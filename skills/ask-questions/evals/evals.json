@@ -1,0 +1,32 @@
+{
+  "skill_name": "ask-questions",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Generate research questions for this ticket: 'Add CSV export to the orders dashboard. Agents need to download filtered order lists for month-end reconciliation. Must respect the existing column visibility settings.'",
+      "expected_output": "A questions artifact with 5-10 targeted, current-state questions tagged by category, a human-only Context section, a determined compatibility posture, rendered via Skill('output-html') to research/questions/YYYY-MM-DD-topic.html",
+      "expectations": [
+        "Produces 5-10 questions total, each beginning with a category tag (e.g. [data-model], [call-graph], [entry-points])",
+        "Every question is about the codebase as it exists today (how exports/downloads currently work, where column visibility settings live), never 'how should we build X'",
+        "Does NOT read any codebase files, grep, or glob — the only input read is the ticket itself",
+        "Section 01 Context contains the human-only callout stating the section is stripped before being passed to /research-codebase",
+        "Determines the compatibility posture (breaking_changes_allowed) by inference or a single AskUserQuestion, and records crispy:breaking_changes_allowed + crispy:compatibility_context in META_EXTRA with a matching Breaking changes SUMMARY_EXTRA row",
+        "Delegates rendering to Skill('output-html') with PHASE=questions and STATUS=ready-for-research, writing to research/questions/YYYY-MM-DD-<topic>",
+        "Presents the questions for review, offers to commit via gh-commit, and does NOT proceed to research automatically"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Generate research questions for this request using --format=md: 'Our background jobs sometimes process the same message twice. Investigate what we'd need to know before adding idempotency.'",
+      "expected_output": "A Markdown questions artifact whose questions force exploration of the current job/queue infrastructure, with no implementation opinions, written to research/questions/YYYY-MM-DD-topic.md",
+      "expectations": [
+        "Because --format=md was passed, delegates to Skill('output-markdown') and writes research/questions/YYYY-MM-DD-<topic>.md",
+        "Questions target current state: how jobs are dispatched and consumed, where message handling lives, existing dedup/retry behavior, test patterns for job handlers",
+        "No question asks for a design opinion ('what's the best way', 'how should') and none names specific files to change",
+        "Questions are pruned to 5-10 — vague or redundant candidates are cut rather than padded",
+        "Does not interrogate the user for more feature context; the only permitted user question is the compatibility posture when it cannot be inferred",
+        "Output uses the shared slot vocabulary (PHASE, STATUS, TOPIC, TITLE, TICKET, PROMPT_TEXT, META_EXTRA, SUMMARY_EXTRA) without inventing new slots"
+      ]
+    }
+  ]
+}

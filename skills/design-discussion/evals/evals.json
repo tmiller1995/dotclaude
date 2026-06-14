@@ -1,0 +1,30 @@
+{
+  "skill_name": "design-discussion",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Produce a design discussion from the research document at research/docs/2026-06-01-csv-export.html, which contains a thorough current-state map of the export and column-visibility code with file:line references.",
+      "expected_output": "A 150-250 line design artifact with contrastive decision cards, open questions resolved one at a time via AskUserQuestion, promoted to ready-for-structure, written to research/designs/YYYY-MM-DD-topic.html",
+      "expectations": [
+        "Reads the research document fully and does NOT re-research — missing facts become Open Questions, not new investigation",
+        "Every design decision is a contrastive card with 2-3 concrete options, pros/cons, a chosen option, and explicit why-not rationale for the rejected options",
+        "The artifact stays within the 150-250 line target (hard ceiling 300) — implementation code, file-by-file change lists, and task breakdowns are absent",
+        "Contains Current State (with file:line citations), Desired End State, Design Decisions, Patterns to Reuse, Open Questions, and Non-Goals sections",
+        "Walks the user through EVERY open question individually using AskUserQuestion — never batched, never skipped — promoting each answer into Design Decisions",
+        "Updates crispy:decisions_resolved and its visible Summary cell as questions resolve, and sets status to ready-for-structure only after all are resolved",
+        "Closes by offering to commit the artifact via gh-commit and suggesting /structure-outline with the artifact path"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Produce a design discussion from research/docs/2026-06-02-stub.html. That document contains only two sentences of prose with no file references or current-state map.",
+      "expected_output": "The skill aborts without writing a design artifact, telling the user the research document is too thin and to run /research-codebase first",
+      "expectations": [
+        "Detects that the research document lacks file:line references and a current-state map",
+        "Stops WITHOUT producing a design document or rendering anything via the output skills",
+        "Tells the user to run /research-codebase first rather than silently doing the research itself",
+        "Does not fabricate current-state claims that the research document cannot support"
+      ]
+    }
+  ]
+}

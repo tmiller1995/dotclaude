@@ -1,0 +1,334 @@
+<!--
+  CRISPY shared artifact template — aesthetic matches Thariq Shihipar's
+  "html-effectiveness" essay (thariqs.github.io/html-effectiveness).
+
+  Every CRISPY skill (ask-questions, research-codebase, design-discussion,
+  structure-outline, create-spec) emits a self-contained .html file using
+  this skeleton. Inline the ENTIRE <style> block into each generated
+  artifact — do not link this file or share a stylesheet. The output must
+  render anywhere it is opened or pasted.
+
+  The header IS the rendered YAML frontmatter: .eyebrow shows phase + repo,
+  <h1> shows the topic title, .prompt-box shows the originating ticket text,
+  and .summary cells expose status / date / cross-doc links as visible chips.
+  Downstream skills also read the machine <meta name="crispy:*"> tags in
+  <head>; keep those names stable.
+
+  Slots to fill (search-and-replace when writing the artifact):
+    {{PHASE}}            questions | research | design | structure | spec
+    {{PHASE_LABEL}}      Questions | Research | Design Discussion | Structure Outline | Implementation Spec
+    {{STATUS}}           draft | ready-for-research | ready-for-design | ready-for-structure | ready-for-plan | ready-for-implementation | complete
+    {{STATUS_CLASS}}     draft | ready | complete   (map ready-for-* → ready, complete → complete, else draft)
+    {{TOPIC}}            kebab-case topic, used in <title>
+    {{TITLE}}            human title shown in <h1> (e.g., "Research Questions: Cross-Tenant Spline Reticulation")
+    {{REPO}}             output of: basename "$(git rev-parse --show-toplevel)"
+    {{BRANCH}}           output of: git branch --show-current
+    {{DATE}}             output of: date '+%Y-%m-%d %H:%M:%S %Z'
+    {{TICKET}}           one-line ticket summary (e.g., "ENG-1234 - reticulate splines across tenants")
+    {{PROMPT_TEXT}}      what was asked — the originating ticket body or research query, in prose
+    {{META_EXTRA}}       0+ extra <meta name="crispy:*"> tags (e.g., crispy:research_doc) — phase-specific
+    {{SUMMARY_EXTRA}}    0+ extra <div class="cell"><div class="k">…</div><div class="v">…</div></div> entries in the summary row
+    {{BODY}}             phase-specific HTML — numbered <section> blocks using the components below
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{PHASE_LABEL}} · {{TOPIC}}</title>
+
+  <!-- Machine-readable metadata. Downstream CRISPY skills parse these — do not rename. -->
+  <meta name="crispy:phase" content="{{PHASE}}">
+  <meta name="crispy:status" content="{{STATUS}}">
+  <meta name="crispy:date" content="{{DATE}}">
+  <meta name="crispy:ticket" content="{{TICKET}}">
+  <meta name="crispy:topic" content="{{TOPIC}}">
+  <meta name="crispy:repo" content="{{REPO}}">
+  <meta name="crispy:branch" content="{{BRANCH}}">
+  {{META_EXTRA}}
+
+  <style>
+    :root {
+      --paper: #FAF9F5;
+      --ink: #141413;
+      --muted: #87867F;
+      --border: #D1CFC5;
+      --border-soft: #E8E6DE;
+      --code-bg: #F2EFE7;
+      --code-bg-deep: #141413;
+      --clay: #D97757;
+      --gold: #C9B98A;
+      --ok: #4E7D4E;
+      --warn: #B8761F;
+      --bad: #B0413E;
+      --max-w: 780px;
+      --max-w-wide: 980px;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #1A1917; --ink: #ECEAE2; --muted: #8F8E86;
+        --border: #3A3835; --border-soft: #2A2926; --code-bg: #232220;
+        --code-bg-deep: #0E0D0C;
+        --clay: #E8896A; --gold: #D6C896;
+        --ok: #6FA46F; --warn: #D29A4A; --bad: #D26763;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      margin: 0;
+      font: 16px/1.65 var(--sans);
+      color: var(--ink);
+      background: var(--paper);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    .page { max-width: var(--max-w-wide); margin: 0 auto; padding: 3rem 1.75rem 5rem; }
+
+    /* ────────── Header (the rendered frontmatter) ────────── */
+    .page-head { margin-bottom: 2.5rem; }
+    .eyebrow {
+      font-size: 0.75rem; color: var(--muted); letter-spacing: 0.08em;
+      text-transform: uppercase; font-weight: 500; margin-bottom: 0.65rem;
+    }
+    h1 {
+      font-size: 2rem; line-height: 1.2; font-weight: 600;
+      margin: 0 0 1.25rem; letter-spacing: -0.015em; max-width: 32ch;
+    }
+    .prompt-box {
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--clay);
+      background: rgba(217, 119, 87, 0.05);
+      padding: 0.85rem 1.1rem;
+      border-radius: 4px;
+      font-size: 0.9375rem;
+      color: var(--ink);
+      max-width: 64ch;
+    }
+    .prompt-box .label {
+      display: inline-block; font-size: 0.6875rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--clay); font-weight: 600;
+      margin-right: 0.55rem; vertical-align: 1px;
+    }
+
+    /* ────────── Summary cells (the rest of the frontmatter) ────────── */
+    .summary {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1px; background: var(--border-soft);
+      border: 1px solid var(--border-soft); border-radius: 6px;
+      overflow: hidden; margin: 1.75rem 0 0;
+    }
+    .summary .cell { background: var(--paper); padding: 0.75rem 1rem; }
+    .summary .k {
+      font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); font-weight: 500; margin-bottom: 0.2rem;
+    }
+    .summary .v { font-size: 0.9375rem; font-weight: 500; }
+    .summary .v.accent { color: var(--clay); }
+    .summary .v code { font-size: 0.8125rem; }
+
+    /* ────────── Status badge ────────── */
+    .badge {
+      display: inline-block; padding: 0.15em 0.65em; border-radius: 999px;
+      font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em;
+      background: var(--border-soft); color: var(--ink);
+    }
+    .status-draft    { background: rgba(184,118,31,0.14); color: var(--warn); }
+    .status-ready    { background: rgba(217,119,87,0.14); color: var(--clay); }
+    .status-complete { background: rgba(78,125,78,0.14);  color: var(--ok); }
+
+    /* ────────── Sections ────────── */
+    section { margin: 3rem 0; }
+    .sec-head { display: flex; align-items: baseline; gap: 0.85rem; margin-bottom: 0.75rem; }
+    .sec-head .num {
+      font: 500 0.8125rem/1 var(--mono); color: var(--muted); letter-spacing: 0.05em;
+    }
+    h2 { font-size: 1.375rem; font-weight: 600; margin: 0; letter-spacing: -0.005em; }
+    h3 { font-size: 1.0625rem; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+    .sec-intro { color: var(--muted); max-width: 60ch; margin: 0 0 1.25rem; }
+    p { margin: 0.5rem 0 0.85rem; max-width: 68ch; }
+
+    /* ────────── Inline + block code ────────── */
+    code {
+      font: 0.875em/1.45 var(--mono);
+      background: var(--code-bg); color: var(--ink);
+      padding: 0.12em 0.4em; border-radius: 3px;
+    }
+    pre {
+      background: var(--code-bg-deep); color: #ECEAE2;
+      border-radius: 6px; padding: 1rem 1.15rem;
+      overflow-x: auto; font: 0.8125rem/1.55 var(--mono);
+      margin: 0.85rem 0; max-width: 100%;
+    }
+    pre code { background: transparent; padding: 0; color: inherit; font-size: 1em; }
+    pre .kw { color: #E8896A; }   /* keyword */
+    pre .fn { color: #C9B98A; }   /* function/identifier */
+    pre .str { color: #A7C499; }  /* string */
+    pre .cm { color: #8F8E86; font-style: italic; }  /* comment */
+    pre .hl { background: rgba(217,119,87,0.18); padding: 0 0.2em; border-radius: 2px; }
+    .file-label {
+      font: 500 0.75rem/1 var(--mono); color: var(--muted);
+      letter-spacing: 0.04em; margin-bottom: 0.4rem;
+    }
+
+    /* ────────── Tables ────────── */
+    table {
+      border-collapse: collapse; width: 100%; margin: 1rem 0;
+      font-size: 0.9375rem;
+    }
+    th, td {
+      border-bottom: 1px solid var(--border-soft);
+      padding: 0.55rem 0.85rem; text-align: left; vertical-align: top;
+    }
+    th {
+      font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--muted); font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ────────── Generic card / details ────────── */
+    .card {
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 1.1rem 1.25rem; margin: 0.85rem 0; background: var(--paper);
+    }
+    details {
+      border: 1px solid var(--border-soft); border-radius: 6px;
+      padding: 0.65rem 0.95rem; margin: 0.6rem 0; background: var(--paper);
+    }
+    summary {
+      cursor: pointer; font-weight: 500;
+      margin: -0.65rem -0.95rem; padding: 0.65rem 0.95rem;
+      border-radius: 6px; list-style: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::before { content: "▸ "; color: var(--muted); }
+    details[open] summary::before { content: "▾ "; }
+    summary:hover { background: var(--code-bg); }
+    details[open] summary { margin-bottom: 0.5rem; }
+    summary .where { float: right; font: 0.8125rem/1.4 var(--mono); color: var(--muted); }
+
+    /* ────────── Tradeoffs grid (used by design-discussion) ────────── */
+    .tradeoffs { display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+      background: var(--border-soft); border: 1px solid var(--border-soft);
+      border-radius: 6px; overflow: hidden; margin: 0.75rem 0; }
+    .tradeoffs .row { display: contents; }
+    .tradeoffs .cell { background: var(--paper); padding: 0.5rem 0.8rem; font-size: 0.9rem; }
+    .tradeoffs .row.head .cell {
+      font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); font-weight: 500; background: var(--code-bg);
+    }
+    .tradeoffs .cell.pro::before { content: "+ "; color: var(--ok); font-weight: 600; }
+    .tradeoffs .cell.con::before { content: "− "; color: var(--bad); font-weight: 600; }
+
+    /* ────────── Option list (contrastive A/B/C) ────────── */
+    .options { display: flex; flex-direction: column; gap: 0.5rem; margin: 0.75rem 0; }
+    .option {
+      border: 1px solid var(--border-soft); border-left: 3px solid var(--border);
+      border-radius: 4px; padding: 0.55rem 0.9rem;
+    }
+    .option.chosen {
+      border-left-color: var(--clay);
+      background: rgba(217,119,87,0.04);
+    }
+    .option .opt-label { font-weight: 600; margin-right: 0.4rem; }
+    .option.chosen .opt-label::after {
+      content: " ✓ chosen"; font-weight: 500; color: var(--clay);
+      font-size: 0.8125rem; letter-spacing: 0.02em;
+    }
+
+    /* ────────── Slice / milestone cards (structure-outline, create-spec) ────────── */
+    .slice {
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 1.1rem 1.25rem; margin: 0.85rem 0; background: var(--paper);
+    }
+    .slice h3 { margin-top: 0; }
+    .slice .goal { color: var(--muted); margin-bottom: 0.5rem; }
+    .checkpoint {
+      display: inline-block; font: 500 0.8125rem/1.3 var(--sans);
+      background: rgba(78,125,78,0.1); color: var(--ok);
+      padding: 0.25rem 0.65rem; border-radius: 4px; margin: 0.35rem 0;
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.45rem 0; }
+    .tag {
+      display: inline-block; font: 500 0.75rem/1.4 var(--mono);
+      background: var(--code-bg); color: var(--muted);
+      padding: 0.15rem 0.55rem; border-radius: 3px; letter-spacing: 0.02em;
+    }
+    .tag.new { color: var(--ok); }
+    .tag.mod { color: var(--clay); }
+    .tag.del { color: var(--bad); }
+
+    /* ────────── Chips (metric pills) ────────── */
+    .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0; }
+    .chip {
+      font-size: 0.8125rem; background: var(--code-bg);
+      padding: 0.25rem 0.65rem; border-radius: 999px; color: var(--muted);
+    }
+    .chip strong { color: var(--ink); font-weight: 600; }
+
+    /* ────────── Callouts ────────── */
+    .callout {
+      border: 1px solid var(--border-soft); border-left: 3px solid var(--clay);
+      background: rgba(217,119,87,0.05);
+      padding: 0.7rem 1rem; border-radius: 4px; margin: 1rem 0;
+      font-size: 0.9375rem;
+    }
+    .callout.warn { border-left-color: var(--warn); background: rgba(184,118,31,0.06); }
+    .callout.bad  { border-left-color: var(--bad);  background: rgba(176,65,62,0.05); }
+
+    /* ────────── Recommendation aside ────────── */
+    aside.reco {
+      border: 1px solid var(--clay); background: rgba(217,119,87,0.04);
+      border-radius: 8px; padding: 1.1rem 1.4rem; margin: 2rem 0;
+    }
+    aside.reco h2 {
+      font-size: 1rem; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--clay); margin: 0 0 0.5rem;
+    }
+
+    /* ────────── Lists ────────── */
+    ul, ol { padding-left: 1.4rem; max-width: 68ch; }
+    li { margin: 0.2rem 0; }
+    blockquote {
+      border-left: 3px solid var(--clay); padding: 0.25rem 0 0.25rem 1rem;
+      margin: 0.75rem 0; color: var(--muted); max-width: 64ch;
+    }
+    a { color: var(--clay); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+    a:hover { color: var(--ink); }
+
+    /* ────────── Print ────────── */
+    @media print {
+      html, body { background: white; color: black; }
+      .page { padding: 0; max-width: 100%; }
+      details { border: none; padding: 0; }
+      details > *:not(summary) { display: block !important; }
+      summary::before { content: "" !important; }
+      pre { background: #f4f3ee; color: #141413; border: 1px solid #ddd; }
+      pre .kw, pre .fn, pre .str, pre .cm { color: inherit !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <header class="page-head">
+      <div class="eyebrow">{{PHASE_LABEL}} · {{REPO}}</div>
+      <h1>{{TITLE}}</h1>
+      <div class="prompt-box">
+        <span class="label">Ticket</span>{{PROMPT_TEXT}}
+      </div>
+      <div class="summary">
+        <div class="cell"><div class="k">Status</div>      <div class="v"><span class="badge status-{{STATUS_CLASS}}">{{STATUS}}</span></div></div>
+        <div class="cell"><div class="k">Date</div>        <div class="v">{{DATE}}</div></div>
+        <div class="cell"><div class="k">Branch</div>      <div class="v"><code>{{BRANCH}}</code></div></div>
+        {{SUMMARY_EXTRA}}
+      </div>
+    </header>
+
+    {{BODY}}
+
+  </div>
+</body>
+</html>

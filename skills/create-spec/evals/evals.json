@@ -1,0 +1,30 @@
+{
+  "skill_name": "create-spec",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create the implementation spec from the structure outline at research/structures/2026-06-03-csv-export.html. The outline defines three vertical slices, each with a goal, files-touched list, and checkpoint, and links to a completed design document with all open questions resolved.",
+      "expected_output": "A phased spec at research/specs/YYYY-MM-DD-topic.html where each phase mirrors a slice and carries implementation steps, tests, automated verification, and manual verification, plus a mandatory Non-goals section",
+      "expectations": [
+        "Phases map 1:1 to the structure outline's slices — boundaries, goals, and checkpoints are copied, never redrawn",
+        "Each phase slice-card contains Implementation steps with file:line citations from the research doc, a Tests checklist, an Automated verification checklist of literal runnable commands, and a Manual verification checklist of human-only steps",
+        "Section 04 Non-goals is present and ends with the out-of-scope confirmation line, even when the design doc lists few non-goals",
+        "Output goes to research/specs/YYYY-MM-DD-<topic> (the standard CRISPY convention), with crispy:structure_doc, crispy:design_doc, crispy:research_doc, crispy:author, crispy:date, and crispy:phase_count metadata mirrored in visible Summary rows",
+        "Makes no architectural decisions and asks the user no questions — this is a transcription spot-check, not a design pass",
+        "No dates or week-based time estimates appear in the phases",
+        "Closes with the executive summary, an offer to commit via gh-commit, and the planner-agent next step"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create the implementation spec from research/structures/2026-06-04-notifications.html. Its linked design document still contains an Open Questions section with two unresolved questions about delivery guarantees.",
+      "expected_output": "The skill aborts without writing a spec, directing the user back to /design-discussion to resolve the open questions",
+      "expectations": [
+        "Scans the linked design document and detects the unresolved Open Questions section before any rendering",
+        "Stops WITHOUT writing a spec artifact and tells the user to return to /design-discussion",
+        "Does not attempt to resolve the open questions itself or proceed with assumptions",
+        "Does not perform the earlier phases' work (no design decisions, no research) to fill the gap"
+      ]
+    }
+  ]
+}

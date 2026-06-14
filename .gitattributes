@@ -1,0 +1,14 @@
+# Normalize all text files to LF in the repo AND on disk.
+# Keeps diffs free of line-ending noise and matches the LF-based upstream
+# (flora131/atomic) that skills/agents are mirrored from.
+* text=auto eol=lf
+
+# Treat common binary assets as binary (no EOL conversion, no diff).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

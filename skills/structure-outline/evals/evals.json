@@ -1,0 +1,35 @@
+{
+  "skill_name": "structure-outline",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a structure outline for implementing a product wishlist feature. The design discussion has already been completed and saved to research/designs/. Break this into vertical slices with checkpoints.",
+      "expected_output": "A structure document with header-style signatures (TypeScript interfaces/signatures only), a file inventory, vertical slices (end-to-end paths) each with a testable checkpoint, integration points, and a rollback strategy, rendered via the matching output skill",
+      "expectations": [
+        "Output contains a New types & signatures section with TypeScript interface/type definitions (signatures only, no implementation bodies)",
+        "Output contains at least 2 vertical slices, each touching multiple layers (e.g., database + API + UI), not a single horizontal layer",
+        "Each vertical slice has a concrete Checkpoint describing how to verify it works (not just 'it compiles'), prefixed with the checkpoint marker",
+        "Slices are ordered so dependencies flow forward (Slice N+1 depends on Slice N, never reverse), with the last slice being the hardening slice",
+        "Output contains a File inventory listing new and modified files with NEW / MODIFY / DELETE tags",
+        "Slice cards follow the output skills' slice-card contract: a `### Slice N — Name` heading, a goal line, a files-touched list with change tags, and a checkpoint line",
+        "The render brief uses only the established slot names (PHASE, PHASE_LABEL, STATUS, STATUS_CLASS, TOPIC, TITLE, TICKET, PROMPT_TEXT, META_EXTRA, SUMMARY_EXTRA) and does not invent new slots",
+        "The skill delegates rendering to Skill('output-html') by default, or Skill('output-markdown') when --format=md is passed, writing to research/structures/YYYY-MM-DD-topic with PHASE=structure and STATUS=ready-for-plan"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Define the implementation structure for adding real-time notifications using WebSockets. We need to support order status updates, new message alerts, and price drop alerts for wishlisted items. Use --format=md.",
+      "expected_output": "Structure outline with header-style signatures for notification types and the WebSocket service, vertical slices progressing from basic WebSocket connection through each notification type, rendered as Markdown via the output-markdown skill",
+      "expectations": [
+        "New types & signatures section defines notification-related interfaces (NotificationType, NotificationPayload, WebSocket service signatures) as signatures only",
+        "Vertical slices are truly vertical — each slice delivers a working end-to-end notification path, not a horizontal layer",
+        "The first slice establishes the base WebSocket infrastructure as a foundation",
+        "Subsequent slices add individual notification types (order status, messages, price drops) incrementally",
+        "No slice only touches the database or only touches the UI — each must be independently verifiable via its checkpoint",
+        "Checkpoints are specific and testable (e.g., 'WebSocket connects and receives ping/pong' not 'WebSocket works')",
+        "File inventory notes when the same file is touched by multiple slices",
+        "Because --format=md was passed, the skill delegates to Skill('output-markdown') and writes to research/structures/YYYY-MM-DD-topic.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+# =============================================================================
+# .claude version control — ALLOWLIST (deny-by-default)
+# -----------------------------------------------------------------------------
+# Everything is ignored unless explicitly un-ignored below. This guarantees
+# that secrets and runtime data Claude Code writes here can never be committed
+# by accident. To start tracking something new, add a `!` line for it.
+# =============================================================================
+
+# Ignore every top-level entry by default.
+/*
+
+# --- Tracked: your customizations -------------------------------------------
+!/.gitignore
+!/.gitattributes
+!/agents/
+!/skills/
+!/commands/
+!/scripts/
+
+# -----------------------------------------------------------------------------
+# Intentionally NOT tracked (kept here as documentation of what we exclude):
+#   .credentials.json        OAuth tokens / secrets  -> NEVER commit
+#   settings.json            global config           -> excluded by choice
+#   settings.local.json      machine-local config    -> NEVER commit
+#   projects/                session data (277M+)    -> huge churn
+#   history.jsonl            prompt history
+#   file-history/            file snapshots (12M+)
+#   transcripts/             session transcripts
+#   plugins/                 reinstallable plugins
+#   shell-snapshots/ cache/ logs/ debug/ daemon/ backups/ ... runtime noise
+# -----------------------------------------------------------------------------

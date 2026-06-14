@@ -1,0 +1,33 @@
+{
+  "skill_name": "research-codebase",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Research the codebase using the questions artifact at research/questions/2026-06-01-csv-export.html. The artifact's Context section describes a CSV export feature ticket; its Questions section asks how exports, downloads, and column-visibility settings currently work.",
+      "expected_output": "A research document at research/docs/YYYY-MM-DD-topic.html synthesized from parallel sub-agent findings, containing only facts about the current codebase with file:line references, with the ticket context never forwarded to sub-agents",
+      "expectations": [
+        "Reads the questions artifact fully in the main context, but sub-agent prompts contain ONLY questions and scope — never the ticket, feature description, or phrasing like 'we are adding CSV export'",
+        "Inherits crispy:breaking_changes_allowed from the questions artifact instead of re-asking the user, and threads it into every sub-agent prompt",
+        "Spawns parallel sub-agents (codebase-locator, codebase-analyzer, codebase-pattern-finder, research-locator/analyzer as relevant) rather than doing deep file reading in the main context",
+        "Waits for ALL sub-agents before synthesizing; findings cite concrete file:line references",
+        "The document contains no recommendations or evaluative language — current state only (documentarian, not evaluator)",
+        "Emits the full crispy:* metadata set including breaking_changes_allowed and compatibility_context, with matching visible Summary rows",
+        "Body sections appear in order: research question, compatibility context, summary, detailed findings, code references, architecture & conventions, historical context, related research",
+        "Presents an executive summary, offers to commit the artifact via gh-commit, and asks for follow-up questions"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Research this inline query with --format=md: 'I'm building a notification center feature — find out how our SignalR hubs are registered and how clients subscribe to them.'",
+      "expected_output": "A Markdown research document where the inline query was rephrased into pure current-state questions before any sub-agent was spawned, with the feature intent stripped",
+      "expectations": [
+        "Rephrases the query into intent-free questions (e.g. 'how are SignalR hubs registered and how do clients subscribe') — the phrase 'building a notification center' never reaches a sub-agent",
+        "Because no questions artifact exists, determines the compatibility posture itself: infers from the request or asks the user once via AskUserQuestion before decomposing",
+        "Because --format=md was passed, delegates to Skill('output-markdown') and writes research/docs/YYYY-MM-DD-<topic>.md with crispy:* keys in YAML frontmatter",
+        "Runs fresh codebase research via sub-agents rather than relying solely on existing research documents",
+        "Handles follow-up questions by appending to the same document and updating crispy:last_updated metadata in sync with the visible Summary cells",
+        "Writes no artifacts outside the research/ directory"
+      ]
+    }
+  ]
+}
