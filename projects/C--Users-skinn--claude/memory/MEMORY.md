@@ -1,0 +1,5 @@
+- [User Profile](user_profile.md) — .NET/C# backend + React/TanStack Start frontend developer on Windows 11
+- [Search Tool Priority](feedback_search_priority.md) — SerpAPI discovers URLs → Firecrawl extracts; Context7/MSLearn niche+fallback. Server key is `firecrawl` (mcp__firecrawl__*)
+- [CRISPY Workflow](user_crispy_workflow.md) — user uses CRISPY (Q→R→D→S→P→I→R) as structured replacement for RPI
+- [Atomic Upstream](reference_atomic_upstream.md) — flora131/atomic at C:\GitHub\atomic is upstream source of skills/agents; customizations to preserve
+- [Subagent Nesting](reference_subagent_nesting.md) — sub-agents can't spawn sub-agents; orchestrator agent → skills/orchestrate (2026-06-12)

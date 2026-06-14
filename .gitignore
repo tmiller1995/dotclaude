@@ -17,6 +17,15 @@
 !/commands/
 !/scripts/
 
+# --- Tracked: curated memory (nested under the excluded projects/) -----------
+# Drill down: un-ignore each parent, then re-ignore its other contents, so
+# ONLY the memory/ folder surfaces — the rest of projects/ stays excluded.
+!/projects/
+/projects/*
+!/projects/C--Users-skinn--claude/
+/projects/C--Users-skinn--claude/*
+!/projects/C--Users-skinn--claude/memory/
+
 # -----------------------------------------------------------------------------
 # Intentionally NOT tracked (kept here as documentation of what we exclude):
 #   .credentials.json        OAuth tokens / secrets  -> NEVER commit
