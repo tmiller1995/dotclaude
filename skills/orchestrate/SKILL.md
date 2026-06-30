@@ -1,11 +1,11 @@
 ---
 name: orchestrate
-description: Orchestrate sub-agents from the MAIN context to accomplish complex long-horizon tasks without losing coherency. Use when the user wants to orchestrate work, delegate across sub-agents, fan out parallel research or implementation, run a long-horizon multi-step task, or asks for "the orchestrator". Sub-agents cannot reliably spawn sub-agents in Claude Code, so orchestration must run in the main conversation — this skill replaces the former `orchestrator` agent.
+description: Orchestrate sub-agents from the MAIN context to accomplish complex long-horizon tasks without losing coherency. Use when the user wants to orchestrate work, delegate across sub-agents, fan out parallel research or implementation, run a long-horizon multi-step task, or asks for "the orchestrator". Sub-agents *can* nest as of Claude Code v2.1.172 (up to 5 deep), but this skill keeps orchestration in the main context by choice — for context hygiene and phase-gate visibility — and replaces the former `orchestrator` agent.
 ---
 
 # Orchestrate (main-context sub-agent orchestration)
 
-You — the **main conversation context** — are the orchestrator. Do NOT delegate orchestration itself to a sub-agent: in Claude Code the `Agent` tool is only reliably available to the main context. Sub-agents cannot spawn sub-agents (official docs: "If your workflow requires nested delegation, use Skills or chain subagents from the main conversation"). All dispatching happens here.
+You — the **main conversation context** — are the orchestrator. Since Claude Code v2.1.172 sub-agents *can* spawn their own sub-agents (up to 5 deep), but this skill deliberately keeps dispatching in the main context: condensed results stay visible to you and the human, and the phase gates don't get buried below an orchestration line you can't watch. Reach for nesting only when a delegated task itself fans out and its intermediate output should never reach you — e.g. the `reviewer` dispatching a verifier per finding. All top-level dispatching happens here.
 
 Your most important tools are the `Agent` tool for dispatching sub-agents and the built-in task tools (`TaskCreate`, `TaskList`, `TaskGet`, `TaskUpdate`) for tracking work.
 
@@ -38,7 +38,7 @@ Dispatch every agent with the `Agent` tool, setting `subagent_type` to the agent
 When running the implement phase (planner → workers):
 
 1. Have `planner` decompose the spec into tasks, then dispatch a `worker` per iteration. The worker claims and completes exactly one task, then stops.
-2. **Workers cannot spawn the debugger themselves.** When a worker stops after filing a bug-fix task, dispatch the `debugger` agent against that task (pass it the evidence the worker logged in the task's metadata), write the debugger's report back to the task via `TaskUpdate` metadata, then resume the worker loop so the fix is picked up first.
+2. **Workers deliberately don't self-dispatch the debugger.** Workers have the `Agent` tool, but the orchestrated loop keeps debugger dispatch here so the fix decision stays visible at the phase gate. When a worker stops after filing a bug-fix task, dispatch the `debugger` agent against that task (pass it the evidence the worker logged in the task's metadata), write the debugger's report back to the task via `TaskUpdate` metadata, then resume the worker loop so the fix is picked up first.
 3. Parallel workers are fine when tasks touch disjoint files; otherwise run them sequentially.
 4. **Phase gates — manual verification (CRITICAL).** Specs from `/create-spec` group tasks into numbered phases, each with an *Automated verification* and a *Manual verification* checklist. When every task in a phase is complete, STOP the worker loop and report to the user in exactly this shape:
 

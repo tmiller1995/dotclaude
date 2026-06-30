@@ -31,8 +31,8 @@ When upgrading skills from upstream, pull the clone fresh (`git pull` in `C:\Git
 
 ## Agent divergence — DO NOT overwrite
 
-- **`orchestrator.md`** — REMOVED 2026-06-12: transformed into the `skills/orchestrate/SKILL.md` skill (sub-agents can't spawn sub-agents — see [[subagent-nesting-claude-code]]). All customizations (HumanLayer Mar 2026 context-window management + CRISPY preference) preserved in the skill. Do NOT re-add an orchestrator AGENT from atomic upstream (backups deleted 2026-06-12 at user request — the skill is now the only copy of the customizations)
-- **`worker.md` / `debugger.md` / `reviewer.md`** — `Agent` tool stripped from frontmatter 2026-06-12 (silently unavailable in sub-agents anyway); worker's Bug Handling now logs evidence + stops so the MAIN context dispatches `debugger`. Do not restore `Agent` grants on upstream sync
+- **`orchestrator.md`** — REMOVED 2026-06-12: transformed into the `skills/orchestrate/SKILL.md` skill (orchestration kept in the main context by deliberate choice — see [[subagent-nesting-claude-code]]). All customizations (HumanLayer Mar 2026 context-window management + CRISPY preference) preserved in the skill. Do NOT re-add an orchestrator AGENT from atomic upstream (backups deleted 2026-06-12 at user request — the skill is now the only copy of the customizations)
+- **`worker.md` / `debugger.md` / `reviewer.md` / `planner.md`** — `Agent` tool GRANTED in frontmatter 2026-06-29 (nesting works since v2.1.172 — see [[subagent-nesting-claude-code]]) so these agents can spawn helper sub-agents. On upstream sync, KEEP these `Agent` grants and the corrected nesting wording — do NOT strip them. worker's Bug Handling still logs evidence + stops so the MAIN context dispatches `debugger` (a deliberate phase-gate choice, not a capability limit)
 - **`codebase-locator.md`** — user swapped JS/TS/Python/Go stack hints for C#/.NET + React/TypeScript to match their profile
 - **`debugger.md` / `reviewer.md` / `worker.md`** — user added MCP tool allowlist (firecrawl/serpapi/context7/mslearn) and references `testing-anti-patterns` instead of `test-driven-development`
 
