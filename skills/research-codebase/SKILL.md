@@ -90,6 +90,7 @@ Extract `--format=html|md` from `$ARGUMENTS`. Default to `html` when the flag is
         - The online researcher uses the search pipeline: SerpAPI for discovery (#1) → Firecrawl for extraction (#2), with Context7 (#3) and MSLearn (#4) as direct routes for library-API / Microsoft docs lookups
         - Instruct the agent to return references to code snippets or documentation, PLEASE INCLUDE those references (e.g. source file names, line numbers, etc.)
         - Instruct the agent to return LINKS with their findings and INCLUDE those links in the research document
+        - Instruct the agent to check `research/web/` for a fresh cached copy BEFORE fetching, and to persist newly fetched sources there with provenance frontmatter — pass it today's date (`YYYY-MM-DD`) for the cache filenames and the freshness check. Reusing a cached source saves SerpAPI/Firecrawl credits and tokens on repeat research.
 
     The key is to use these agents intelligently:
     - Start with locator agents to find what exists
@@ -124,6 +125,8 @@ Extract `--format=html|md` from `$ARGUMENTS`. Default to `html` when the flag is
     │   ├── YYYY-MM-DD-topic.<ext>
     ├── notes/
     │   ├── YYYY-MM-DD-meeting.<ext>
+    ├── web/
+    │   ├── YYYY-MM-DD-topic.md          # cached external sources (provenance frontmatter), written by codebase-online-researcher
     ```
 
     Naming conventions:

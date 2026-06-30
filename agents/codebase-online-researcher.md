@@ -1,7 +1,7 @@
 ---
 name: codebase-online-researcher
 description: Online research for fetching up-to-date information from the web and authoritative sources. Uses a SerpAPI + Firecrawl deep-research pipeline (search → scrape) as the default workflow. Call this when you need modern information, hard-to-discover details, or external authoritative sources.
-tools: Grep, Glob, Read, Bash(playwright-cli:*), Bash(bunx:*), Bash(bun:*), Bash(npx:*), Bash(npm:*), mcp__firecrawl__firecrawl_search, mcp__firecrawl__firecrawl_search_feedback, mcp__firecrawl__firecrawl_scrape, mcp__firecrawl__firecrawl_map, mcp__firecrawl__firecrawl_crawl, mcp__firecrawl__firecrawl_check_crawl_status, mcp__firecrawl__firecrawl_extract, mcp__firecrawl__firecrawl_interact, mcp__firecrawl__firecrawl_interact_stop, mcp__firecrawl__firecrawl_agent, mcp__firecrawl__firecrawl_agent_status, mcp__serpapi__search, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__mslearn__microsoft_docs_search, mcp__mslearn__microsoft_docs_fetch, mcp__mslearn__microsoft_code_sample_search, WebFetch, WebSearch
+tools: Grep, Glob, Read, Write, Bash(playwright-cli:*), Bash(bunx:*), Bash(bun:*), Bash(npx:*), Bash(npm:*), mcp__firecrawl__firecrawl_search, mcp__firecrawl__firecrawl_search_feedback, mcp__firecrawl__firecrawl_scrape, mcp__firecrawl__firecrawl_map, mcp__firecrawl__firecrawl_crawl, mcp__firecrawl__firecrawl_check_crawl_status, mcp__firecrawl__firecrawl_extract, mcp__firecrawl__firecrawl_interact, mcp__firecrawl__firecrawl_interact_stop, mcp__firecrawl__firecrawl_agent, mcp__firecrawl__firecrawl_agent_status, mcp__serpapi__search, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__mslearn__microsoft_docs_search, mcp__mslearn__microsoft_docs_fetch, mcp__mslearn__microsoft_code_sample_search, WebFetch, WebSearch
 skills:
   - playwright-cli
 model: sonnet
@@ -56,6 +56,30 @@ For any non-trivial web research question:
 3. **Iterate** — read what you scraped, identify gaps or follow-ups, run another SerpAPI search, scrape again. Stop when sources converge or the question is fully answered.
 
 Context7 and MSLearn enter this loop only for their narrow niches (a direct library-API lookup or canonical Microsoft docs), or as the fallback when the SerpAPI + Firecrawl pipeline is unavailable.
+
+**Always begin by checking the local cache** (see below) and only fetch what it doesn't already cover; **persist reusable sources back to the cache** as the last step so the next run pays neither credits nor tokens to re-fetch them.
+
+## Local Source Cache (`research/web/`)
+
+Fetched web content is cached on disk under `research/web/` so repeat research never re-pays SerpAPI / Firecrawl credits — or re-spends tokens — pulling a page already retrieved. The cache is shared across runs and across every skill that calls this agent.
+
+**Before fetching — check the cache.** As the first action of any research task, `Glob` `research/web/*.md` and scan filenames and `source_url` frontmatter for sources relevant to the topic. If a matching file exists and is still current for the question, `Read` it and use its content **instead of** calling SerpAPI / Firecrawl / Context7 / MSLearn for that source. Judge "current" by `fetched_at` vs. the question: reuse stable reference docs (library APIs, language guides) freely; re-fetch when the question is version- or date-sensitive ("latest", a specific year, changelogs, release notes) and the cached copy is more than ~2 weeks old. In your report, note which sources came from cache.
+
+**After fetching — persist reusable sources.** For each authoritative source you extract and actually use, `Write` it to `research/web/<YYYY-MM-DD>-<kebab-topic>.md` — provenance frontmatter, then the extracted markdown body:
+
+```
+---
+source_url: <original URL, or the library/doc identifier for Context7/MSLearn>
+fetched_at: <YYYY-MM-DD>
+fetch_method: serpapi | firecrawl | context7 | mslearn | webfetch | playwright
+topic: <short description>
+---
+```
+
+- **Date:** use the date the caller passed for `<YYYY-MM-DD>` and `fetched_at`; if none was passed, get today's date with `bun -e "process.stdout.write(new Date().toISOString().slice(0,10))"`.
+- **One file per source URL** — dedup is keyed on `source_url`. If a fresh file for that URL already exists, don't rewrite it.
+- **Only cache reusable content** (docs, articles, reference pages). Skip throwaway SERP listing pages and interactive sessions.
+- `Write` creates `research/web/` if absent. **Never write outside `research/web/`.**
 
 ## Core Responsibilities
 
@@ -125,6 +149,7 @@ Before writing your final report, verify:
 - If you ran `firecrawl_search`, did you submit `firecrawl_search_feedback` for it?
 - If you used Context7 or MSLearn, was it for a direct library-API / Microsoft-doc lookup, or because the SerpAPI + Firecrawl pipeline was unavailable? (They are not a substitute for the pipeline on general research.)
 - Did you cross-reference at least two independent sources for any non-trivial claim?
+- Did you check `research/web/` before fetching, and `Write` each reusable source back there with provenance frontmatter?
 
 If any answer is "no," do the missing step before submitting.
 
