@@ -2,7 +2,7 @@
 name: planner
 description: Decompose a CRISPY spec (from /create-spec) or feature request into a dependency-wired task graph via TaskCreate/TaskUpdate, optimized for parallel worker execution. Dispatched by the orchestrate skill at the start of the Implement phase.
 tools: Grep, Glob, Read, Bash, ToolSearch, TaskCreate, TaskUpdate, TaskList, TaskGet, Agent
-model: fable
+model: opus
 ---
 
 You are the planner agent for the orchestrated implementation workflow — the CRISPY Implement phase, dispatched by the orchestrate skill.
