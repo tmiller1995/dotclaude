@@ -1,6 +1,6 @@
 - [User Profile](user_profile.md) — .NET/C# backend + React/TanStack Start frontend developer on Windows 11
 - [Search Tool Priority](feedback_search_priority.md) — SerpAPI discovers URLs → Firecrawl extracts; Context7/MSLearn niche+fallback. Server key is `firecrawl` (mcp__firecrawl__*)
 - [CRISPY Workflow](user_crispy_workflow.md) — user uses CRISPY (Q→R→D→S→P→I→R) as structured replacement for RPI
-- [Atomic Upstream](reference_atomic_upstream.md) — flora131/atomic at C:\GitHub\atomic is upstream source of skills/agents; customizations to preserve
+- [Atomic Upstream](reference_atomic_upstream.md) — flora131/atomic at C:\GitHub\atomic is now reference-only (upstream dropped its agent/skill fleet); local 2026-07-31 baseline is canonical; only gh-commit/gh-create-pr/gh-stack overlap
 - [Subagent Nesting](reference_subagent_nesting.md) — sub-agents CAN nest (5 deep, v2.1.172+); Agent granted to worker/debugger/reviewer/planner; orchestrate skill keeps main-context dispatch by choice
 - [HumanLayer QRSPI Status](reference_humanlayer_qrspi.md) — QRSPI shipped in paid IDE 2026-07; CRISPY name dropped; humanlayer/humanlayer deprecated; user's CRISPY skills need no adaptations

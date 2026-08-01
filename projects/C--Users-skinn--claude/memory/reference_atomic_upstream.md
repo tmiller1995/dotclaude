@@ -3,22 +3,32 @@ name: atomic upstream skills source
 description: flora131/atomic is the upstream source of user's skills and agents — cloned locally for diff/sync
 type: reference
 originSessionId: 3a7a217a-db3d-4612-951d-d1edeb23c816
-modified: 2026-08-01T04:20:58.725Z
+modified: 2026-08-01T04:27:40.332Z
 ---
 `flora131/atomic` (GitHub) is the upstream source of the user's `.claude/skills/` and `.claude/agents/`. Referenced in Alex Lavaee's "From RPI to QRSPI" blog post (https://alexlavaee.me/blog/from-rpi-to-qrspi/).
 
-- **Local clone**: `C:\GitHub\atomic`
-- **Skills dir**: `C:\GitHub\atomic\.agents\skills\` (last sync 2026-04-24 against Atomic v0.5.34, commit `0a40566f`)
-- **Agents dir**: `C:\GitHub\atomic\.claude\agents\` (12 agents)
+- **Local clone**: `C:\GitHub\atomic` — pulled fresh 2026-07-31: at commit `196cc766` (2026-07-31, past `0.8.31-alpha.5`). Historical baseline was v0.5.34 commit `0a40566f` (synced 2026-04-24).
+- **Upstream RESTRUCTURED between v0.5.34 and 0.8.31**: `.agents\skills\` now contains ONLY 7 skills (bun, gh-commit, gh-create-pr, gh-stack, prek, typescript-advanced-types, typescript-expert). `.claude\agents\` no longer exists upstream — the 12-agent fleet and most skills were removed from the repo (monorepo restructure `#936`, 2026-05-15). Atomic is now reference-only for everything except the 2 overlapping skills below.
+- **`gh-stack`** — NEW upstream 2026-07-30 (891-line SKILL.md vendored from github/gh-stack v0.1.0): stacked-PR management. NOT adopted locally — user's branching is trunk-based with short-lived branches; revisit only if they start stacking dependent PRs.
 - **Design context file**: `C:\GitHub\atomic\.impeccable.md` (copied to `C:\Users\skinn\.claude\.impeccable.md`)
 
-When upgrading skills from upstream, pull the clone fresh (`git pull` in `C:\GitHub\atomic`) then diff before copying.
+## Local skill baseline is canonical (2026-07-31) — DO NOT overwrite from atomic
 
-## Skills user has customized — DO NOT overwrite from atomic
+Commit `df48f8a` rewrote all 15 custom skills against the 2026-07 best-practices rubric
+(local gitignored copy: `.claude/research/skill-reviews/RUBRIC.md`, with per-skill plan docs
+alongside), the skills counterpart to the `53630b7` agent overhaul. Local versions supersede
+upstream for EVERY skill.
 
-- **`create-spec`** — customized for CRISPY P (Plan) phase with explicit "spot-check not deep review" framing citing Alex Lavaee
-- **`research-codebase`** — customized for CRISPY R (Research) phase with critical "ticket isolation rule" (feature ticket must NOT be passed to sub-agents)
-- **`liteparse`** — user has extensions beyond atomic's version (formatting-only drift confirmed 2026-04-24)
+- **Only remaining upstream overlap: `gh-commit` and `gh-create-pr`.** Both untouched upstream
+  since the 2026-05-15 monorepo restructure — they predate the local 2026-07-31 overhaul, so
+  local strictly supersedes (valid `feat!:` examples, spec extracted to references/, working
+  default-branch fallback, `gh pr edit` for updates, trigger-shaped descriptions, no ADO).
+  On a future pull, diff them only to cherry-pick genuinely new capabilities.
+- Longstanding customizations now folded into the baseline: create-spec "spot-check not deep
+  review" framing; research-codebase ticket-isolation rule; `disable-model-invocation: true` on
+  the five CRISPY phase skills (deliberate human-gated slash commands).
+- `liteparse` — RETIRED: no longer exists locally or upstream; entry kept only so it isn't
+  "restored" from an old checkout.
 
 ## Skills user has that atomic lacks (custom CRISPY/workflow scaffolding)
 
