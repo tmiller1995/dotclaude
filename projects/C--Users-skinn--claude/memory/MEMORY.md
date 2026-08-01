@@ -3,3 +3,4 @@
 - [CRISPY Workflow](user_crispy_workflow.md) — user uses CRISPY (Q→R→D→S→P→I→R) as structured replacement for RPI
 - [Atomic Upstream](reference_atomic_upstream.md) — flora131/atomic at C:\GitHub\atomic is upstream source of skills/agents; customizations to preserve
 - [Subagent Nesting](reference_subagent_nesting.md) — sub-agents CAN nest (5 deep, v2.1.172+); Agent granted to worker/debugger/reviewer/planner; orchestrate skill keeps main-context dispatch by choice
+- [HumanLayer QRSPI Status](reference_humanlayer_qrspi.md) — QRSPI shipped in paid IDE 2026-07; CRISPY name dropped; humanlayer/humanlayer deprecated; user's CRISPY skills need no adaptations

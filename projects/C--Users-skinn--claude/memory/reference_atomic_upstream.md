@@ -3,6 +3,7 @@ name: atomic upstream skills source
 description: flora131/atomic is the upstream source of user's skills and agents — cloned locally for diff/sync
 type: reference
 originSessionId: 3a7a217a-db3d-4612-951d-d1edeb23c816
+modified: 2026-08-01T04:20:58.725Z
 ---
 `flora131/atomic` (GitHub) is the upstream source of the user's `.claude/skills/` and `.claude/agents/`. Referenced in Alex Lavaee's "From RPI to QRSPI" blog post (https://alexlavaee.me/blog/from-rpi-to-qrspi/).
 
@@ -34,7 +35,7 @@ When upgrading skills from upstream, pull the clone fresh (`git pull` in `C:\Git
 - **`orchestrator.md`** — REMOVED 2026-06-12: transformed into the `skills/orchestrate/SKILL.md` skill (orchestration kept in the main context by deliberate choice — see [[subagent-nesting-claude-code]]). All customizations (HumanLayer Mar 2026 context-window management + CRISPY preference) preserved in the skill. Do NOT re-add an orchestrator AGENT from atomic upstream (backups deleted 2026-06-12 at user request — the skill is now the only copy of the customizations)
 - **`worker.md` / `debugger.md` / `reviewer.md` / `planner.md`** — `Agent` tool GRANTED in frontmatter 2026-06-29 (nesting works since v2.1.172 — see [[subagent-nesting-claude-code]]) so these agents can spawn helper sub-agents. On upstream sync, KEEP these `Agent` grants and the corrected nesting wording — do NOT strip them. worker's Bug Handling still logs evidence + stops so the MAIN context dispatches `debugger` (a deliberate phase-gate choice, not a capability limit)
 - **`codebase-locator.md`** — user swapped JS/TS/Python/Go stack hints for C#/.NET + React/TypeScript to match their profile
-- **`debugger.md` / `reviewer.md` / `worker.md`** — user added MCP tool allowlist (firecrawl/serpapi/context7/mslearn) and references `testing-anti-patterns` instead of `test-driven-development`
+- **`debugger.md`** — user added MCP tool allowlist (firecrawl/serpapi/context7/mslearn). reviewer's web-tool allowlist was REMOVED 2026-07-31 (context hygiene — reviewer routes web checks through spawned `codebase-online-researcher`); do not re-add it on sync.
 
 ## Preserve-on-sync divergences (2026-05-30 work->personal migration)
 
@@ -55,14 +56,30 @@ Skill-level adaptations to preserve:
 
 Agent-level adaptations to preserve:
 - **`linear-issue-analyzer.md`** — adapted from `azure-devops-analyzer.md`. The ADO analyzer is NOT present in this config; do not re-add it.
-- **`codebase-online-researcher.md`** — kept Firecrawl-first (matches search-priority memory).
-- **`reviewer.md`** — changed SharePoint -> Linear and stayed LEAN (deliberately NO codegraph wiring, unlike the other codebase agents). Do not add codegraph to reviewer.
-- **`codebase-*` agents** (`codebase-analyzer`, `codebase-locator`, `codebase-pattern-finder`, `codebase-research-analyzer`, `codebase-research-locator`) + `worker`/`debugger` — adopted the CodeGraph layer (`mcp__codegraph__*`).
+- **`codebase-online-researcher.md`** — SerpAPI-first discovery restored 2026-07-31 (SerpAPI discovers → Firecrawl extracts, matching the search-priority memory); absolute cache path `C:/Users/skinn/.claude/research/web/`; `permissionMode: acceptEdits`.
+- **codegraph-wired agents** (`codebase-*`, `worker`, `debugger`, `code-simplifier`, `reviewer`, `planner`) — carry ONLY `mcp__codegraph__codegraph_explore` (see below).
 
-## codegraph MCP server is wired (valid across sessions)
+## codegraph MCP server surface is explore-ONLY (updated 2026-07-31)
 
-The `codegraph` MCP server is wired in `C:/Users/skinn/.claude.json` (`command: codegraph`, `args: [serve, --mcp]`) — note this is the home-root `.claude.json`, not a file inside `.claude/`. This makes the codegraph-dependent agents above valid in every session; do not treat `mcp__codegraph__*` references as dangling.
+The `codegraph` MCP server is wired in `C:/Users/skinn/.claude.json` (`command: codegraph`, `args: [serve, --mcp]`) — home-root `.claude.json`, not inside `.claude/`. The server's tool surface was consolidated: `DEFAULT_MCP_TOOLS = ['explore']`, so **only `mcp__codegraph__codegraph_explore` exists**. The old names (`codegraph_search`, `codegraph_callers`, `codegraph_callees`, `codegraph_impact`, `codegraph_node`, `codegraph_files`, `codegraph_status`) ARE dangling — all 77 occurrences were purged from the agent fleet on 2026-07-31 (commit `53630b7`). Do NOT re-add them from atomic upstream or old examples; re-enabling extra tools would require `CODEGRAPH_MCP_TOOLS` env config, which is not set.
 
-## Known dangling reference: `testing-anti-patterns` skill
+## 2026-07-31 fleet-wide best-practices overhaul — preserve on sync
 
-The `testing-anti-patterns` skill is referenced by `debugger.md`, `reviewer.md`, and `worker.md` frontmatter (and in `debugger.md`/`worker.md` body prose) but is ABSENT from both `C:/Users/skinn/.claude/skills/` and the source `C:/temp/.claude/skills/`. Confirmed it does NOT ship as a plugin skill: not present in `C:/Users/skinn/.claude/plugins/` (marketplaces `claude-code-warp`, `claude-plugins-official`, `gitkraken`; installed plugins csharp-lsp/typescript-lsp/warp/gitkraken-hooks) nor anywhere under `plugins/cache`. This is a documented KNOWN DANGLING reference — the frontmatter refs were intentionally LEFT IN PLACE (not removed) so the agents self-document the intended discipline; the agents fall back to inline guidance when the skill is missing. Resolve by authoring/porting a `testing-anti-patterns` skill (atomic upstream uses `test-driven-development` instead — see "Agent divergence" above), NOT by deleting the refs.
+Commit `53630b7` rewrote all 14 agents against Anthropic + HumanLayer subagent best practices (net −767 lines). Preserve on any upstream sync: trigger-shaped `description` fields with sibling boundaries, `maxTurns` on every agent, structured output contracts (worker/planner/debugger/code-simplifier), failure-handling blocks, model tiers (locator+research-locator=haiku, debugger/planner/reviewer=opus, rest=sonnet), and the removal of upstream boilerplate (SOLID essays, T-SQL template library, MCP usage examples, fabricated transcripts).
+
+## 2026-07-31 skills best-practices overhaul — preserve on sync
+
+All 15 custom skills (CRISPY five, gh-commit/gh-create-pr/git-branch-namer/create-worktree,
+linear-roadmap, orchestrate, output-html/output-markdown, review-codeant, improve-claude-md)
+were rewritten against the 2026-07 rubric (`.claude/research/skill-reviews/RUBRIC.md`; plan
+docs alongside). Net −188 lines + fixes. Preserve on sync: trigger-shaped descriptions with
+sibling boundaries (≤1024 chars, no XML tags), `references/`+`assets/` layout in the output
+skills, `gh-commit/references/conventional-commits.md`, `create-worktree/scripts/create-worktree.sh`,
+`git-branch-namer/references/trunk-based-branching.md` (renamed from git-flow-standards),
+new/expanded `evals/`, and `disable-model-invocation: true` on the five CRISPY skills
+(user's choice: phase gates are human-invoked slash commands; skills-not-commands is
+deliberate — commands merged into skills per current Claude Code docs).
+
+## `testing-anti-patterns` dangling reference — RESOLVED 2026-07-31
+
+All references were removed (frontmatter `skills:` blocks deleted from debugger/reviewer/worker; create-spec SKILL.md reworded). The intended discipline now lives INLINE: worker.md has a "Test discipline" section (public entry points, specific assertions, mock only process boundaries, never weaken tests). If a `testing-anti-patterns` skill is ever authored, re-wire deliberately — do not assume the old refs should return.
