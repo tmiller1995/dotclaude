@@ -1,12 +1,14 @@
 # QRSPI Workflow (CRISPY)
 
-A structured alignment-first workflow for building features with AI coding agents. Based on Dex Horthy's (HumanLayer) methodology — front-load alignment before any code is written.
+A structured alignment-first workflow for building features with AI coding agents. Based on Dex Horthy's (HumanLayer) methodology — front-load alignment before any code is written. HumanLayer now ships this same flow, branded **QRSPI**, in their IDE; these skills are the Claude Code equivalent (their "worktree" pipeline step maps to the local `/create-worktree` skill).
 
 ## The Flow
 
 ```
 /ask-questions  →  /research-codebase  →  /design-discussion  →  /structure-outline  →  /create-spec  →  implement  →  review
 ```
+
+The five phase skills are **manual-only** (`disable-model-invocation: true`): Claude never auto-starts a phase — each `/command` is a deliberate human gate, matching the human-in-the-loop artifact reviews the flow is built around. Optionally start with `/create-worktree <issue>` to run the whole flow in an isolated checkout.
 
 ### 1. Questions (`/ask-questions <feature>`)
 
@@ -40,11 +42,11 @@ The tactical implementation plan. Because alignment happened upstream, this is a
 
 **Output:** `research/specs/YYYY-MM-DD-topic.html` — the implementation plan organized by vertical slices.
 
-All five artifacts can be emitted as either **self-contained HTML** (default) or **GitHub-flavored Markdown** — pass `--format=html` or `--format=md` to any phase command. Each CRISPY skill delegates rendering to one of two output skills: `skills/output-html/` (template + component library) or `skills/output-markdown/` (parallel template + component library). The component vocabulary maps 1:1 between formats — the `.options` + `.option.chosen` decision card in HTML is rendered as `- [x] **B.** … ✓ chosen` checkbox-options in Markdown, and so on. Machine-readable fields (`<meta name="crispy:*">` in HTML, `crispy:` keys under YAML frontmatter in Markdown) carry the same schema for downstream skills to parse.
+All five artifacts can be emitted as either **self-contained HTML** (default) or **GitHub-flavored Markdown** — pass `--format=html` or `--format=md` to any phase command. Each CRISPY skill delegates rendering to one of two output skills: `skills/output-html/` or `skills/output-markdown/` (each bundling `assets/` template + `references/components.md` component library). The component vocabulary maps 1:1 between formats — the `.options` + `.option.chosen` decision card in HTML is rendered as `- [x] **B.** … ✓ chosen` checkbox-options in Markdown, and so on. Machine-readable fields (`<meta name="crispy:*">` in HTML, `crispy:` keys under YAML frontmatter in Markdown) carry the same schema for downstream skills to parse.
 
 ### 6. Implement
 
-The planner decomposes the spec into parallel tasks following the vertical slice ordering. Workers execute one task at a time. **At each phase boundary the orchestrator stops: automated verification results are reported and the phase's manual verification steps are handed to you — the next phase does not start until you explicitly confirm them.** The reviewer checks the code. QA summary is generated and attached to the related Linear issue. PR is created via the gh-create-pr skill (gh CLI) / GitHub MCP create_pull_request.
+The planner decomposes the spec into parallel tasks following the vertical slice ordering. Workers execute one task at a time. **At each phase boundary the orchestrator stops: automated verification results are reported and the phase's manual verification steps are handed to you — the next phase does not start until you explicitly confirm them.** The reviewer checks the code. Commits follow the gh-commit skill's Conventional Commits discipline; the PR is created via the gh-create-pr skill (gh CLI / GitHub MCP), draft by default with the related Linear issue linked.
 
 ### 7. Review
 
