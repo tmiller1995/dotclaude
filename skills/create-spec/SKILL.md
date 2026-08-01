@@ -1,6 +1,6 @@
 ---
 name: create-spec
-description: Create a tactical implementation plan (spec) from a completed structure outline. Use this as the FIFTH phase of CRISPY (Questions → Research → Design → Structure → PLAN → Implement → Review). This phase is a SPOT-CHECK, not a deep review — alignment happened in design-discussion and structure-outline. Trigger after /structure-outline has produced a structure document. Accepts `--format=html|md` to select output format (default `html`).
+description: Create a tactical implementation plan (spec) from a completed structure outline. The Plan phase of CRISPY (Questions → Research → Design → Structure → PLAN → Implement → Review). This phase is a SPOT-CHECK, not a deep review — alignment happened in design-discussion and structure-outline. Takes the structure document from /structure-outline as input. Accepts `--format=html|md` to select output format (default `html`).
 argument-hint: "<path to structure file> [--format=html|md]"
 disable-model-invocation: true
 ---

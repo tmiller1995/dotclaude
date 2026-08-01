@@ -1,6 +1,6 @@
 ---
 name: research-codebase
-description: Document codebase as-is by spawning parallel sub-agents and synthesizing findings. Use this as the SECOND phase of CRISPY (Questions → RESEARCH → Design → Structure → Plan → Implement → Review). Trigger after /ask-questions produces a questions artifact, or on any request to research, investigate, map, or document how something currently works before designing it — "research the codebase", "how does X work here", "find out how we currently do Y", "document the current state of Z". Accepts either a questions artifact from /ask-questions OR a raw research query. CRITICAL rule — feature ticket content must NOT be passed to sub-agents, only the questions themselves. Not for proposing designs or changes (use /design-discussion). Accepts `--format=html|md` to select output format (default `html`).
+description: Document the codebase as-is by spawning parallel sub-agents and synthesizing findings into a research artifact. The Research phase of CRISPY (Questions → RESEARCH → Design → Structure → Plan → Implement → Review). Accepts either a questions artifact from /ask-questions OR a raw research query. CRITICAL rule — feature ticket content must NOT be passed to sub-agents, only the questions themselves. Facts only; proposing designs or changes is /design-discussion. Accepts `--format=html|md` to select output format (default `html`).
 argument-hint: "<path to questions file OR research question> [--format=html|md]"
 disable-model-invocation: true
 ---

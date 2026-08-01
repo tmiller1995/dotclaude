@@ -1,6 +1,6 @@
 ---
 name: ask-questions
-description: Generate targeted research questions from a feature ticket, user story, or feature request, so the research phase is forced to touch every relevant region of the codebase. Use this as the FIRST phase of the CRISPY workflow (Questions → Research → Design → Structure → Plan → Implement → Review). Trigger when a ticket, issue, or feature request needs investigation before implementation, when the user pastes a ticket and asks where to start without naming a skill, or on phrases like "ask questions", "generate research questions", "what should we research first", "kick off CRISPY". Not for answering those questions or opening codebase files — that is research-codebase. Accepts `--format=html|md` to select output format (default `html`).
+description: Generate targeted research questions from a feature ticket, user story, or feature request, so the research phase is forced to touch every relevant region of the codebase. The Questions phase of the CRISPY workflow (Questions → Research → Design → Structure → Plan → Implement → Review); its output feeds /research-codebase. Does not answer the questions or open codebase files — that is research-codebase. Accepts `--format=html|md` to select output format (default `html`).
 argument-hint: "<ticket text or file path> [--format=html|md]"
 disable-model-invocation: true
 ---
