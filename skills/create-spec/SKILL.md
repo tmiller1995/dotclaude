@@ -131,7 +131,7 @@ REQUIRED — never omit this section. Bulleted list copied from the design doc's
 One slice-card per phase, per Step 4. This is the centerpiece of the artifact.
 
 **Section 06 — Test strategy**
-Prose summarizing tests from each phase. Reference the `testing-anti-patterns` skill to avoid common mistakes.
+Prose summarizing tests from each phase. Tests must target observable behavior through public entry points, assert specific expected values (never just "does not throw"), and mock only across process boundaries (network, clock, filesystem) — never the type under test.
 
 **Section 07 — Rollback strategy**
 A callout (HTML `.callout` / MD `> [!NOTE]`) containing the rollback strategy copied from the structure outline.
