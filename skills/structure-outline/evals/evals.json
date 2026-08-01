@@ -30,6 +30,18 @@
         "File inventory notes when the same file is touched by multiple slices",
         "Because --format=md was passed, the skill delegates to Skill('output-markdown') and writes to research/structures/YYYY-MM-DD-topic.md"
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "Here's the research doc for the wishlist feature at research/2026-07-14-wishlist.md. Give me the structure outline with vertical slices.",
+      "expected_output": "The skill recognizes it was handed a research document rather than a design document, stops, and redirects the user to /design-discussion instead of producing a structure outline",
+      "expectations": [
+        "The skill does not produce a structure outline or a file inventory",
+        "The skill does not invoke Skill('output-html') or Skill('output-markdown') and writes no file to research/structures/",
+        "The response names the missing prerequisite (a completed design document) as the reason for stopping",
+        "The response directs the user to run /design-discussion first",
+        "The skill does not attempt to perform the design phase itself by inventing design decisions from the research doc"
+      ]
     }
   ]
 }

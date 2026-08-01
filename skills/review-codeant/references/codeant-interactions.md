@@ -16,7 +16,7 @@ CodeAnt requires `@codeant-ai` in all replies to process them. Without this tag,
 
 ## Dispute / Dismiss Behavior
 
-When you dispute a finding using `@codeant-ai: This is not an issue because [reasoning]`, CodeAnt:
+Disputing a finding with `@codeant-ai: This is not an issue because [reasoning]` causes CodeAnt to:
 - Creates a "learning" from the feedback
 - Avoids similar flags in future reviews
 - Learnings are manageable at `app.codeant.ai/settings/learnings`

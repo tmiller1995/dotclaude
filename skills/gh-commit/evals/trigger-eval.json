@@ -1,0 +1,22 @@
+[
+  { "query": "commit this", "should_trigger": true },
+  { "query": "commit my changes with a good message", "should_trigger": true },
+  { "query": "stage src/auth and commit it", "should_trigger": true },
+  { "query": "write a commit message for what I just changed", "should_trigger": true },
+  { "query": "these changes are unrelated — split them into separate commits", "should_trigger": true },
+  { "query": "what should this commit say?", "should_trigger": true },
+  { "query": "check this in before I forget", "should_trigger": true },
+  { "query": "I removed a public API parameter, how do I mark the commit as breaking?", "should_trigger": true },
+  { "query": "can you save my work so far in git", "should_trigger": true },
+  { "query": "open a PR for these changes", "should_trigger": false },
+  { "query": "commit and push this, then put it up for review", "should_trigger": false },
+  { "query": "explain the difference between feat and fix", "should_trigger": false },
+  { "query": "what does BREAKING CHANGE mean in semantic versioning?", "should_trigger": false },
+  { "query": "rewrite the last three commit messages on this branch", "should_trigger": false },
+  { "query": "what's the branch name convention for ENG-1234?", "should_trigger": false },
+  { "query": "review my staged changes for bugs", "should_trigger": false },
+  { "query": "undo my last commit but keep the changes", "should_trigger": false },
+  { "query": "add a commitlint config to this repo", "should_trigger": false },
+  { "query": "show me what changed since the last commit", "should_trigger": false },
+  { "query": "resolve the merge conflicts in src/orders/total.ts", "should_trigger": false }
+]

@@ -1,6 +1,6 @@
 ---
 name: linear-roadmap
-description: Generate executive-ready release notes, roadmaps, and delivery-flow diagnostics from Linear issues. Use this skill whenever the user mentions release notes, roadmaps, cycle or sprint summaries, issues being stuck or blocked, cycle time, bounce counts, bottlenecks, Sankey or flow diagrams of state transitions, or wants to classify items as customer-facing vs internal — even if they don't explicitly say "roadmap" or "release notes" (e.g., "what shipped this cycle", "why is the team slowing down", "where's ENG-572 stuck"). Triggers on phrases like "release notes for cycle X", "roadmap for sprint Y", "where are issues stuck", "why is this issue stalled", "flow diagnostic", "show the bottleneck", "deep dive on issue N". Also handles "HTML release report" / "markdown release report" requests — the format keyword routes here (not output-html/output-markdown) because the user wants Linear data, and this skill delegates rendering to the matching output skill internally. Accepts `--format=html|md` (default `md` — most outputs go to PR/issue-comment contexts where Mermaid renders natively; use `html` for polished customer-share docs).
+description: Generate executive-ready release notes, roadmaps, and delivery-flow diagnostics from Linear issues. Use whenever the user mentions release notes, roadmaps, cycle or sprint summaries, issues being stuck or blocked, cycle time, bounce counts, bottlenecks, Sankey or flow diagrams of state transitions, or classifying work as customer-facing vs internal — even when they don't say "roadmap" or "release notes" (e.g., "what shipped this cycle", "why is the team slowing down", "where's ENG-572 stuck", "flow diagnostic", "show the bottleneck", "deep dive on ENG-572"). Also handles "HTML release report" / "markdown release report" — a format keyword routes here rather than to output-html or output-markdown, which this skill calls internally to render. Accepts `--format=html|md` (default `md`).
 argument-hint: "[mode] [cycle | issue_id] [--format=html|md]"
 ---
 
@@ -27,8 +27,15 @@ A "cycle" can be a Linear cycle, a project, or a milestone — resolve whichever
 
 This skill is the entry point for Linear release/flow data, regardless of whether the user wants HTML or Markdown output. It gathers and structures the data; the output skills (`output-html` / `output-markdown`) handle the scaffolding.
 
-- Default is `--format=md`. Markdown is the right format for GitHub PR descriptions, Linear comments, GitHub, GitLab — and Mermaid diagrams render natively in all of those.
-- `--format=html` produces a polished single-file HTML document (useful for emailing to a non-engineering audience or pasting into Confluence). **Caveat:** Mermaid diagrams in HTML mode are emitted as plain fenced blocks — they render in Mermaid-aware viewers (GitHub Pages with mermaid.js, GitLab) but appear as source text in vanilla browsers. If the consumer needs static rendered diagrams in HTML, post-process the file with `mermaid-cli` (`mmdc -i in.html -o out.html`) to convert the blocks to inline SVG.
+- Default is `--format=md`. Markdown is the right format for GitHub PR descriptions, Linear comments, GitHub, GitLab — and Mermaid diagrams render natively in all of those. Most outputs go to PR or issue-comment contexts where Mermaid renders natively; use `html` for polished customer-share docs.
+- `--format=html` produces a polished single-file HTML document (useful for emailing to a non-engineering audience or pasting into Confluence). `output-html` is self-contained and does not render Mermaid, so **pre-render diagrams to SVG before handing off** and inline the result:
+
+  ```
+  npm install -g @mermaid-js/mermaid-cli
+  mmdc -i diagram.mmd -o diagram.svg      # one file per diagram
+  ```
+
+  Inline each `<svg>` element into the body. If `mmdc` is unavailable, keep the tables and the executive summary, omit the diagram, and tell the user that `--format=md` preserves it.
 
 ## How to run
 
@@ -42,7 +49,7 @@ This skill is the entry point for Linear release/flow data, regardless of whethe
 | `roadmap` | union of the above two |
 | `deep_dive` | `references/modes.md` § deep_dive, `references/flow-metrics.md`, `references/mermaid-templates.md` |
 
-Don't pre-load reference files you won't use — that's the point of progressive disclosure.
+Load only the reference files the chosen mode needs.
 
 ## Non-negotiable guardrails
 

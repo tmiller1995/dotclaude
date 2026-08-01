@@ -1,0 +1,41 @@
+{
+  "skill_name": "improve-claude-md",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our CLAUDE.md has grown to 400 lines of coding standards, API conventions, and testing notes. Can you clean it up?",
+      "expected_output": "The existing CLAUDE.md rewritten in place — bare project identity, project map, and tech stack at the top, every command preserved inside one <important if> block, each remaining rule in its own narrowly-conditioned block — followed by a list of every removed rule with its reason",
+      "expectations": [
+        "Reads the existing CLAUDE.md before rewriting, rather than authoring a new file from scratch",
+        "Leaves project identity, project map, and tech stack as plain markdown with no <important if> wrapper",
+        "Wraps every command from the original in a single <important if> block and drops none of them",
+        "Splits grouped rule lists into separate blocks whose conditions name a specific kind of work, with no condition broad enough to match essentially every task",
+        "Removes linter- and formatter-enforceable rules, code snippets, and vague instructions, suggesting a pre-commit or pre-push hook where a deleted rule still matters",
+        "Replaces any code snippet with a file path reference instead of preserving it inline",
+        "Writes the rewritten file in place and then reports each removed rule with its reason so the user can restore anything that mattered"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Claude keeps ignoring the instructions in my CLAUDE.md. What can I do about it?",
+      "expected_output": "A rewrite of the existing CLAUDE.md into conditional <important if> blocks, explaining that the system reminder tells the agent to skip context it judges irrelevant and that narrow conditions restore the relevance signal",
+      "expectations": [
+        "Diagnoses the cause as the 'may or may not be relevant' system reminder rather than treating it as a phrasing or emphasis problem",
+        "Applies the <important if> rewrite instead of only describing the technique",
+        "Does not shard the file into separate documents that require extra tool calls to discover",
+        "Keeps the rewritten file short — cutting content the agent could discover from existing code patterns",
+        "Reports the removals with reasons after writing the file"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "This repo has no CLAUDE.md yet — write one for it from scratch.",
+      "expected_output": "The init skill handles the request; improve-claude-md is not the acting skill",
+      "expectations": [
+        "improve-claude-md is NOT the acting skill — the request routes to `init`",
+        "Recognizes that no CLAUDE.md exists to rewrite, which is this skill's precondition",
+        "Does not produce an <important if> rewrite of a file it invented"
+      ]
+    }
+  ]
+}

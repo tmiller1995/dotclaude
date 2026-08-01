@@ -3,6 +3,7 @@
   "evals": [
     {
       "id": 1,
+      "should_trigger": true,
       "prompt": "Generate research questions for this ticket: 'Add CSV export to the orders dashboard. Agents need to download filtered order lists for month-end reconciliation. Must respect the existing column visibility settings.'",
       "expected_output": "A questions artifact with 5-10 targeted, current-state questions tagged by category, a human-only Context section, a determined compatibility posture, rendered via Skill('output-html') to research/questions/YYYY-MM-DD-topic.html",
       "expectations": [
@@ -17,6 +18,7 @@
     },
     {
       "id": 2,
+      "should_trigger": true,
       "prompt": "Generate research questions for this request using --format=md: 'Our background jobs sometimes process the same message twice. Investigate what we'd need to know before adding idempotency.'",
       "expected_output": "A Markdown questions artifact whose questions force exploration of the current job/queue infrastructure, with no implementation opinions, written to research/questions/YYYY-MM-DD-topic.md",
       "expectations": [
@@ -26,6 +28,55 @@
         "Questions are pruned to 5-10 — vague or redundant candidates are cut rather than padded",
         "Does not interrogate the user for more feature context; the only permitted user question is the compatibility posture when it cannot be inferred",
         "Output uses the shared slot vocabulary (PHASE, STATUS, TOPIC, TITLE, TICKET, PROMPT_TEXT, META_EXTRA, SUMMARY_EXTRA) without inventing new slots"
+      ]
+    },
+    {
+      "id": 3,
+      "should_trigger": true,
+      "prompt": "ENG-412: Tenants can't rotate their API keys without support intervention. Self-serve rotation from the settings page, old key valid for 24h. Where do we start?",
+      "expected_output": "The Questions phase fires on a bare pasted ticket with no skill or action named, producing a questions artifact at research/questions/YYYY-MM-DD-topic.html rather than an answer, a plan, or a code change",
+      "expectations": [
+        "Triggers on the pasted ticket alone — the user never says 'ask questions', 'generate questions', or names the skill",
+        "Answers 'where do we start?' by producing the questions artifact, not by proposing an implementation approach or naming files to change",
+        "Produces 5-10 current-state questions (how API keys are currently issued and stored, how the settings page is routed and authorized, what existing expiry/grace-period handling looks like, how tenant scoping is enforced, test patterns for credential flows)",
+        "Does NOT read codebase files, grep, or glob — the ticket text is the only input consulted",
+        "Asks the user nothing beyond the Step 5 compatibility posture, and only if the ticket does not settle it",
+        "Section 01 Context carries the human-only callout; the ticket body appears there and in PROMPT_TEXT, never inside the questions themselves"
+      ]
+    },
+    {
+      "id": 4,
+      "should_trigger": true,
+      "prompt": "Generate research questions for this ticket: 'PLAT-88: Add pagination to the public /v1/reports endpoint. This endpoint is published in our partner API docs and three external integrators poll it today, so existing callers must keep working through the migration window.'",
+      "expected_output": "A questions artifact whose compatibility posture is inferred as breaking_changes_allowed: false directly from the ticket, with no AskUserQuestion round-trip, and a Breaking changes summary row reading 'not allowed'",
+      "expectations": [
+        "Infers crispy:breaking_changes_allowed: false from the ticket's published-API and external-consumer language — does NOT call AskUserQuestion, because the ticket already settles the posture",
+        "Records crispy:compatibility_context in META_EXTRA with a one-line explanation citing the published endpoint and external integrators",
+        "The SUMMARY_EXTRA Breaking changes row reads 'not allowed'",
+        "Questions cover the current state relevant to a compatibility-constrained change: how the endpoint is currently routed and versioned, how responses are serialized, what existing pagination conventions exist elsewhere, how API contract or schema tests are written",
+        "No question proposes a pagination design (cursor vs offset) — that is the Design phase, not Questions"
+      ]
+    },
+    {
+      "id": 5,
+      "should_trigger": false,
+      "prompt": "Research how our auth middleware validates tenant scope and write up what you find.",
+      "expected_output": "Routes to research-codebase, not ask-questions — the user is asking for answers about the current codebase, not for a list of questions",
+      "expectations": [
+        "Does NOT invoke ask-questions: no questions artifact is written to research/questions/",
+        "Recognized as the Research phase — the request is to open files and report findings, which is exactly what this skill forbids in Step 2",
+        "research-codebase handles it, spawning sub-agents and producing research/docs/YYYY-MM-DD-topic.<ext>"
+      ]
+    },
+    {
+      "id": 6,
+      "should_trigger": false,
+      "prompt": "Here's the research doc from yesterday — what should the design look like?",
+      "expected_output": "Routes to design-discussion, not ask-questions — a completed research artifact means the Questions phase is already behind us",
+      "expectations": [
+        "Does NOT invoke ask-questions: the input is a finished research document, not a ticket needing investigation",
+        "Recognized as the Design phase — the user is asking for design direction and trade-offs, which questions-phase output explicitly excludes",
+        "design-discussion handles it, consuming the research document and producing a design artifact"
       ]
     }
   ]

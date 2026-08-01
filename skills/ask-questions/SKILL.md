@@ -1,24 +1,23 @@
 ---
 name: ask-questions
-description: Generate targeted research questions from a feature ticket or user request. Use this as the FIRST phase of the CRISPY workflow (Questions → Research → Design → Structure → Plan → Implement → Review). The questions force the research phase to touch all relevant codebase regions. Trigger when the user provides a ticket, feature request, or user story that needs investigation before implementation. Accepts `--format=html|md` to select output format (default `html`).
+description: Generate targeted research questions from a feature ticket, user story, or feature request, so the research phase is forced to touch every relevant region of the codebase. Use this as the FIRST phase of the CRISPY workflow (Questions → Research → Design → Structure → Plan → Implement → Review). Trigger when a ticket, issue, or feature request needs investigation before implementation, when the user pastes a ticket and asks where to start without naming a skill, or on phrases like "ask questions", "generate research questions", "what should we research first", "kick off CRISPY". Not for answering those questions or opening codebase files — that is research-codebase. Accepts `--format=html|md` to select output format (default `html`).
 argument-hint: "<ticket text or file path> [--format=html|md]"
+disable-model-invocation: true
 ---
 
 # Ask Questions (CRISPY Q Phase)
 
-You are tasked with generating a focused list of research questions from a feature ticket, user story, or implementation request: **$ARGUMENTS**
+Generate a focused list of research questions from the feature ticket, user story, or implementation request in **$ARGUMENTS**.
 
-This is the **Questions (q)** phase of the CRISPY workflow. Your output directly drives the Research phase. Good questions produce good research; vague questions produce vague research.
+This is the **Questions (q)** phase of the CRISPY workflow. The output of this phase directly drives the Research phase. Good questions produce good research; vague questions produce vague research.
 
 ## The Core Principle
 
-> "A skilled engineer writes questions that force the model to touch all relevant parts of the codebase — moving from a vague ticket to a concrete list of technical inquiries." — Alex Lavaee
-
-You are NOT writing an implementation plan. You are NOT researching yet. You are writing **targeted questions** that will become the input to `/research-codebase`.
+This phase produces **targeted questions** only — not an implementation plan, and not research findings. The questions become the input to `/research-codebase`.
 
 ## Why This Phase Exists
 
-In the old RPI workflow, the ticket was dumped directly into a mega-prompt with 85+ instructions. The agent formed opinions about the solution before understanding the code. By extracting **just the questions** into their own artifact, we:
+An agent handed the whole ticket forms opinions about the solution before it understands the code. Extracting **just the questions** into their own artifact does four things:
 
 1. Keep the research phase focused on facts, not opinions
 2. Prevent the feature ticket from contaminating the research context (the ticket stays hidden from sub-agents during Research)
@@ -51,7 +50,7 @@ Good questions:
 
 ### Step 1: Parse arguments and pick the output format
 
-Extract `--format=html|md` from `$ARGUMENTS`. Default to `html` if not specified. The rest of `$ARGUMENTS` is the ticket input (inline text or a file path). Remember the chosen format — Step 5 hands off to the matching output skill.
+Extract `--format=html|md` from `$ARGUMENTS`. Default to `html` if not specified. The rest of `$ARGUMENTS` is the ticket input (inline text or a file path). Remember the chosen format — Step 6 hands off to the matching output skill.
 
 ### Step 2: Read the Ticket Carefully
 
@@ -61,7 +60,7 @@ If the user provided a ticket file path, read it fully. If they provided inline 
 - Any **acceptance criteria**
 - Any **linked documents, tickets, or prior discussions**
 
-Do NOT start researching yet. Do NOT open codebase files yet. Do NOT form an opinion about how to implement it.
+Stop at the ticket — no file reads beyond it, no grep, no glob. Opening codebase files or forming an implementation opinion at this point is the contamination this phase exists to prevent.
 
 ### Step 3: Identify the Unknowns
 
@@ -80,7 +79,7 @@ For each category, write 1-3 questions that would force the research phase to ex
 
 ### Step 4: Prune Ruthlessly
 
-**Aim for 5-10 questions total, not 20+.** Too many questions blow the instruction budget in the research phase. Ask yourself for each question:
+**Aim for 5-10 questions total, not 20+.** Too many questions blow the instruction budget in the research phase. Check each question against four tests:
 
 - Is this question about **the codebase as it exists today**, not about how to build the feature?
 - Will answering it produce **facts** (file paths, function signatures, data flows), not **opinions**?
@@ -94,7 +93,7 @@ If a question doesn't pass all four checks, cut it or rewrite it.
 Research and every downstream phase need to know whether this work may break existing behavior.
 
 - Infer from the ticket: explicit permission for breaking changes, cleanup, or "no real users yet" → `breaking_changes_allowed: true`. Mentions of production users, published APIs, downstream consumers, or migration safety → `false`.
-- If the ticket doesn't settle it, ask the user ONCE via `AskUserQuestion`. (This is the exception to the "don't interrogate the user" rule below — it's a single question, and it changes how research documents everything it finds.)
+- If the ticket doesn't settle it, ask the user exactly one question via `AskUserQuestion` — this is the sole exception to not interrogating the user, because the posture changes how research documents everything it finds.
 - Record the result in the render brief as `crispy:breaking_changes_allowed` and `crispy:compatibility_context` (Step 6). `/research-codebase` inherits the posture from these fields instead of re-asking.
 
 ### Step 6: Prepare the Render Brief and Delegate
@@ -104,7 +103,7 @@ Assemble a **render brief** with the values and section content listed below, th
 - `--format=html` → `Skill('output-html')`
 - `--format=md` → `Skill('output-markdown')`
 
-Both output skills share the SAME slot schema and component vocabulary, so this one brief renders unchanged in either format. The output skill reads its template + `components.md` and produces the file. You stay in the conversation as the upstream skill — when it asks for any clarification, answer; otherwise let it write the file.
+Both output skills share one slot schema and component vocabulary, so this brief renders unchanged in either format. The output skill reads its template + `components.md` and produces the file. This skill stays in the conversation as the upstream caller — answer any clarification the output skill asks for, and otherwise let it write the file.
 
 #### Output path
 
@@ -141,12 +140,10 @@ Emit three numbered sections in this order. Number them monotonically (`01`, `02
 
 **Section 02 — Questions**
 - A sec-intro line: "5-10 targeted questions that force the research phase to touch the relevant parts of the codebase. Each question is about *current state*, answerable with file:line references."
-- An ordered list of 5-10 questions. Each item begins with a **plain category tag** — use the muted default tag style (`<span class="tag">data-model</span>` in HTML, `` `data-model` `` in MD), NOT the new/mod/del change tags. Use category tags such as `[data-model]`, `[call-graph]`, `[validation]`. Wrap any inline file paths or identifiers in question prose with `<code>` (HTML) or backticks (MD).
+- An ordered list of 5-10 questions. Each item begins with a **plain category tag** such as `data-model`, `call-graph`, or `validation`. These are non-modifying category labels, so the output skill's default muted tag applies rather than the change tags; `components.md` in the chosen output skill owns the exact markup for both formats, including inline file paths and identifiers.
 
 **Section 03 — Notes** *(optional — omit entirely if there are no notes)*
 - Free prose for known-unknowns, gotchas the human spotted, or areas the user explicitly flagged for investigation.
-
-**CRITICAL:** Section 01 is for humans only. When these questions get passed to `/research-codebase`, only the questions themselves should be forwarded — the ticket description must not contaminate the research phase.
 
 ### Step 7: Present to the User
 
@@ -160,19 +157,6 @@ After the output skill writes the file:
 
 ## Important Rules
 
-- **Do NOT research** in this phase. No file reading beyond the ticket itself. No grep. No glob. Just think and write.
-- **Do NOT write a plan**. Do NOT suggest implementation approaches. Do NOT name specific files to change.
-- **Do NOT ask the user** for more context about the feature unless the ticket is genuinely ambiguous about what's being requested. Your job is to turn the ticket into questions, not to interrogate the user. (The one standing exception: the compatibility posture in Step 5.)
-- **5-10 questions total** is the target. Exceptions only if the feature genuinely spans many subsystems.
-- **Every question must be about current state**, not future state.
-- **Stop after the output skill writes the artifact.** The next phase (`/research-codebase`) is invoked separately in a fresh session.
+- **Do not interrogate the user.** Turning the ticket into questions is the job; ask for more feature context only when the ticket is genuinely ambiguous about what is being requested. (Step 5's compatibility question is the one standing exception.)
 
-## What Happens Next
-
-The questions artifact you create is the input to `/research-codebase`. That phase will:
-1. Read your questions (and ONLY your questions — not the ticket)
-2. Spawn parallel sub-agents (locator, analyzer, pattern-finder, research-locator, research-analyzer, online-researcher)
-3. Answer each question with file:line references and factual descriptions
-4. Produce a research document at `research/docs/YYYY-MM-DD-topic.<ext>`
-
-Your questions are the leverage point. 10 good questions produce better research than 85 mega-prompt instructions.
+The questions are the leverage point — `/research-codebase` answers them, and must never see the ticket.

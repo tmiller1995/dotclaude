@@ -1,0 +1,46 @@
+{
+  "skill_name": "gh-commit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I've staged a change that adds a `/auth/refresh` endpoint plus its unit tests. Commit it for me.",
+      "expected_output": "A single Conventional Commits message with a correctly typed subject and a why-focused body, presented to the user for confirmation before any `git commit` runs",
+      "expectations": [
+        "Reads the staged diff with `git diff --cached` before drafting anything",
+        "Subject line matches `^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\\([a-z0-9-]+\\))?!?: .+` and uses `feat` for the new endpoint",
+        "Subject describes what changed and why, not which files changed",
+        "Body explains the reasoning as bullets or a short paragraph rather than restating the diff",
+        "Presents files + subject + body and waits for the user's confirmation before running `git commit`",
+        "Commits with `git commit --message \"<subject>\" --message \"<body>\"` and shows `git log -1` afterward",
+        "Adds no `Co-Authored-By`, `Generated with Claude`, or any other AI attribution trailer",
+        "Does not pass `--no-verify`, `--no-gpg-sign`, or `--amend`"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Commit my changes. The working tree has a bug fix in src/orders/total.ts and an unrelated dependency bump in package.json and package-lock.json.",
+      "expected_output": "A proposal to split the work into two commits — the dependency bump and the bug fix — each with its own files and subject, presented before anything is committed",
+      "expectations": [
+        "Identifies that the diff covers two unrelated logical changes and proposes separate commits rather than one",
+        "Assigns `fix` to the src/orders/total.ts change and `chore` or `build` to the dependency bump",
+        "Lists each proposed commit's files and subject in the plan",
+        "Stages each commit's paths explicitly with `git add <paths>` rather than `git add -A` or `git add .`",
+        "Waits for confirmation before the first `git commit`",
+        "Shows `git log --oneline -2` (or equivalent) after committing both"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Write the commit message for this: I removed the `includeArchived` parameter from the public `listOrders()` API — callers passing it will now fail to compile.",
+      "expected_output": "A Conventional Commits message that marks the change as breaking, using `!` before the colon or a `BREAKING CHANGE:` footer",
+      "expectations": [
+        "Marks the breaking change with a bare `!` immediately before the colon (e.g. `feat(api)!:` or `refactor(api)!:`) and/or a `BREAKING CHANGE:` footer",
+        "The exclamation mark appears bare and unquoted, so the subject parses as valid Conventional Commits",
+        "If a footer is used, the token is the uppercase text `BREAKING CHANGE` followed by a colon and a description",
+        "The description explains the removed parameter and what callers must do",
+        "Consults references/conventional-commits.md if the correct breaking-change form is uncertain",
+        "Still presents the message for confirmation before committing"
+      ]
+    }
+  ]
+}

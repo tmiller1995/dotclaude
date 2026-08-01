@@ -1,8 +1,14 @@
 # Markdown Component Reference
 
-Every component a CRISPY artifact can use in Markdown form. Each one maps 1:1 against a component in `skills/output-html/components.md`; the *semantics* are the same, only the rendering differs. A CRISPY skill produces one render brief and either format can consume it.
+Every component a CRISPY artifact can use in Markdown form. Each one maps 1:1 against a component in `skills/output-html/references/components.md`; the *semantics* are the same, only the rendering differs. A CRISPY skill produces one render brief and either format can consume it.
 
-Dialect: **GitHub-flavored Markdown (GFM)**. Inline HTML (notably `<details>`/`<summary>`) is allowed where it adds value — most GFM renderers (GitHub, Linear, Notion, VS Code preview) handle it.
+Dialect: **GitHub-flavored Markdown (GFM)**.
+
+**Contents:** [Section structure](#section-structure) · [Inline elements](#inline-elements) ·
+[Lists](#lists) · [Code blocks](#code-blocks) · [Tables](#tables) · [Callouts](#callouts) ·
+[Cards](#cards) · [Vertical-slice cards](#vertical-slice-cards) · [Collapsibles](#collapsibles) ·
+[Recommendation aside](#recommendation-aside) · [Component-selection cheat sheet](#component-selection-cheat-sheet) ·
+[What not to do](#what-not-to-do)
 
 ## Section structure
 
@@ -48,7 +54,7 @@ GFM has no direct equivalent of the HTML `.hl` span. Options, in order of prefer
 <mark>literal highlight</mark>      ← GFM accepts <mark> but many renderers ignore it
 ```
 
-Default to bold for "the eye should land here." Reserve `<mark>` for places you really need a visual highlight.
+Default to bold for "the eye should land here." Reserve `<mark>` for the rare place that genuinely needs a visual highlight.
 
 ### Tags (change kind)
 
@@ -69,7 +75,7 @@ Status is rendered in the template header with an emoji + backticked status stri
 ✅ `ready-for-implementation`
 ```
 
-Emoji choice: 📝 for draft, ✅ for any `ready-*`, 🟢 for `complete`.
+Emoji mapping is defined in SKILL.md.
 
 ### Chips (metric pills)
 
@@ -140,15 +146,17 @@ export const reticulateSpline = createServerFn({ method: 'POST' })
 
 Language hint after the opening fence (`` ```typescript ``) gives GFM's syntax highlighter the cues it needs — no manual span-wrapping required. Use the right hint for the file: `typescript`, `tsx`, `csharp`, `sql`, `python`, `bash`, `yaml`, `json`, `html`, `css`. Use `text` for plain text and `diff` for diffs.
 
+When an example itself contains a fenced block, wrap the example in four backticks — three-backtick nesting terminates the outer block early.
+
 ### Diff blocks
 
-```markdown
+````markdown
 ```diff
 - old line
 + new line
   unchanged context
 ```
-```
+````
 
 The `diff` language hint gives `+`/`-` lines the appropriate coloring on GitHub and most other GFM renderers.
 
@@ -182,7 +190,7 @@ GFM does not have a styled callout primitive. Three options:
 > being deployed first.
 
 > [!CAUTION]
-> Tests that mock the database have been blocked in this repo since 2025-Q4.
+> Reticulation is irreversible once the log row is written — there is no undo path.
 ```
 
 | HTML component | GFM alert |
@@ -198,10 +206,10 @@ If the target renderer doesn't support GFM alerts:
 ```markdown
 > ℹ️ Each slice is behind a feature flag (`enable_reticulation`).
 > ⚠️ This depends on the database migration being deployed first.
-> 🚨 Tests that mock the database have been blocked since 2025-Q4.
+> 🚨 Reticulation is irreversible once the log row is written — there is no undo path.
 ```
 
-Default to GFM alerts. Drop to emoji blockquotes only if you know the target won't render alerts.
+Default to GFM alerts. Drop to emoji blockquotes only when the target is known not to render alerts.
 
 ## Cards
 
@@ -329,7 +337,5 @@ A heading-inside-blockquote pattern. Use at most one per section. Light bulb emo
 
 - **Don't reach for HTML when Markdown would do.** The point of this format is grep-ability and renderer portability. Save HTML for `<details>` and a few other cases where there's no alternative.
 - **Don't over-emphasize.** Bolding every phrase teaches the reader nothing stands out. One emphasized phrase per paragraph at most.
-- **Don't break the section numbering.** `01`, `02`, `03`, ... monotonic, no skips.
 - **Don't mix decision-card formats.** Pick the checkbox-options style (`- [x] B. ...`) and stay consistent — readers learn to recognize the chosen option visually.
 - **Don't omit language hints on code blocks.** Even ` ```text ` is better than no hint; renderers can use it to disable highlighting cleanly.
-- **Don't emit `{{PLACEHOLDER}}` text.** If a slot is missing, surface it back to the upstream skill rather than writing the literal.

@@ -1,0 +1,39 @@
+{
+  "skill_name": "create-worktree",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Spin up a worktree for ENG-4102.",
+      "expected_output": "The create-worktree skill triggers and runs its full flow: resolve paths, build the branch name, run the bundled script, index CodeGraph, report the result",
+      "expectations": [
+        "Triggers create-worktree rather than answering with a bare `git worktree add` command",
+        "Resolves the source repo root with `git rev-parse --show-toplevel` and derives the destination as a sibling directory of the form <repo-basename>-ENG-4102",
+        "Fetches the issue title from Linear via mcp__linear__get_issue when only the identifier is supplied, and preserves the identifier casing as ENG-4102",
+        "Delegates worktree creation and the `.claude` mirror to scripts/create-worktree.sh rather than emitting inline `git worktree add` / `rm -rf` commands",
+        "Runs `codegraph init -i` on the new worktree and reports the file/symbol counts from `codegraph status`",
+        "Ends by printing the worktree path, branch, base, and the `cd` + `claude` command without auto-launching a session"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create a branch for ENG-4102.",
+      "expected_output": "git-branch-namer produces the branch name only; no worktree, directory, or branch is created",
+      "expectations": [
+        "Does NOT trigger create-worktree — the request is for a name, not an isolated checkout",
+        "Routes to git-branch-namer and returns a `prefix/ENG-4102-slug` name in a code block",
+        "Creates no directory, runs no `git worktree add`, and runs no CodeGraph indexing"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Make a worktree for ENG-4102 off develop.",
+      "expected_output": "The create-worktree skill triggers and branches from develop instead of the default main",
+      "expectations": [
+        "Triggers create-worktree and honors `develop` as the base rather than defaulting to `main`",
+        "Passes `develop` as the fourth argument to scripts/create-worktree.sh so the worktree is created off `origin/develop`",
+        "Reports `origin/develop` as the base in the final summary",
+        "Still mirrors `.claude` and indexes CodeGraph — a non-default base changes only the branch point"
+      ]
+    }
+  ]
+}

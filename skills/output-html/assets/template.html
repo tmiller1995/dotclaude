@@ -14,21 +14,7 @@
   Downstream skills also read the machine <meta name="crispy:*"> tags in
   <head>; keep those names stable.
 
-  Slots to fill (search-and-replace when writing the artifact):
-    {{PHASE}}            questions | research | design | structure | spec
-    {{PHASE_LABEL}}      Questions | Research | Design Discussion | Structure Outline | Implementation Spec
-    {{STATUS}}           draft | ready-for-research | ready-for-design | ready-for-structure | ready-for-plan | ready-for-implementation | complete
-    {{STATUS_CLASS}}     draft | ready | complete   (map ready-for-* → ready, complete → complete, else draft)
-    {{TOPIC}}            kebab-case topic, used in <title>
-    {{TITLE}}            human title shown in <h1> (e.g., "Research Questions: Cross-Tenant Spline Reticulation")
-    {{REPO}}             output of: basename "$(git rev-parse --show-toplevel)"
-    {{BRANCH}}           output of: git branch --show-current
-    {{DATE}}             output of: date '+%Y-%m-%d %H:%M:%S %Z'
-    {{TICKET}}           one-line ticket summary (e.g., "ENG-1234 - reticulate splines across tenants")
-    {{PROMPT_TEXT}}      what was asked — the originating ticket body or research query, in prose
-    {{META_EXTRA}}       0+ extra <meta name="crispy:*"> tags (e.g., crispy:research_doc) — phase-specific
-    {{SUMMARY_EXTRA}}    0+ extra <div class="cell"><div class="k">…</div><div class="v">…</div></div> entries in the summary row
-    {{BODY}}             phase-specific HTML — numbered <section> blocks using the components below
+  Slot schema and skip rules: see ../SKILL.md
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -317,7 +303,7 @@
       <div class="eyebrow">{{PHASE_LABEL}} · {{REPO}}</div>
       <h1>{{TITLE}}</h1>
       <div class="prompt-box">
-        <span class="label">Ticket</span>{{PROMPT_TEXT}}
+        <span class="label">{{PROMPT_LABEL}}</span>{{PROMPT_TEXT}}
       </div>
       <div class="summary">
         <div class="cell"><div class="k">Status</div>      <div class="v"><span class="badge status-{{STATUS_CLASS}}">{{STATUS}}</span></div></div>

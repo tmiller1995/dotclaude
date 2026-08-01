@@ -1,0 +1,62 @@
+{
+  "skill_name": "git-branch-namer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a fix branch for ENG-1234 - Cookie Policy – Broken 'here' link",
+      "expected_output": "The single branch name fix/ENG-1234-cookie-policy-broken-here-link in a code block, with no surrounding explanation",
+      "expectations": [
+        "Outputs exactly `fix/ENG-1234-cookie-policy-broken-here-link` in a fenced code block",
+        "Preserves the identifier casing as `ENG-1234` rather than lowercasing it to `eng-1234`",
+        "Detects the `fix/` prefix from the wording ('fix', 'Broken') without asking a clarifying question",
+        "Converts the en dash, apostrophes, and other non-alphanumeric characters to single hyphens with no leading, trailing, or doubled hyphens in the slug",
+        "Adds no prose explanation, rationale, or next-step suggestion around the branch name",
+        "Does not create the branch, a worktree, a commit, or a pull request"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Branch name for ENG-7788",
+      "expected_output": "A mcp__linear__get_issue lookup for ENG-7788 followed by a branch name built from the returned identifier and title",
+      "expectations": [
+        "Calls `mcp__linear__get_issue` with the identifier `ENG-7788` before producing any branch name",
+        "Does not invent, guess, or ask the user for the issue title when the lookup can supply it",
+        "Builds the name from the returned `identifier` and `title`, applying the standard conversion rules",
+        "Uses the returned issue type wording to pick the prefix, and asks the single clarifying question only when it remains ambiguous",
+        "Presents the final name in a code block with no extra commentary"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Branch name for WEB-1045 - Homepage hero banner image not loading on mobile",
+      "expected_output": "One clarifying question about the branch type, then fix/WEB-1045-homepage-hero-banner-image-not-loading-on-mobile once the user answers 'Fix'",
+      "expectations": [
+        "Asks exactly one clarifying question — 'Is this a feat, fix, or chore branch?' — instead of guessing a prefix",
+        "Does not emit a branch name before the user answers",
+        "After the answer 'Fix', outputs `fix/WEB-1045-homepage-hero-banner-image-not-loading-on-mobile` in a code block",
+        "Preserves the `WEB-1045` identifier casing for a non-ENG team key",
+        "Asks only the one question and does not follow up with further interrogation"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Create a worktree for ENG-1234",
+      "expected_output": "The create-worktree skill handles the request; git-branch-namer is not the acting skill",
+      "expectations": [
+        "git-branch-namer is NOT the acting skill — the request routes to `create-worktree`",
+        "Does not respond with a bare branch name as the deliverable",
+        "Recognizes that the user asked for a created worktree and branch, not for a name string"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Open a PR for this branch",
+      "expected_output": "The gh-create-pr skill handles the request; git-branch-namer is not the acting skill",
+      "expectations": [
+        "git-branch-namer is NOT the acting skill — the request routes to `gh-create-pr`",
+        "Does not attempt to rename the branch or propose a new branch name",
+        "Recognizes that committing, pushing, and opening the pull request are outside this skill's boundary"
+      ]
+    }
+  ]
+}

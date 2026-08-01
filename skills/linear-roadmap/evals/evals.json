@@ -1,0 +1,62 @@
+{
+  "skill_name": "linear-roadmap",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "What shipped this cycle?",
+      "expected_output": "Release notes for the current cycle, built from Linear done-state issues, split into public and internal sections",
+      "expectations": [
+        "linear-roadmap is the acting skill even though the user never said 'release notes' or 'roadmap'",
+        "Selects `release_notes` mode, or asks the single mode-selection question, rather than silently producing a different mode's output",
+        "Resolves the cycle to an id with `mcp__linear__list_cycles` before listing issues",
+        "Filters to the team's completed workflow state rather than assuming the state is named `Done`",
+        "Produces both a public (customer-facing) and an internal section, with no issue identifiers in the public one",
+        "Never invents issue ids or fields if a Linear call fails or returns empty"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Why is ENG-572 stuck?",
+      "expected_output": "A deep_dive forensic breakdown of ENG-572 — timeline, comments, linked artifacts, and a specific recommendation",
+      "expectations": [
+        "linear-roadmap is the acting skill and selects `deep_dive` mode",
+        "Calls `mcp__linear__get_issue` for ENG-572 plus `mcp__linear__list_comments` rather than answering from the issue title alone",
+        "Reports `blocker_reason` as `unclear — no comment near transition` when no comment sits near the latest backward transition, instead of guessing a cause",
+        "Ends with a specific unblocking action naming people or artifacts, not generic advice like 'follow up' or 'more communication'",
+        "Does not post a comment back to Linear without explicit approval"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Give me an HTML release report for cycle 12",
+      "expected_output": "linear-roadmap gathers the Linear data for cycle 12 and delegates HTML scaffolding to output-html",
+      "expectations": [
+        "linear-roadmap is the acting skill — the word 'HTML' does NOT route the request to `output-html` directly",
+        "Runs in `--format=html`",
+        "Gathers and structures the Linear data first, then hands the body off to `output-html` for the scaffold rather than writing the HTML scaffold itself",
+        "If the output includes any diagram, it is pre-rendered to an inline `<svg>`; a raw Mermaid fenced block is never handed to `output-html`",
+        "Writes to `reports/YYYY-MM-DD-<mode>-<cycle>.html` unless the user named a path"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Render this analysis as HTML",
+      "expected_output": "The output-html skill handles the request; linear-roadmap is not the acting skill",
+      "expectations": [
+        "linear-roadmap is NOT the acting skill — the request routes to `output-html`",
+        "Does not query Linear or ask which roadmap mode to run",
+        "Recognizes that the content already exists in the conversation and only needs rendering"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "What's the status of ENG-572?",
+      "expected_output": "A plain issue-context lookup (the linear-issue-analyzer agent); linear-roadmap is not the acting skill",
+      "expectations": [
+        "linear-roadmap is NOT the acting skill — a simple status lookup routes to the `linear-issue-analyzer` agent",
+        "Does not produce a deep_dive forensic timeline, gantt chart, or recommendation section",
+        "Does not write a report file for a question answerable inline"
+      ]
+    }
+  ]
+}

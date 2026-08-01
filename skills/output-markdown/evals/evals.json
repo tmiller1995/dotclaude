@@ -1,0 +1,44 @@
+{
+  "skill_name": "output-markdown",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Take that postmortem we just went through and give me a markdown report I can attach to the PR.",
+      "expected_output": "A Report-mode .md file at reports/YYYY-MM-DD-<topic>.md whose first line is `---`, whose frontmatter is a valid YAML `report:` block, and whose body uses the numbered-section and component conventions",
+      "expectations": [
+        "Invokes the output-markdown skill rather than pasting the report into the conversation",
+        "Reads assets/template.md and references/components.md from the skill folder — not a remembered copy of either",
+        "Byte 0 of the written file is `-`: the YAML frontmatter opens on line 1 with no comment, heading, or blank line above it",
+        "The frontmatter parses under a strict YAML parser and uses the `report:` block (title, kind, date, topic), never a `crispy:` block with empty phase/status/ticket keys",
+        "The string `{{` does not appear anywhere in the written file",
+        "Applies the SKIP RULES: no orphan header-blockquote segment, no empty backticks, and no summary-table row whose value is blank",
+        "Body sections are numbered `## 01.`, `## 02.`, `## 03.` … monotonically with no gaps",
+        "Reports the written file path back to the conversation along with any slots it derived itself"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "CRISPY delegation: /research-codebase --format=md has finished its synthesis and hands over a render brief with phase=research, a status, a ticket line, and numbered body sections.",
+      "expected_output": "A CRISPY-mode .md file under research/docs/YYYY-MM-DD-<topic>.md carrying the full crispy:* frontmatter set, with every human-facing key mirrored as a summary-table row",
+      "expectations": [
+        "Invokes in CRISPY mode and writes under research/docs/ using the caller-supplied stem plus `.md` — it does not fall back to the Report-mode reports/ default",
+        "Frontmatter starts on line 1, nests the keys under `crispy:`, and parses as valid YAML",
+        "Every human-facing `crispy:` key has a matching row in the summary table; frontmatter-only internals such as `crispy:git_commit` correctly have no row",
+        "The status renders as the emoji plus the backticked status string, with the emoji chosen from the status prefix (any `ready-for-*` value maps to ✅)",
+        "The string `{{` does not appear anywhere in the written file",
+        "Derives REPO, BRANCH, and DATE via the shell in one parallel Bash call rather than inventing values",
+        "Uses GFM constructs (pipe tables, fenced blocks with language hints, `> [!NOTE]` alerts, `<details>` for deep dives) and does not reach for CSS or HTML layout markup"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Write a Python script that reads the YAML frontmatter out of every file in research/docs/ and prints a table of phase and status.",
+      "expected_output": "A Python script written directly, with no output-markdown invocation — this is code that processes Markdown, which the description explicitly excludes",
+      "expectations": [
+        "Does NOT invoke the output-markdown skill: the request is to write a Markdown-parsing program, not to render content as Markdown",
+        "Does not read assets/template.md or apply the slot-substitution procedure",
+        "Writes the requested Python script as an ordinary coding task"
+      ]
+    }
+  ]
+}

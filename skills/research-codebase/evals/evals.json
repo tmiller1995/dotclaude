@@ -3,6 +3,7 @@
   "evals": [
     {
       "id": 1,
+      "should_trigger": true,
       "prompt": "Research the codebase using the questions artifact at research/questions/2026-06-01-csv-export.html. The artifact's Context section describes a CSV export feature ticket; its Questions section asks how exports, downloads, and column-visibility settings currently work.",
       "expected_output": "A research document at research/docs/YYYY-MM-DD-topic.html synthesized from parallel sub-agent findings, containing only facts about the current codebase with file:line references, with the ticket context never forwarded to sub-agents",
       "expectations": [
@@ -18,6 +19,7 @@
     },
     {
       "id": 2,
+      "should_trigger": true,
       "prompt": "Research this inline query with --format=md: 'I'm building a notification center feature — find out how our SignalR hubs are registered and how clients subscribe to them.'",
       "expected_output": "A Markdown research document where the inline query was rephrased into pure current-state questions before any sub-agent was spawned, with the feature intent stripped",
       "expectations": [
@@ -27,6 +29,42 @@
         "Runs fresh codebase research via sub-agents rather than relying solely on existing research documents",
         "Handles follow-up questions by appending to the same document and updating crispy:last_updated metadata in sync with the visible Summary cells",
         "Writes no artifacts outside the research/ directory"
+      ]
+    },
+    {
+      "id": 3,
+      "should_trigger": true,
+      "prompt": "Find out how our per-tenant rate limiting is configured in the API gateway middleware and document what you find.",
+      "expected_output": "A research document that reports what the sub-agents actually found — including that the premise of the question does not hold (rate limiting is enforced elsewhere, or is not per-tenant) — with the misframing surfaced to the user before the document is finalized",
+      "expectations": [
+        "Triggers on a bare research request with no questions artifact and no skill named — the phrasing 'find out how ... and document what you find' is enough",
+        "When sub-agent findings contradict the question's framing (no per-tenant limiting in the gateway middleware, or the limiting lives in a different layer), flags the misframing to the user before finalizing rather than burying it or quietly answering a different question",
+        "Documents the mechanism that actually exists, with file:line references, instead of describing the assumed one",
+        "Records the contradiction in the document (Summary and, where unresolved, Section 09 Open questions) rather than only mentioning it in chat",
+        "Still produces no recommendations — the misframing is reported as a fact about current state, not as a defect to fix",
+        "Determines the compatibility posture before decomposing, since no questions artifact supplies it"
+      ]
+    },
+    {
+      "id": 4,
+      "should_trigger": false,
+      "prompt": "How does the formatCurrency helper in src/utils.ts work?",
+      "expected_output": "A direct answer from reading the single named file — no sub-agent fan-out, no research artifact",
+      "expectations": [
+        "Does NOT invoke research-codebase: no document is written to research/docs/",
+        "Recognized as a single-file lookup with the file already named — the answer comes from reading src/utils.ts directly",
+        "Spawning parallel sub-agents and producing a research artifact would be disproportionate to a one-function question"
+      ]
+    },
+    {
+      "id": 5,
+      "should_trigger": false,
+      "prompt": "Take the research we just did and render it as a self-contained HTML doc.",
+      "expected_output": "Routes to output-html, not research-codebase — the research already exists and only needs rendering",
+      "expectations": [
+        "Does NOT invoke research-codebase: no new sub-agents are spawned and no fresh codebase investigation runs",
+        "Recognized as a rendering request over content already in the conversation, which is output-html's job",
+        "output-html handles it, producing a no-CDN single-file .html from the existing findings"
       ]
     }
   ]

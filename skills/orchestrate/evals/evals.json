@@ -1,0 +1,42 @@
+{
+  "skill_name": "orchestrate",
+  "evals": [
+    {
+      "id": 1,
+      "should_trigger": true,
+      "prompt": "coordinate a few agents to migrate every call site of this API and keep me in the loop at each phase",
+      "expected_output": "Orchestration driven from the main context: work decomposed into tasks, sub-agents dispatched per unit of work, and a phase gate reported to the user before the next phase starts",
+      "expectations": [
+        "Keeps all top-level dispatching in the main context rather than delegating orchestration to a nested agent",
+        "Records the units of work with TaskCreate and checks TaskList before deciding what to delegate next",
+        "Dispatches one worker per pending task instead of handing a worker several tasks at once",
+        "Stops at each phase boundary and reports in the Phase [N] Complete — Ready for Manual Verification shape, then waits for the user to confirm the manual steps",
+        "Never checks off a manual verification item on the user's behalf"
+      ]
+    },
+    {
+      "id": 2,
+      "should_trigger": true,
+      "prompt": "run this refactor end to end, fan the investigation out and report back",
+      "expected_output": "A long-horizon loop where investigation is fanned out to parallel sub-agents and only condensed results return to the main context",
+      "expectations": [
+        "Launches the independent investigation agents in a single message so they run concurrently",
+        "Writes self-contained prompts — each sub-agent sees only what the prompt carries, not this conversation",
+        "Continues an already-running agent with SendMessage rather than re-spawning it",
+        "Delegates verbose commands rather than running them inline, or wraps them via the Bash tool with backpressure.sh passing the wrapped command as separate arguments",
+        "Does not attempt the work itself while waiting on a sub-agent"
+      ]
+    },
+    {
+      "id": 3,
+      "should_trigger": false,
+      "prompt": "spawn parallel sub-agents to document how auth works in this repo",
+      "expected_output": "Routed to research-codebase, which owns parallel sub-agent research for a single research phase — orchestrate should not claim this",
+      "expectations": [
+        "Recognizes this as one CRISPY research phase, not a multi-phase long-horizon task, despite the parallel sub-agent phrasing",
+        "Invokes /research-codebase rather than opening an orchestration loop",
+        "Creates no task list and no phase gates for what is a single-phase request"
+      ]
+    }
+  ]
+}

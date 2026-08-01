@@ -1,0 +1,82 @@
+{
+  "skill_name": "gh-create-pr",
+  "evals": [
+    {
+      "id": 1,
+      "should_trigger": true,
+      "prompt": "Open a PR for this branch. It adds a JWT refresh endpoint for ENG-412.",
+      "expected_output": "A draft PR against the repository's default branch with a Conventional Commits title and a filled-out description, linked to ENG-412 in Linear, with the PR web URL reported back",
+      "expectations": [
+        "Commits any outstanding work via the gh-commit skill, then pushes with `git push -u origin \"$(git branch --show-current)\"`",
+        "Reads the full branch diff against `origin/<default branch>` before drafting the title, not just the most recent commit",
+        "Resolves the base branch from the state block's \"Default branch\" value instead of hardcoding `main` in `git diff`, `git log`, or `--base`",
+        "Title matches `^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\\([a-z0-9-]+\\))?!?: .+`, uses `feat`, and stays under 72 characters",
+        "Checks for a repository PR template (`.github/pull_request_template.md` and the other listed paths) and fills it out when one exists, falling back to the bundled Summary/Changes/Test Plan template otherwise",
+        "Passes `--draft` — the PR opens as a draft because the user did not ask for it to be ready",
+        "Includes `Closes ENG-412` (or `Refs ENG-412`) in the description and attaches the PR to the Linear issue with `mcp__linear__create_attachment`",
+        "Requests no reviewers, because the user named none",
+        "Reports the PR web URL plus a one-line summary of branch, target, draft status, and linked issue",
+        "Adds no `Co-Authored-By`, `Generated with Claude`, or any other AI attribution trailer"
+      ]
+    },
+    {
+      "id": 2,
+      "should_trigger": true,
+      "prompt": "Put this up for review — Sam and Priya should look at it. Their GitHub handles are sam-h and priyakr.",
+      "expected_output": "A draft PR created with both reviewers requested via `--reviewer` on the create call, not a second `gh pr create` afterward",
+      "expectations": [
+        "Triggers on the implicit phrasing \"put this up for review\" without the user saying \"PR\" or \"pull request\"",
+        "Requests both reviewers as flags on the single `gh pr create` call (`--reviewer sam-h --reviewer priyakr`), or `gh pr edit <number> --add-reviewer sam-h,priyakr` when the PR already existed",
+        "Never runs `gh pr create` a second time against a branch that already has a PR",
+        "Uses only the logins the user supplied and invents no additional reviewers",
+        "Still opens as a draft — \"put this up for review\" is not an instruction to skip the draft default"
+      ]
+    },
+    {
+      "id": 3,
+      "should_trigger": true,
+      "prompt": "Update the PR description to mention the database migration.",
+      "expected_output": "The existing PR is edited in place with `gh pr edit <number>`, preserving curated content and adding the migration detail",
+      "expectations": [
+        "Recognizes update mode from the \"Existing PR for branch\" value already in the state block, without re-running `gh pr view`",
+        "Uses `gh pr edit <number> --body ...` and does not attempt `gh pr create`",
+        "Preserves the existing title and the curated parts of the description, adding the migration detail rather than regenerating the body from scratch",
+        "Leaves the title untouched if it already follows Conventional Commits and is accurate",
+        "Does not change the PR's draft/ready state as a side effect"
+      ]
+    },
+    {
+      "id": 4,
+      "should_trigger": false,
+      "prompt": "Commit this.",
+      "expected_output": "Routes to gh-commit — the user asked for a commit only, with no push and no pull request",
+      "expectations": [
+        "Does NOT invoke gh-create-pr: nothing is pushed and no PR is created",
+        "gh-commit handles it, drafting a Conventional Commits message and confirming before committing",
+        "The branch is not pushed to origin as an unrequested side effect"
+      ]
+    },
+    {
+      "id": 5,
+      "should_trigger": false,
+      "prompt": "What should I name this branch? The issue is ENG-1234, 'Cookie policy broken here link'.",
+      "expected_output": "Routes to git-branch-namer — the user wants a branch name, not a pull request",
+      "expectations": [
+        "Does NOT invoke gh-create-pr: no branch is created, nothing is committed or pushed, and no PR is opened",
+        "git-branch-namer handles it, returning a name such as `fix/ENG-1234-cookie-policy-broken-here-link`",
+        "Produces the name only, leaving branch creation to create-worktree and the PR to gh-create-pr"
+      ]
+    },
+    {
+      "id": 6,
+      "should_trigger": false,
+      "prompt": "Review the CodeAnt comments on my PR.",
+      "expected_output": "Routes to review-codeant — the PR already exists and the task is triaging automated review feedback",
+      "expectations": [
+        "Does NOT invoke gh-create-pr: the PR's title, description, and draft state are not modified",
+        "review-codeant handles it, fetching the CodeAnt findings and classifying each as valid or dismissible",
+        "No new commit is created and nothing is pushed unless a triaged finding calls for a fix"
+      ]
+    }
+  ]
+}

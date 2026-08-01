@@ -1,22 +1,22 @@
 ---
 name: output-html
-description: Render existing structured content (writeup, report, summary, analysis, postmortem, RFC) as a polished, self-contained single-file HTML document using a shared scaffold and component vocabulary. Trigger when the user asks for HTML output of content they've already produced or discussed — phrases like "output this in HTML", "render as a self-contained HTML page", "give me an HTML report", "write this up as HTML", "make this an HTML artifact", "produce an HTML writeup" — or when a CRISPY skill (ask-questions, research-codebase, design-discussion, structure-outline, create-spec) delegates rendering. Produces a no-CDN, no-external-dependency .html file. Do NOT use this skill when the user wants to BUILD a new UI component, page, or web application — use impeccable for that.
+description: Render existing structured content (writeup, report, summary, analysis, postmortem, RFC) as a polished, self-contained single-file HTML document using a shared scaffold and component vocabulary. Trigger when the user asks for HTML output of content they've already produced or discussed — phrases like "output this in HTML", "render as a self-contained HTML page", "give me an HTML report", "write this up as HTML", "make this an HTML artifact", "produce an HTML writeup" — or when a CRISPY skill (ask-questions, research-codebase, design-discussion, structure-outline, create-spec) or linear-roadmap delegates rendering. Produces a no-CDN, no-external-dependency .html file. Do NOT use this skill when the user wants to BUILD a new UI component, page, or web application — use impeccable for that.
 ---
 
 # Output: HTML
 
-You are the renderer for a polished, self-contained `.html` file. The design vocabulary is anchored to Thariq Shihipar's [*The Unreasonable Effectiveness of HTML*](https://thariqs.github.io/html-effectiveness/) — system fonts only, every CSS rule inlined, no CDN, no fonts loaded over the network, inline SVG for diagrams.
+This skill renders a polished, self-contained `.html` file. The design vocabulary is anchored to Thariq Shihipar's [*The Unreasonable Effectiveness of HTML*](https://thariqs.github.io/html-effectiveness/) — system fonts only, every CSS rule inlined, no CDN, no fonts loaded over the network, inline SVG for diagrams.
 
-You support two invocation modes:
+Two invocation modes are supported:
 
 - **CRISPY mode** — invoked by `/ask-questions`, `/research-codebase`, `/design-discussion`, `/structure-outline`, or `/create-spec`. The caller provides a full render brief with phase, status, ticket, etc. The output file lands in the standard `research/{questions,docs,designs,structures,specs}/` directory.
 - **Report mode** — invoked directly (e.g., the user says "output this in HTML" or "render this as an HTML report"). The caller provides a title and body content; CRISPY-specific slots are skipped. The output lands in `reports/YYYY-MM-DD-<topic>.html` by default unless the caller specifies a path.
 
 The rendering logic is the same for both — only some slots are absent in Report mode, and the SKIP RULES below tell you which structural elements to omit when their slot is empty.
 
-## Your job in one sentence
+## The job in one sentence
 
-Read `template.html`, fill the slot values, render the body sections using the components in `components.md`, apply the SKIP RULES for any empty optional slots, write the file to disk, and report the path.
+Read `assets/template.html`, fill the slot values, render the body sections using the components in `references/components.md`, apply the SKIP RULES for any empty optional slots, write the file to disk, and report the path.
 
 ## Slot schema
 
@@ -29,12 +29,13 @@ The same schema serves both modes. CRISPY mode fills all slots; Report mode fill
 | `{{REPO}}` | derived | derived | `basename "$(git rev-parse --show-toplevel)"` — if no git repo, use `""` and apply the SKIP rule |
 | `{{BRANCH}}` | derived | derived | `git branch --show-current` — same skip behavior if absent |
 | `{{DATE}}` | derived | derived | `date '+%Y-%m-%d %H:%M:%S %Z'` |
-| `{{BODY}}` | required | required | Numbered `<section>` blocks rendered via `components.md` |
+| `{{BODY}}` | required | required | Numbered `<section>` blocks rendered via `references/components.md` |
 | `{{PHASE}}` | required | optional | One of `questions`, `research`, `design`, `structure`, `spec`. Omit in Report mode. |
 | `{{PHASE_LABEL}}` | required | optional | Human label for the eyebrow. In Report mode, set to a free-form subtitle (e.g., `Status report`, `RFC`, `Postmortem`) OR leave empty to skip the eyebrow entirely. |
 | `{{STATUS}}` | required | optional | Lifecycle status (see CRISPY status list). Empty → skip the badge & summary cell. |
-| `{{STATUS_CLASS}}` | derived | derived | Map: `draft`→`draft`; any `ready-*` or `ready`→`ready`; `complete`→`complete`. Only used when STATUS is non-empty. |
-| `{{TICKET}}` | required | optional | One-line ticket summary or `N/A`. Empty → no `Ticket` label rendered. |
+| `{{STATUS_CLASS}}` | derived | derived | See the CRISPY status table below. Only used when STATUS is non-empty. |
+| `{{TICKET}}` | required | optional | One-line ticket summary or `N/A`. Head-only — emitted as `<meta name="crispy:ticket">`, never rendered visibly. |
+| `{{PROMPT_LABEL}}` | derived | optional | Label on the `.prompt-box`. `Ticket` in CRISPY mode; in Report mode set to whatever `PROMPT_TEXT` actually is (`Request`, `Context`, `Summary`). |
 | `{{PROMPT_TEXT}}` | required | optional | The originating request / ticket / prose subtitle. Empty → skip the entire `.prompt-box`. |
 | `{{META_EXTRA}}` | as needed | as needed | Extra `<meta name="crispy:*">` tags (CRISPY) or `<meta name="report:*">` tags (Report). Always emit empty string if none. |
 | `{{SUMMARY_EXTRA}}` | as needed | as needed | Extra `<div class="cell">` entries appended to the summary grid. Empty string if none. |
@@ -50,6 +51,8 @@ These rules let one template serve both modes cleanly. After you fill the slots,
 | `{{STATUS}}` empty | the Status `<div class="cell">` inside `.summary` |
 | `{{BRANCH}}` empty | the Branch `<div class="cell">` inside `.summary` |
 | `{{DATE}}` empty | the Date `<div class="cell">` inside `.summary` |
+| Report mode (no `{{PHASE}}`) | the whole `crispy:*` `<meta>` block — emit `report:*` tags in its place so CRISPY tooling does not match a report |
+| Exactly one of `{{PHASE_LABEL}}` / `{{REPO}}` empty | the ` · ` separator in `.eyebrow` (same for `<title>` when `{{PHASE_LABEL}}` is empty) |
 
 If after applying all SKIP rules the `.summary` grid has zero cells AND `{{SUMMARY_EXTRA}}` is also empty, remove the entire `<div class="summary">…</div>` too.
 
@@ -89,7 +92,7 @@ Downstream CRISPY skills parse these tags. Field names are stable — never inve
 
 ### Report-mode metadata (optional)
 
-In Report mode you can stamp the file with `<meta name="report:*">` tags for downstream tooling. Suggested fields:
+In Report mode you can stamp the file with `<meta name="report:*">` tags for downstream tooling. These replace the `crispy:*` block rather than joining it. Suggested fields:
 
 | Field | Purpose |
 | --- | --- |
@@ -100,20 +103,23 @@ In Report mode you can stamp the file with `<meta name="report:*">` tags for dow
 
 ## Rendering procedure
 
-1. **Read `template.html`** in this skill's folder. Copy the entire contents verbatim into a new buffer — do not link to it, do not import, do not skip the `<style>` block. Self-contained means *every CSS rule is inlined*.
+1. **Read `assets/template.html`** in this skill's folder. Copy from `<!DOCTYPE html>` to the end into a new buffer, verbatim — do not link to it, do not import, do not skip the `<style>` block. Self-contained means *every CSS rule is inlined*. The comment above `<!DOCTYPE` is authoring documentation for skill maintainers and must not ship in the artifact.
 
 2. **Gather shell-derived slots** in one parallel call (Bash tool):
    - `git rev-parse --show-toplevel` (for repo basename — empty string is OK if not in a repo)
    - `git branch --show-current` (empty string is OK)
    - `date '+%Y-%m-%d %H:%M:%S %Z'`
 
-3. **Substitute slot values.** Replace each `{{SLOT}}` exactly once.
+3. **Substitute slot values.** Replace *every* occurrence of each `{{SLOT}}` — six slots appear twice by design: `{{PHASE_LABEL}}` and `{{TOPIC}}` in `<title>`, `{{STATUS}}`, `{{DATE}}`, `{{BRANCH}}`, and `{{REPO}}` in both the `<head>` metadata and the visible header. A second occurrence is expected, not an error.
 
 4. **Apply SKIP RULES.** Walk through the table above; for each empty optional slot, remove the wrapping structural element.
 
-5. **Verify no placeholders remain.** Search the buffer for `{{` — if anything remains, the caller's brief was incomplete; stop and surface the missing slot.
+5. **Verify before writing.** Scan the buffer for each of these; every hit is a defect to fix, not a warning to note:
+   - `{{` — a slot went unfilled. The caller's brief was incomplete; stop and surface which slot.
+   - `<link rel="stylesheet"`, `<script src=`, `@import`, `https://` inside `src=` or `href=` on an asset — the file is no longer self-contained.
+   - Section numbers out of order or skipping — renumber monotonically from `01`.
 
-6. **Render the body** using the component vocabulary in `components.md`. The caller specifies which sections to emit and what content goes in each; you translate that into the correct HTML components. Number sections monotonically with `<div class="sec-head"><span class="num">NN</span><h2>...</h2></div>`.
+6. **Render the body** using the component vocabulary in `references/components.md`. The caller specifies which sections to emit and what content goes in each; you translate that into the correct HTML components. Number sections monotonically with `<div class="sec-head"><span class="num">NN</span><h2>...</h2></div>`.
 
 7. **Determine the output path:**
    - **CRISPY mode** — caller provides `research/<phase-dir>/YYYY-MM-DD-<topic>` as the stem; you append `.html`.
@@ -125,7 +131,7 @@ In Report mode you can stamp the file with `<meta name="report:*">` tags for dow
 
 ## Component reference
 
-See `components.md` for the full catalog: when to use each component, the HTML snippet to paste, and which CSS classes carry meaning. Components include:
+See `references/components.md` for the full catalog: when to use each component, the HTML snippet to paste, and which CSS classes carry meaning. Components include:
 
 - `.eyebrow`, `.sec-head`, `.sec-intro` — section structure
 - `.prompt-box`, `.summary` / `.cell` / `.badge` — header card
@@ -137,7 +143,7 @@ See `components.md` for the full catalog: when to use each component, the HTML s
 - `<table>` — palette-styled data tables
 - `aside.reco` — recommendation callout
 
-If you find yourself wanting a pattern that is not in `components.md`, prefer adapting an existing component over inventing new CSS. Inventing means consistency breaks across artifacts.
+If you find yourself wanting a pattern that is not in `references/components.md`, prefer adapting an existing component over inventing new CSS. Inventing means consistency breaks across artifacts.
 
 ## Self-containment invariants
 
@@ -163,5 +169,3 @@ The reader opens the file in a browser (or pastes it into a chat that renders HT
 - A SKIP rule not applied — the page renders an orphan eyebrow / prompt-box / status cell with no content
 - A required `<meta>` tag is missing — downstream tooling crashes
 - An external resource (font, script, CSS) is referenced — the file is no longer self-contained
-- Section numbering is non-monotonic or skips numbers
-- An ad-hoc CSS class invented inline instead of reusing the component vocabulary

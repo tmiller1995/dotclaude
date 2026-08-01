@@ -4,7 +4,7 @@ Once the mode is known, this is the script that runs for every mode. Per-mode ou
 
 ## Step 1 — Confirm host capabilities
 
-Check what's available before pulling data. The skill is intentionally portable across hosts (Claude Code, Claude Desktop, ChatGPT, Cursor, Copilot Chat) and the capability check is what makes that work.
+Check what's available before pulling data.
 
 1. **If a Linear MCP is loaded** (tool names starting with `mcp__linear__`), use it. Operations needed:
    - `mcp__linear__list_cycles` / `list_projects` / `list_milestones` — resolve the named cycle/project/milestone to an id
@@ -15,22 +15,13 @@ Check what's available before pulling data. The skill is intentionally portable 
    - `mcp__linear__list_issue_labels` — resolve the configurable customer-facing label
    - For linked code: `mcp__github__pull_request_read` / `mcp__github__list_commits` (or the `gh` CLI) to enrich PRs/commits referenced in issue attachments
 
-2. **If no Linear MCP is available** (e.g., Copilot Chat without connectors), stop and ask the user to either:
-   - Paste a CSV/JSON export of the cycle, or
-   - Paste the issue details directly.
-
-   Then continue from Step 3 with whatever they provide. Don't try to invent the missing data.
-
-### Host quirks
-
-- **Claude Code / Claude Desktop** — Linear MCP loads natively. Spawn parallel sub-agents per issue only when item count > ~30, otherwise the orchestration overhead outweighs the parallelism.
-- **ChatGPT** — requires the Linear connector to be enabled. If it isn't, fall back to pasted CSV/JSON.
-- **Cursor** — same as Claude Code if the Linear MCP is configured in `~/.cursor/mcp.json`.
-- **GitHub Copilot Chat** — at present, no arbitrary MCP support; operate in pasted-data mode.
+2. **If no Linear MCP is available**, stop and ask the user to paste either a CSV/JSON export of the cycle or the issue details directly, then continue from Step 3 with whatever they provide. Never invent the missing data.
 
 ## Step 2 — Pull the data
 
 First resolve the **scope**: the user names a cycle, a project, or a milestone — resolve it to an id with `list_cycles` / `list_projects` / `list_milestones`. Also pull `list_issue_statuses` once so state-name comparisons (done-state, forward order) use the team's real states.
+
+Spawn parallel sub-agents per issue only when item count > ~30 — below that the orchestration overhead outweighs the parallelism.
 
 For the cycle in scope, fetch:
 
@@ -64,9 +55,7 @@ For `release_notes`, treat customer-facing as the default-public set. Features (
 
 ## Step 4 — Apply the mode
 
-Open `modes.md` and follow the per-mode template.
-
-For `flow_diagnostic`, `roadmap`, and `deep_dive`, also compute the flow metrics from `flow-metrics.md` — they populate the stuck-items table, the at-risk section, and the bottleneck identification. `release_notes` doesn't need these; skip them.
+Open `modes.md` and follow the per-mode template; the `SKILL.md` load table lists which references each mode needs.
 
 ## Step 5 — Render outputs
 
@@ -75,7 +64,7 @@ This skill **gathers and structures** the data; it does NOT directly write the f
 - `--format=md` (default) → `Skill('output-markdown')`
 - `--format=html` → `Skill('output-html')`
 
-The output skill wraps the body in the standard CRISPY-style scaffold (header card with status / cycle / mode chips, summary grid, polished section frames) and writes a self-contained file. The body content you produce — Mermaid blocks, stuck-items tables, executive summary bullets — flows through unchanged.
+The output skill wraps the body in the standard CRISPY-style scaffold (header card with status / cycle / mode chips, summary grid, polished section frames) and writes a self-contained file. The body content produced here — diagrams, stuck-items tables, executive summary bullets — flows through unchanged.
 
 ### Slot values for the render brief
 
@@ -98,7 +87,7 @@ Default: `reports/YYYY-MM-DD-<mode>-<cycle-or-id>.<ext>`. Override if the user s
 
 ### Content-rendering rules (carried through to either output skill)
 
-- **Diagrams** — always Mermaid. Sankey uses `sankey-beta`; timelines use `gantt`. Skeletons in `mermaid-templates.md`. **Both output skills preserve Mermaid as fenced code blocks** — they render natively in GitHub / GitLab / Confluence (with plugin). In vanilla HTML browsers Mermaid won't render automatically; see the "Format selection" callout in `SKILL.md` for the post-processing recipe.
+- **Diagrams** — Sankey uses `sankey-beta`; timelines use `gantt`. Skeletons in `mermaid-templates.md`. In `md` mode the fenced Mermaid blocks pass through unchanged and render natively in GitHub / GitLab / Linear. In `html` mode they must be pre-rendered to inline `<svg>` first — `output-html` treats "no Mermaid" and "all diagrams as inline `<svg>`" as non-negotiable invariants. See "Format selection" in `SKILL.md` for the command.
 - **Tables** — GitHub-flavored markdown (works in both output formats; `output-markdown` keeps them as pipe tables, `output-html` converts to palette-styled `<table>`). Sort the stuck-items table by `days_in_current_state` desc.
 - **IDs** — include in *internal* sections; omit from *public* sections.
 - **Dates** — convert all relative dates to absolute `YYYY-MM-DD`.

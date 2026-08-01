@@ -1,9 +1,9 @@
 ---
 name: improve-claude-md
-description: Rewrite a CLAUDE.md file using <important if="condition"> conditional XML blocks to improve instruction adherence, prune linter-territory rules, and keep foundational context bare. Use when the user asks to improve, optimize, restructure, or shrink a CLAUDE.md, says Claude is ignoring CLAUDE.md instructions, or mentions conditional/important-if blocks. Source: github.com/humanlayer/skills (HumanLayer, March 2026).
+description: Rewrite an existing CLAUDE.md into conditional "important if" XML blocks so each instruction fires only on the tasks it applies to, pruning linter-territory rules and keeping foundational context bare. Use when the user asks to improve, optimize, restructure, shrink, or clean up a CLAUDE.md, says it has grown too long or bloated, says Claude ignores or forgets CLAUDE.md instructions, or mentions conditional or important-if blocks. To author a CLAUDE.md from scratch use init instead; this skill rewrites a file that already exists.
 ---
 
-When the user provides a CLAUDE.md file (or asks you to improve one), rewrite it following the principles and structure below.
+Rewrite the target CLAUDE.md following the principles below, then report every rule that was removed and why.
 
 ## Core Problem
 
@@ -11,11 +11,11 @@ Claude Code injects a system reminder with every CLAUDE.md that says:
 
 > "this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task."
 
-This means Claude will ignore parts of your CLAUDE.md it deems irrelevant. The more content that isn't applicable to the current task, the more likely Claude is to ignore everything — including the parts that matter.
+This means the agent will ignore parts of the CLAUDE.md it deems irrelevant. The more content that isn't applicable to the current task, the more likely the agent is to ignore everything — including the parts that matter.
 
 ## Solution: `<important if="condition">` Blocks
 
-Wrap conditionally-relevant sections of the CLAUDE.md in `<important if="condition">` XML tags. This exploits the same XML tag pattern used in Claude Code's own system prompt, giving the model an explicit relevance signal that cuts through the "may or may not be relevant" framing.
+Wrap conditionally-relevant sections of the CLAUDE.md in `<important if="condition">` XML tags. This exploits the same XML tag pattern used in Claude Code's own system prompt, giving the agent an explicit relevance signal that cuts through the "may or may not be relevant" framing. This technique is HumanLayer's, from "Getting Claude to Actually Read Your CLAUDE.md" (March 2026).
 
 ## Principles
 
@@ -64,9 +64,9 @@ Prefer to keep the file concise.
 
 ### 4. Less is more
 
-- Frontier models can reliably follow a few hundred. Claude Code's system prompt and tools already use ~50 of those. Your CLAUDE.md should be as lean as possible.
+- Frontier models reliably follow only a few hundred instructions in total, and Claude Code's own system prompt and tools already consume roughly 50 of them. The CLAUDE.md should be as lean as possible.
 - Cut any instruction that a linter, formatter, or pre-commit hook can enforce
-- Cut any instruction the agent can discover from existing code patterns. LLMs are in-context learners — if your codebase consistently uses a pattern, the agent will follow it after a few searches.
+- Cut any instruction the agent can discover from existing code patterns. Agents are in-context learners — if the codebase consistently uses a pattern, the agent will follow it after a few searches.
 - Cut code snippets. They go stale and bloat the file. Use file path references instead (e.g., "see `src/utils/example.ts` for the pattern").
 
 ### 5. Keep all commands
@@ -116,11 +116,22 @@ When given an existing CLAUDE.md to improve:
 2. **Extract the directory map** — keep it bare (no `<important if>` wrapper). This is foundational context.
 3. **Extract the tech stack** — if present, keep it bare near the top. Condense to one or two lines.
 4. **Extract commands** — keep ALL commands from the original. Wrap in a single `<important if>` block.
-5. **Break apart rules** — split any list of rules into individual `<important if>` blocks with specific conditions. You can group rules, but never group unrelated rules under one broad condition.
+5. **Break apart rules** — split any list of rules into individual `<important if>` blocks with specific conditions. Related rules can share a block; unrelated rules never share one broad condition.
 6. **Wrap domain sections** — testing, API patterns, state management, i18n, etc. each get their own block with a condition describing when that knowledge matters.
-7. **Delete linter territory** — remove style guidelines, formatting rules, and anything enforceable by tooling. Suggest replacing with pre-push or pre-commit hooks.
-8. **Delete code snippets** — replace with file path references.
-9. **Delete vague instructions** — remove anything like "leverage the X agent" or "follow best practices" that isn't concrete and actionable.
+7. **Delete everything principle 4 covers** — linter-enforceable style and formatting rules, code snippets, and vague instructions like "leverage the X agent" or "follow best practices". Where a deleted rule still matters, suggest a pre-commit or pre-push hook instead.
+
+## Before finishing
+
+Check the rewrite against the original:
+
+- Every command from the original is present.
+- No condition is broad enough to match essentially every task.
+- No code snippets remain — each is replaced by a file path reference.
+- Project identity, project map, and tech stack are bare, not wrapped.
+
+Write the rewritten file in place, then list each removed rule with its reason —
+linter territory, discoverable from existing code, vague, or a stale snippet —
+so the user can restore anything that mattered. The example below shows the format.
 
 ## Example
 
@@ -252,7 +263,3 @@ Run with `turbo` from the repo root.
 What was removed and why:
 - camelCase/PascalCase, const vs let, strict equality, template literals, JSDoc, barrel exports — linter and formatter territory, or discoverable from existing code patterns
 - Coding Standards as a grouped section — split into targeted blocks by trigger condition
-
-What was NOT removed:
-- All commands kept (including dev, storybook, analyze)
-- Project map left bare (foundational context, relevant to every task)

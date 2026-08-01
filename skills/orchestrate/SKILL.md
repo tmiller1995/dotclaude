@@ -1,21 +1,21 @@
 ---
 name: orchestrate
-description: Orchestrate sub-agents from the MAIN context to accomplish complex long-horizon tasks without losing coherency. Use when the user wants to orchestrate work, delegate across sub-agents, fan out parallel research or implementation, run a long-horizon multi-step task, or asks for "the orchestrator". Sub-agents *can* nest as of Claude Code v2.1.172 (up to 5 deep), but this skill keeps orchestration in the main context by choice — for context hygiene and phase-gate visibility — and replaces the former `orchestrator` agent.
+description: Orchestrate sub-agents from the MAIN context to accomplish complex long-horizon tasks without losing coherency. Use when the user wants to orchestrate or coordinate work across sub-agents, delegate or fan out parallel research or implementation, spawn several agents at once, parallelize a large refactor, run a long-horizon multi-step task end to end, or asks for "the orchestrator". Covers the dispatch loop, phase gates, and context-budget discipline. Not for running a single CRISPY phase — use /research-codebase, /design-discussion, /structure-outline or /create-spec for that; not for a one-off codebase question, which a single codebase-locator or codebase-analyzer dispatch answers directly.
 ---
 
 # Orchestrate (main-context sub-agent orchestration)
 
 You — the **main conversation context** — are the orchestrator. Since Claude Code v2.1.172 sub-agents *can* spawn their own sub-agents (up to 5 deep), but this skill deliberately keeps dispatching in the main context: condensed results stay visible to you and the human, and the phase gates don't get buried below an orchestration line you can't watch. Reach for nesting only when a delegated task itself fans out and its intermediate output should never reach you — e.g. the `reviewer` dispatching a verifier per finding. All top-level dispatching happens here.
 
-Your most important tools are the `Agent` tool for dispatching sub-agents and the built-in task tools (`TaskCreate`, `TaskList`, `TaskGet`, `TaskUpdate`) for tracking work.
+Your most important tools are the `Agent` tool for dispatching sub-agents and the built-in task tools (`TaskCreate`, `TaskList`, `TaskGet`, `TaskUpdate`) for tracking work — load the task tools by name via `ToolSearch` before the first call, as they are deferred when many MCP servers are connected.
 
 All non-trivial operations should be delegated to sub-agents. Delegate research and codebase understanding to `codebase-analyzer`, `codebase-locator`, `codebase-pattern-finder`, and `codebase-online-researcher`. Delegate bash commands likely to produce lots of output (`aws` CLI, `gh` CLI, digging through logs) to general-purpose sub-agents.
 
 Use separate sub-agents for separate tasks, and launch them in parallel — but do not delegate multiple tasks that are likely to have significant overlap to separate sub-agents.
 
-## Initializing the underlying agents
+## Dispatching sub-agents
 
-Dispatch every agent with the `Agent` tool, setting `subagent_type` to the agent's name and writing a self-contained `prompt` (the agent sees nothing of this conversation except what you put in the prompt). Launch independent agents in a single message so they run concurrently; use background execution for long-running work and continue a running agent with `SendMessage` rather than re-spawning it.
+Dispatch every agent with the `Agent` tool, setting `subagent_type` to the agent's name and writing a self-contained `prompt` (the agent sees nothing of this conversation except what you put in the prompt). Launch independent agents in a single message so they run concurrently; sub-agents run in the background by default and notify you on completion, so pass `run_in_background: false` only when you need a result before you can continue; continue a running agent with `SendMessage` rather than re-spawning it.
 
 | Agent (`subagent_type`) | Dispatch it to… | Prompt must include |
 | --- | --- | --- |
@@ -64,7 +64,7 @@ You may be running on a long-context model. **Instruction budget does not scale 
 - **Keep your own context under 100,000 tokens.** Past this point, instruction adherence degrades regardless of how much window is left. This is HumanLayer's revised guidance from March 2026 ("Long-Context Isn't the Answer") — replacing the older "40% of window" heuristic.
 - **When approaching 100K tokens:** stop, persist progress to disk (research docs, task notes, design artifacts), and hand off to a fresh session.
 - **Delegate early, not late.** Every verbose tool output (Bash, file reads, search results) adds context weight. Sub-agents return condensed results, keeping your window lean.
-- **Verbose commands go through backpressure.** When you must run a build/test/lint command directly instead of delegating it, use `bash ~/.claude/scripts/backpressure.sh <command>` — full output lands in a log file and only the exit code + tail enters your context.
+- **Verbose commands go through backpressure.** When you must run a build/test/lint command directly instead of delegating it, run it through the **Bash tool** as `bash ~/.claude/scripts/backpressure.sh <cmd> <args...>` — for example `bash ~/.claude/scripts/backpressure.sh npm test -- --coverage`. Full output lands in a log file and only the exit code plus a 20-line tail enters your context. Pass the wrapped command as separate arguments, not as one quoted string: the script execs `"$@"`, so a quoted string exits 127. Do not run this from PowerShell, where `bash` resolves to the WSL shim rather than Git Bash and fails immediately.
 - **Sub-agents are context firewalls, not character roles.** Their job is to isolate context, not to play a persona. Dispatch them when: (1) the task produces lots of tool output you don't want in your window, (2) the task is independent enough to run in parallel, or (3) you want a different model (e.g. haiku for cheap file finding).
 
 ## Task Orchestration
@@ -76,10 +76,10 @@ You may be running on a long-context model. **Instruction budget does not scale 
 
 ## Rules of Engagement
 
-IMPORTANT: if the user has already given you a task, you should proceed with that task using this approach.
+If the user has already given you a task, proceed with it using this approach rather than re-scoping — the dispatch pattern below applies to any task, not just ones this skill named.
 
-IMPORTANT: sometimes sub-agents will take a long time. DO NOT attempt to do the job yourself while waiting for the sub-agent to respond. Instead, use the time to plan out your next steps, or ask the user follow-up questions to clarify the task requirements.
+Sometimes sub-agents will take a long time. DO NOT attempt to do the job yourself while waiting for the sub-agent to respond. Instead, use the time to plan out your next steps, or ask the user follow-up questions to clarify the task requirements.
 
-IMPORTANT: If the user's request matches a CRISPY workflow phase (research, design, plan, implement, review), prefer invoking the corresponding skill (`/research-codebase`, `/design-discussion`, `/structure-outline`, `/create-spec`) rather than doing the phase inline. Skills are lazy-loaded and give you fresh instruction budget per phase.
+If the user's request matches a CRISPY phase, prefer invoking the corresponding skill rather than doing the phase inline: questions → `/ask-questions`, research → `/research-codebase`, design → `/design-discussion`, structure → `/structure-outline`, plan → `/create-spec`. Implement and review stay in the worker loop above. Skills are lazy-loaded, so each phase gets fresh instruction budget.
 
 If you have not already been explicitly given a task, ask the user what task they would like you to work on — do not assume or begin working on a ticket automatically.

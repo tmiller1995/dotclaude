@@ -85,7 +85,7 @@ Linear priority is numeric (`0` No priority, `1` Urgent, `2` High, `3` Medium, `
 
 ## Items at risk — long days-in-state OR bounced
 
-Linear's filters don't natively expose `days_in_current_state` or bounce count, so this narrows the candidate set by staleness; compute the actual at-risk filter from each issue's history in Step 5 of the workflow.
+Linear's filters don't natively expose `days_in_current_state` or bounce count, so this narrows the candidate set by staleness; compute the actual at-risk filter from each issue's history per `flow-metrics.md`.
 
 ```
 mcp__linear__list_issues {
@@ -109,13 +109,13 @@ mcp__linear__get_issue   { id: "<parent_issue_id>" }     # includes sub-issues +
 mcp__linear__list_issues { parent: "<parent_issue_id>" }  # direct child query if supported
 ```
 
-Walk the children so a parent inherits the customer-facing classification from any descendant (a parent may not carry the `customer` label directly even though a child bug does).
+Walk the children so the parent rollup rule in `workflow.md` Step 2 can be applied.
 
 ---
 
 ## Customer-labeled items in a cycle
 
-Customer-facing detection is a configurable **label** (default `customer`), not an external URL. Resolve the label, then filter:
+Customer-facing detection uses a configurable label (default `customer`) — see `workflow.md` Step 3 for the classification and rollup rules. Resolve the label, then filter:
 
 ```
 mcp__linear__list_issue_labels { team: "<team_key_or_id>" }     # confirm the label exists; capture exact name/id
@@ -124,8 +124,6 @@ mcp__linear__list_issues {
   label: "<customer_label>"                                     # default "customer"; override per team
 }
 ```
-
-If the team uses a different label name (e.g., `customer-reported`, `external`, `csat`), set `customer_label` accordingly. If no such label exists and the team is known to track customer reports another way, ask before classifying everything as internal rather than guessing.
 
 ---
 
@@ -136,4 +134,4 @@ mcp__linear__get_issue    { id: "<issue_id>" }      # state, assignee, priority,
 mcp__linear__list_comments { issueId: "<issue_id>" } # comment thread for the timeline + blocker extraction
 ```
 
-`get_issue` returns the issue history (state changes with timestamps and actors) where available; if transition-level granularity is limited, fall back to the created / updated / completed timestamps. Linked GitHub PRs and commits come from attachments — cross-reference them with `mcp__github__pull_request_read` / `mcp__github__list_commits` (see `workflow.md` Step 2).
+`get_issue` returns the issue history (state changes with timestamps and actors) where available; when transition-level granularity is limited, use the fallback in `workflow.md` Step 2. Linked GitHub PRs and commits come from attachments — cross-reference them with `mcp__github__pull_request_read` / `mcp__github__list_commits`.

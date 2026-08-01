@@ -1,6 +1,6 @@
 # Flow metrics
 
-For each issue in scope, compute these from the state-change history. Used by `flow_diagnostic`, `roadmap`, and `deep_dive`. `release_notes` doesn't need them.
+For each issue in scope, compute these from the state-change history.
 
 ## Per-item metrics
 
@@ -12,7 +12,7 @@ For each issue in scope, compute these from the state-change history. Used by `f
 
 ## Defining "backward"
 
-Prefer the team's own ordering when you can see it. The real workflow states and their order come from `list_issue_statuses` — use those, not assumed names. If the data shows a dominant left-to-right path (most transitions move in one direction across the cycle), use that as the forward flow and treat the minority direction as backward.
+Prefer the team's own ordering when it is visible. The real workflow states and their order come from `list_issue_statuses` — use those, not assumed names. If the data shows a dominant left-to-right path (most transitions move in one direction across the cycle), use that as the forward flow and treat the minority direction as backward.
 
 If the data is too sparse to infer and `list_issue_statuses` is unavailable, fall back to this generic Linear default flow:
 

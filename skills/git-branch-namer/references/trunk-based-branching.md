@@ -15,24 +15,11 @@ There are no `develop`, `master`, `release/*`, or `hotfix/*` branches. Releases 
 
 ## Work branches
 
-These are the short-lived branches developers create from Linear issues. The naming pattern is:
-
-```
-prefix/ENG-1234-short-kebab-case-description
-```
-
-Where `ENG-1234` is the Linear issue identifier (preserved exactly, including its casing), and the description is the issue title converted to kebab-case.
+These are the short-lived branches developers create from Linear issues, named
+`prefix/ENG-1234-kebab-case-title`. The exact conversion rules live in the Conversion rules section
+of SKILL.md and are not repeated here.
 
 Branches are **short-lived**: cut from `main`, kept small, and merged back via pull request as quickly as possible. After merge the branch is deleted to keep history clean — commit history remains accessible through the linked pull request.
-
-### feat/ENG-1234-short-feature-description
-For new features and enhancements. Maps to the `feat` conventional-commit type.
-
-### fix/ENG-1234-short-fix-description
-For bug fixes and patches. Maps to the `fix` conventional-commit type.
-
-### chore/ENG-1234-short-chore-description
-For maintenance work that is neither a new feature nor a bug fix — dependency bumps, tooling, config, and refactors. Maps to the `chore` conventional-commit type.
 
 ## Choosing the right branch type
 
@@ -55,4 +42,4 @@ When in doubt, decide whether the change adds behavior (feat/) or corrects it (f
 
 ## Linking to Linear
 
-Reference the Linear issue identifier (e.g. `ENG-1234`) in the branch name and PR description so the work is traceable. Linear can auto-link the pull request to the issue when the identifier appears in the branch name or PR title/body; you can also attach the PR URL to the issue with `mcp__linear__create_attachment`.
+Reference the Linear issue identifier (e.g. `ENG-1234`) in the branch name and PR description so the work is traceable. Linear can auto-link the pull request to the issue when the identifier appears in the branch name or PR title/body; attach the PR URL to the issue with `mcp__linear__create_attachment`.

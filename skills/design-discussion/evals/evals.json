@@ -25,6 +25,39 @@
         "Tells the user to run /research-codebase first rather than silently doing the research itself",
         "Does not fabricate current-state claims that the research document cannot support"
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "We've got the research done on the notifications refactor (research/docs/2026-06-10-notifications.html). Before you plan anything out, talk me through the approach and what the options are.",
+      "expected_output": "The design-discussion skill is selected from the natural-language request alone, without the user naming it, and produces a design artifact rather than a plan or a structure outline",
+      "expectations": [
+        "The design-discussion skill triggers even though the user never names it or types /design-discussion",
+        "Produces a design artifact under research/designs/ — not a task plan, not a file-by-file change list, not signatures or types",
+        "Reads research/docs/2026-06-10-notifications.html rather than starting fresh investigation of the notifications code",
+        "Surfaces the approach as contrastive decision cards with named options and rejected alternatives, matching the user's ask for 'what the options are'"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Take research/designs/2026-06-10-notifications.html and give me the function signatures and types, broken into vertical slices.",
+      "expected_output": "Routes to structure-outline; design-discussion does not fire and no design artifact is written",
+      "expectations": [
+        "The structure-outline skill is selected, not design-discussion",
+        "No new design artifact is written to research/designs/",
+        "No decision cards, open questions, or AskUserQuestion design walkthrough are produced",
+        "The named input is treated as a completed design document to consume, not as something to redesign"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Figure out how the export pipeline currently works and write it up.",
+      "expected_output": "Routes to research-codebase; design-discussion does not fire and no design artifact is written",
+      "expectations": [
+        "The research-codebase skill is selected, not design-discussion",
+        "No design artifact is written to research/designs/",
+        "No design decisions, open-question cards, or desired-end-state content are produced against a codebase that has not been researched yet",
+        "The request is treated as documenting current behavior, not as choosing between architectural options"
+      ]
     }
   ]
 }

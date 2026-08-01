@@ -1,5 +1,10 @@
 # Modes — full output templates
 
+- [Mode: `release_notes`](#mode-release_notes)
+- [Mode: `flow_diagnostic`](#mode-flow_diagnostic)
+- [Mode: `roadmap`](#mode-roadmap)
+- [Mode: `deep_dive`](#mode-deep_dive)
+
 This file documents the four modes the `linear-roadmap` skill supports. Each mode has a strict output shape; follow it unless the user explicitly asks for variation.
 
 ---
@@ -32,7 +37,7 @@ Rules:
 
 - Plain language. No internal jargon.
 - **No issue identifiers** in the public version.
-- One line per item. If you need two, you're being too detailed.
+- One line per item; a second line means the entry is too detailed.
 - Lead with the user benefit, not the technical change.
   - Bad: `Refactored the offer state machine.`
   - Good: `Offers no longer get stuck in "pending" after declining a counter.`
@@ -93,7 +98,7 @@ Sorted by `days_in_current_state` desc. Cap at 20 rows; if there are more, note 
 | ENG-611 | Offer countdown rollover           | In Review    | 11         | 0       | @bob         | Awaiting reviewer (on PTO until 04-29)     |
 ```
 
-`Why Stuck` is the `blocker_reason` from Step 5. If unclear, write `unclear — no comment near transition` rather than guessing.
+`Why Stuck` is the `blocker_reason` computed in `flow-metrics.md`. If unclear, write `unclear — no comment near transition` rather than guessing.
 
 ### 3. Sankey diagram of state flow
 
@@ -114,7 +119,7 @@ Combines `release_notes` + `flow_diagnostic` and adds a forward-looking section.
 Order of output:
 
 1. **Shipping this cycle** — from `release_notes` (public framing, but include IDs since this is internal).
-2. **At risk** — items with `days_in_current_state > 7` OR `state_bounce_count >= 2`. Use the same table format as `flow_diagnostic` Step 2.
+2. **At risk** — items with `days_in_current_state > 7` OR `state_bounce_count >= 2`. Use the same table format as the `flow_diagnostic` stuck-items table.
 3. **Next up** — items in the cycle still in `Todo` or `In Progress`, ordered by priority (Linear priority: `1` Urgent first, then `2` High, `3` Medium, `4` Low, `0` No priority last) then by identifier asc. One line each: `[Type] ID — Title — @assignee — Priority N`.
 4. **Bottleneck snapshot** — the Sankey diagram from `flow_diagnostic`.
 5. **Executive summary** — 4–6 bullets covering ship-readiness, risks, and bottleneck pattern.

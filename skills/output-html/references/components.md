@@ -1,14 +1,30 @@
 # HTML Component Reference
 
-Every component a CRISPY artifact can use. The CSS for every class below already lives in `template.html` — your job when rendering is to pick the right component for the content, not to invent new CSS.
+Every component a CRISPY artifact can use. The CSS for every class below already lives in `../assets/template.html` — rendering means picking the right component for the content, not inventing new CSS.
 
 Treat this like a shared design system. If two artifacts both have "design decisions," they should both look like `.card` + `.options` + `.option.chosen`. Consistency is the point.
+
+## Contents
+
+- [Section structure](#section-structure) — numbered headers, section intros, the page eyebrow
+- [Header card components](#header-card-components) — what the template slots already emit
+- [Inline elements](#inline-elements) — `<code>`, `.hl`, `.tag`, `.badge`, `.chips`
+- [Lists](#lists) — `<ul>` / `<ol>` / `<dl>` / `<blockquote>`
+- [Code blocks](#code-blocks) — `.file-label` + `<pre>` and the highlight-span palette
+- [Tables](#tables)
+- [Callouts](#callouts) — default / `.warn` / `.bad`
+- [Cards](#cards) — generic, decision-with-options, `.tradeoffs` grid
+- [Vertical-slice cards](#vertical-slice-cards) — the structure-outline / create-spec centerpiece
+- [Collapsibles](#collapsibles) — `<details>` deep dives
+- [Recommendation aside](#recommendation-aside)
+- [Component-selection cheat sheet](#component-selection-cheat-sheet) — content shape → component
+- [What not to do](#what-not-to-do)
 
 ## Section structure
 
 ### Numbered section header
 
-Use for every top-level body section. Sections are numbered monotonically `01`, `02`, `03`... within the artifact.
+Use for every top-level body section. Numbering rule: see [What not to do](#what-not-to-do).
 
 ```html
 <section>
@@ -31,7 +47,7 @@ Already emitted by the template's header — do not duplicate inside body sectio
 
 ## Header card components
 
-These are already wired through template slots; you do not re-emit them by hand. Listed here for reference so you know what `PROMPT_TEXT`, `SUMMARY_EXTRA`, and the status badge produce.
+These are already wired through template slots; do not re-emit them by hand. Listed here for reference so you know what `PROMPT_TEXT`, `SUMMARY_EXTRA`, and the status badge produce.
 
 | Component | Slot | Visual |
 | --- | --- | --- |

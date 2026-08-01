@@ -1,27 +1,14 @@
 ---
 name: review-codeant
-description: Review and triage CodeAnt AI comments on a GitHub PR. Use when the user says "review codeant", "triage codeant comments", "handle codeant", "codeant review", "address codeant feedback", or wants to process automated code review comments from CodeAnt on a pull request.
-allowed-tools: Bash(gh *)
+description: Fetch, triage, and reply to CodeAnt AI review comments on a GitHub pull request — classifying each finding as valid (worth fixing) or dismissible, and disputing the dismissals so CodeAnt learns from them. Use when the user says "review codeant", "triage codeant comments", "handle codeant", "codeant review", or "address codeant feedback", and also when the user shares a PR URL or number and mentions CodeAnt, a bot review, or automated review comments without naming this skill. Not for reviewing a diff on its own merits (use /code-review or the reviewer agent), not for running linters or static analysis locally, and not for replying to human reviewers.
+allowed-tools: Bash(gh:*)
 ---
 
 # Review CodeAnt Comments
 
 Fetch, triage, and respond to CodeAnt AI review comments on a GitHub pull request.
 
-> **CodeAnt requires `@codeant-ai` in EVERY reply.** Without that mention, CodeAnt never sees the reply and the learning loop never fires. See [references/codeant-interactions.md](references/codeant-interactions.md) for the full command formats, dispute/learning behavior, and why the tagged reply (not any thread status) is the only feedback channel.
-
-## When to Use
-
-- User wants to review CodeAnt comments on a PR
-- User says "review codeant", "triage codeant", "handle codeant comments"
-- User wants to address automated code review feedback from CodeAnt
-- User shares a PR URL or number and mentions CodeAnt
-
-## When NOT to Use
-
-- User wants a general code review (not CodeAnt-specific)
-- User wants to run linting or static analysis locally
-- User wants to deploy or manage infrastructure — use appropriate Railway skills
+> Every reply to CodeAnt must include `@codeant-ai` — without the mention CodeAnt never sees the reply and the learning loop never fires. See [references/codeant-interactions.md](references/codeant-interactions.md) for command syntax, dispute mechanics, and repo-scoped custom instructions.
 
 ## Workflow
 
@@ -31,7 +18,7 @@ User provides PR (URL or number)
   Step 1: Fetch PR metadata
   (gh pr view)
         │
-  Step 2: Fetch ALL CodeAnt comments
+  Step 2: Fetch all CodeAnt comments
   (review comments + issue comments)
         │
   Step 3: For each comment, analyze
@@ -40,13 +27,17 @@ User provides PR (URL or number)
    ┌────┴────┐
  Valid     Not valid / Nitpick
    │           │
-   │      Reply with reasoning
-   │      (why not implementing)
-   │           │
    └─────┬─────┘
          │
-  Step 4: Present remediation plan
-  for valid comments
+  Step 4a: Present remediation plan
+  (fixes + proposed dismissal replies)
+         │
+  Step 4b: Wait for user approval
+         │
+   ┌─────┴─────┐
+ Fixes      Dismissal replies
+ implemented   posted (4c)
+   (4d)
 ```
 
 ## Step 1: Identify the PR
@@ -61,6 +52,8 @@ gh pr view <PR_NUMBER> --json number,title,headRefName,baseRefName,url
 ## Step 2: Fetch CodeAnt Comments
 
 Fetch both review comments (inline on code) and issue comments (PR-level). CodeAnt's bot username is `codeant-ai[bot]`.
+
+Run these through the Bash tool. The backslash continuations and single-quoted `--jq` filters are POSIX-shell syntax and will not parse in PowerShell, which is this environment's default shell.
 
 ### Review Comments (inline code comments)
 
@@ -83,7 +76,7 @@ gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
 ### Important Notes on Comment Filtering
 
 - If `codeant-ai[bot]` returns no results, try alternate usernames: `codeant-ai`, `codeantai[bot]`, `codeantai`
-- If still no results, list ALL comment authors to identify the correct username:
+- If still no results, list all comment authors to identify the correct username:
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr_number}/comments \
@@ -137,27 +130,11 @@ A comment should be **dismissed** when:
 
 ## Step 4: Respond and Plan
 
-### Reply to Dismissed Comments
+Read [references/codeant-interactions.md](references/codeant-interactions.md) before composing the first reply, or whenever a posted reply does not register with CodeAnt within about a minute.
 
-For **review comments** (inline), reply directly to the comment thread:
+### 4a: Present the Remediation Plan
 
-```bash
-# Reply to a review comment thread
-gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
-  -f body="@codeant-ai <REASONING>"
-```
-
-For **issue comments** (PR-level), add a new comment tagging CodeAnt:
-
-```bash
-# Reply to a PR-level comment
-gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
-  -f body="@codeant-ai Re: <BRIEF_QUOTE_OF_ORIGINAL>
-
-<REASONING>"
-```
-
-### Dismissal Response Format
+#### Dismissal Response Format
 
 Keep responses concise and technical. **Prefer the dispute format** — it triggers CodeAnt's learning loop so it stops flagging similar code in future reviews:
 
@@ -170,11 +147,9 @@ Examples:
 - "@codeant-ai: This is not an issue because the project uses `snake_case` naming convention per PostgreSQL standards. This matches the pattern established across all DbContexts."
 - "@codeant-ai: This is not an issue because the collection is bounded to max 10 items by the query's `Take(10)` — the allocation difference is negligible."
 
-CodeAnt records each dispute as a "learning" (manageable at `app.codeant.ai/settings/learnings`) and avoids similar flags going forward.
+#### Plan Format
 
-### Present Remediation Plan
-
-After triaging all comments, present the valid ones as a remediation plan to the user:
+After triaging all comments, present the valid ones as a remediation plan to the user, along with the exact reply text proposed for each dismissed comment:
 
 ```markdown
 ## CodeAnt Remediation Plan — PR #<NUMBER>
@@ -194,15 +169,37 @@ After triaging all comments, present the valid ones as a remediation plan to the
 #### 2. ...
 
 ### Dismissed Comments
-| # | File | Comment Summary | Reason |
-|---|------|----------------|--------|
-| 1 | file.cs:42 | ... | Already handled by ... |
-| 2 | ... | ... | ... |
+| # | File | Comment Summary | Reason | Proposed reply |
+|---|------|----------------|--------|----------------|
+| 1 | file.cs:42 | ... | Already handled by ... | @codeant-ai: This is not an issue because ... |
+| 2 | ... | ... | ... | ... |
 ```
 
-Wait for user approval before implementing any fixes.
+### 4b: Wait for Approval
 
-### After Implementing Valid Fixes
+Wait for user approval before posting any reply or implementing any fix. Replies are public on the pull request and are recorded permanently as CodeAnt learnings, so they are not reversible in any meaningful sense.
+
+### 4c: Post Dismissal Replies
+
+For **review comments** (inline), reply directly to the comment thread:
+
+```bash
+# Reply to a review comment thread
+gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
+  -f body="@codeant-ai <REASONING>"
+```
+
+For **issue comments** (PR-level), add a new comment tagging CodeAnt:
+
+```bash
+# Reply to a PR-level comment
+gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
+  -f body="@codeant-ai Re: <BRIEF_QUOTE_OF_ORIGINAL>
+
+<REASONING>"
+```
+
+### 4d: Implement Approved Fixes, Then Acknowledge
 
 Once a valid comment's fix has been implemented (and ideally committed/pushed), post an acknowledgement reply so CodeAnt knows the finding was actioned. Every reply must include `@codeant-ai`.
 
@@ -224,7 +221,7 @@ gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
 
 - **Implement fixes**: After user approves the remediation plan, implement the changes directly
 - **Run tests**: After implementing fixes, run the project's test suite to verify
-- **Create commit**: Use `/commit` skill to commit the fixes
+- **Create commit**: Use `Skill('gh-commit')` to commit the fixes
 
 ## Error Handling
 

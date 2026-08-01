@@ -1,17 +1,18 @@
 ---
 name: git-branch-namer
-description: "Use this skill for Git branching: generate kebab-case branch names from Linear issues, choose the right branch prefix (feat/, fix/, chore/), or get guidance on the team's trunk-based branching conventions."
+description: "Generates kebab-case Git branch names from Linear issues using the team's trunk-based convention: a feat/, fix/, or chore/ prefix, the issue identifier with its casing preserved, and a slugified title (for example fix/ENG-1234-cookie-policy-broken-here-link). Use when the user asks for a branch name, asks what to call a branch, supplies a Linear issue ID, identifier line, or Linear URL and wants a branch for it, asks which prefix (feat, fix, or chore) a change belongs under, or asks about the base branch or the trunk-based branching model. Produces the name only: create-worktree creates the branch and worktree, gh-create-pr commits and opens the pull request."
+argument-hint: "ENG-1234 - Issue Title | ENG-1234 | Linear issue URL"
 ---
 
 # Git Branch Namer
 
-Generate kebab-case git branch names from Linear issues, following a trunk-based branching model. The resulting `prefix/ENG-1234-slug` name is ready to hand straight to the `gh-create-pr` skill.
+Generate kebab-case git branch names from Linear issues, following a trunk-based branching model.
 
 ## Reference files
 
 This skill has supporting documentation in the `references/` directory. Load it when needed:
 
-- **references/git-flow-standards.md** — Read this when the user asks about the branching model, which branch type to use, what the base branch is, or anything about the trunk-based branching conventions.
+- **references/trunk-based-branching.md** — Read this when the user asks about the branching model, which branch type to use, what the base branch is, or anything about the trunk-based branching conventions.
 
 For straightforward "give me a branch name" requests, the instructions below are self-contained — no need to load references.
 
@@ -29,7 +30,7 @@ The leading segment is the Linear issue identifier (team key + number, e.g. `ENG
 
 ### Optional sourcing step
 
-If the user gives you **only** an issue ID or a Linear issue URL (no title), fetch the title before generating the name:
+When the user supplies **only** an issue ID or a Linear issue URL with no title, fetch the title before generating the name:
 
 1. Call `mcp__linear__get_issue` with the identifier (e.g. `ENG-1234`) or the URL.
 2. Use the returned `identifier` and `title` to build the input `ENG-1234 - Issue Title`.
@@ -50,7 +51,7 @@ The primary branch prefixes are `feat/` and `fix/`. `chore/` is available for ma
 
 If the type cannot be confidently inferred, ask a single clarifying question: **"Is this a feat, fix, or chore branch?"** — then proceed.
 
-If the user seems uncertain about which type to choose, read `references/git-flow-standards.md` to give them informed guidance.
+If the user seems uncertain about which type to choose, read `references/trunk-based-branching.md` to give them informed guidance.
 
 ## Conversion rules
 
@@ -62,7 +63,10 @@ If the user seems uncertain about which type to choose, read `references/git-flo
    - Replace spaces, underscores, and any non-alphanumeric characters (except hyphens) with hyphens
    - Collapse consecutive hyphens into a single hyphen
    - Strip leading and trailing hyphens from the title portion
-4. **Result**: `prefix/ENG-1234-kebab-case-title`
+4. **Keep the slug readable**: if the kebab-cased title pushes the full branch name past ~60
+   characters, drop trailing words until it fits. Trim at word boundaries only, and never shorten
+   the prefix or the issue identifier — those are what Linear and `gh-create-pr` parse.
+5. **Result**: `prefix/ENG-1234-kebab-case-title`
 
 ## Examples
 

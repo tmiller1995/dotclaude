@@ -6,7 +6,7 @@ Ready-to-fill skeletons for the diagrams produced by `flow_diagnostic`, `roadmap
 
 ## Sankey — state-flow across a cycle
 
-The Sankey diagram (a.k.a. the "pipe-width" diagram you see in network traffic dashboards) shows transitions between states. Width = number of transitions. Backward transitions are first-class — render them as their own links so regressions are visible.
+The Sankey diagram shows transitions between states. Width = number of transitions. Backward transitions are first-class — render them as their own links so regressions are visible.
 
 ```mermaid
 sankey-beta

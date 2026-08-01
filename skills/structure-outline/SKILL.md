@@ -1,7 +1,8 @@
 ---
 name: structure-outline
-description: Produce a C-header-file-style structure outline with signatures, new types, and vertical-slice phase breakdown. Use this as the FIFTH phase of CRISPY (Questions → Research → Design → STRUCTURE → Plan → Implement → Review). This is where vertical slices (mock API → front-end → database) are enforced with testable checkpoints. Trigger after /design-discussion has produced a design document. Accepts `--format=html|md` to select output format (default `html`).
+description: Produce a C-header-file-style structure outline — signatures, new types, file inventory, and a vertical-slice phase breakdown where each slice (mock API → front-end → database) carries a testable checkpoint. Use this as the STRUCTURE phase of CRISPY (Questions → Research → Design → STRUCTURE → Plan → Implement → Review), normally after /design-discussion has produced a design document. Trigger when the user asks to "create a structure outline", "define the implementation structure", "break this into vertical slices", "slice this feature into phases with checkpoints", "what files will this touch", or "give me the header-file view" — including when they describe that work without naming the skill. Not for deciding what to build or why (that is design-discussion) and not for tactical task lists with ids and dependencies (that is create-spec). Accepts `--format=html|md` to select output format (default `html`).
 argument-hint: "<path to design file> [--format=html|md]"
+disable-model-invocation: true
 ---
 
 # Structure Outline (CRISPY S Phase)
@@ -52,7 +53,7 @@ Each vertical slice produces a working end-to-end path that can be tested and re
 
 ### Step 1: Parse Arguments and Pick the Output Format
 
-Extract `--format=html|md` from `$ARGUMENTS`. Default to `html` when no flag is present. The remainder of `$ARGUMENTS` is the path to the design document. Hold the chosen format for Step 7 — it selects which output skill renders the artifact.
+Extract `--format=html|md` from `$ARGUMENTS`. Default to `html` when no flag is present. The remainder of `$ARGUMENTS` is the path to the design document. If nothing remains after stripping the flag, list `research/designs/` newest-first and confirm the intended document with the user before reading. Hold the chosen format for Step 7 — it selects which output skill renders the artifact.
 
 ### Step 2: Read the Design Document
 
@@ -60,11 +61,13 @@ Read the design document fully (no limit/offset). Also read:
 - The research document it cites
 - The questions artifact if one exists (for ticket context)
 
-**Do NOT re-open design questions.** The design is frozen at this point. If you find the design is wrong or missing something, STOP and tell the user to go back to `/design-discussion`.
+The design is frozen at this point — reopening it here splits the decision record across two artifacts. If the design looks wrong or incomplete, stop and send the user back to `/design-discussion`.
 
 ### Step 3: Enumerate the Changes as Signatures
 
-For each new function, class, method, type, or module the feature introduces, write its signature. **No bodies.** Plan each signature as a file-label + code block. The output skill renders these with palette-aware highlighting — see its `components.md` for the language hint (MD) or `.kw`/`.fn`/`.str`/`.cm` spans (HTML).
+For each new function, class, method, type, or module the feature introduces, write its signature. **No bodies.** Plan each signature as a file-label + code block. The output skill owns syntax highlighting — pass a language hint with each block and let it render.
+
+Write signatures in the target repository's language and idiom; the examples below are illustrative.
 
 **Example — Backend (TypeScript):**
 
@@ -119,13 +122,13 @@ For **existing files being modified**, describe the change at a signature level 
 
 Break the feature into 3-6 vertical slices. Each slice must:
 - Produce a working end-to-end path (even if parts are mocked)
-- Have a **testable checkpoint** — a concrete thing you can verify before moving on
+- Have a **testable checkpoint** — a concrete thing a human can verify before moving on
 - Be independently deployable (optional but preferred)
 
 Plan each slice as a slice-card matching the output skills' slice-card contract (same contract create-spec consumes):
 - A `### Slice N — Name` heading
 - A `goal` line: one sentence of what success looks like for the user
-- A files-touched list with `NEW` / `MODIFY` / `DELETE` tags (the `.tag new` / `.tag mod` / `.tag del` spans in HTML; `**NEW**` / `**MODIFY**` / `**DELETE**` in MD)
+- A files-touched list with `NEW` / `MODIFY` / `DELETE` tags (see `skills/output-html/references/components.md`, Vertical-slice cards, for the shape both output skills expect)
 - A `checkpoint` line: the testable thing the user can verify (prefix with `✓`)
 - An optional `chips` row with metrics: `Size: ~80 LOC`, `Surfaces: web`, `Behind flag: enable_reticulation`
 
@@ -148,10 +151,6 @@ Output path:
 - Directory: `research/structures/`
 - Stem: `YYYY-MM-DD-<topic>` (match the kebab-case topic from the design doc)
 - Extension: chosen by the output skill
-
-Invoke the matching output skill, passing the stem so it appends the extension:
-- `--format=html` → `Skill('output-html')`
-- `--format=md` → `Skill('output-markdown')`
 
 #### Slot values
 
@@ -194,6 +193,24 @@ The 2-column file:line table from Step 5.
 **Section 06 — Rollback strategy**
 The callout from Step 6.
 
+#### Step 7a — Check before rendering
+
+Run the brief past these questions. On a miss, fix the brief and recheck before delegating.
+
+- Does every slice touch more than one layer? If a slice is only database or only UI, recut it.
+- Does every slice have a concrete checkpoint a human can run?
+- Is the last slice the hardening slice (auth, validation, error handling, telemetry, migration)?
+- Does any code block contain a function body? Signatures only.
+- Do the slot names match the Step 7 table exactly, with none renamed or invented?
+- Does the Section 02 file inventory account for every file named in a slice card?
+- Does every integration point carry a `file:line` reference from the research doc?
+
+#### Delegate
+
+Invoke the matching output skill, passing the stem so it appends the extension:
+- `--format=html` → `Skill('output-html')`
+- `--format=md` → `Skill('output-markdown')`
+
 ### Step 8: Present to User
 
 Show:
@@ -202,49 +219,18 @@ Show:
 3. Offer to commit the artifact via `Skill('gh-commit')` — committed CRISPY artifacts survive worktree teardown and are reviewable in PRs
 4. Suggest next command: `/create-spec research/structures/YYYY-MM-DD-topic.<ext>`
 
-Do NOT proceed to planning automatically. The human should review the slice breakdown before the Plan phase turns it into tasks.
-
-## Critical Rules
-
-- **NO IMPLEMENTATION CODE.** Signatures only. If you find yourself writing function bodies, stop.
-- **VERTICAL SLICES, NOT HORIZONTAL LAYERS.** If your slices look like "all backend, then all frontend" — cut them differently.
-- **EVERY SLICE NEEDS A CHECKPOINT.** A testable thing a human can verify before proceeding.
-- **DO NOT REOPEN DESIGN DECISIONS.** The design is frozen. If something's wrong, stop and go back.
-- **FILE PATHS, NOT FILE CONTENTS.** List what changes, not how. The how is Plan + Implement.
-- **Use `file:line` references from the research doc** for all integration points.
-- **MATCH THE SLOT AND SLICE-CARD VOCABULARY.** Use the slot names and slice-card contract from the output skills exactly — do not rename or invent slots. The slice-card shape must match create-spec so the Plan phase can transcribe it cleanly.
-
-## Why the Header-File Analogy Matters
-
-A C header file shows you the shape of a module without revealing its guts. You can review it quickly and know:
-- What functions exist
-- What types are new
-- What the public API looks like
-- Where the boundaries are
-
-That's exactly what the human reviewing this document needs. They should be able to read 2-3 pages and know what the feature looks like structurally, without drowning in implementation detail.
+Do not proceed to planning automatically — the human should review the slice breakdown before the Plan phase turns it into tasks.
 
 ## When to Abort This Phase
 
-If ANY of these are true, STOP and tell the user to go back:
+Stop and send the user back if any of these hold:
 
-1. The design document doesn't exist, or the user passed you a research doc / raw ticket instead → run `/design-discussion` first
+1. The design document doesn't exist, or what was passed is a research doc / raw ticket instead → run `/design-discussion` first
 2. The design doc has unresolved open questions → return to `/design-discussion`
 3. The research doc the design cites doesn't exist or is stale → run `/research-codebase` first
 
-Do NOT try to fill in gaps by doing the earlier phases yourself. Each phase runs in its own context for a reason.
+Each phase runs in its own context for a reason, so do not fill the gaps by performing the earlier phases here.
 
 ## What Happens Next
 
-The structure outline feeds `/create-spec`, which is now a lightweight **Plan** phase. The plan converts each slice into concrete tasks with dependencies, which the worker agent then picks up one at a time.
-
-**The alignment flywheel:**
-- Questions → what don't we know?
-- Research → what does the code do today?
-- Design → what decisions are we making?
-- **Structure → what shape does the code take?**
-- Plan → what tasks execute each slice?
-- Implement → do them, one at a time
-- Review → did we build the right thing correctly?
-
-Each phase is a fresh context window. Each phase reads only the prior artifact, not the whole history. That's how the instruction budget stays under 40 per phase.
+The structure outline feeds `/create-spec`, which converts each slice into concrete tasks with dependencies for the worker agent to pick up one at a time. Each phase runs in a fresh context and reads only the prior artifact, not the whole history.
