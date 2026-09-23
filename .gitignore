@@ -12,6 +12,7 @@
 # --- Tracked: your customizations -------------------------------------------
 !/.gitignore
 !/.gitattributes
+!/settings.json
 !/agents/
 !/skills/
 !/commands/
@@ -29,7 +30,6 @@
 # -----------------------------------------------------------------------------
 # Intentionally NOT tracked (kept here as documentation of what we exclude):
 #   .credentials.json        OAuth tokens / secrets  -> NEVER commit
-#   settings.json            global config           -> excluded by choice
 #   settings.local.json      machine-local config    -> NEVER commit
 #   projects/                session data (277M+)    -> huge churn
 #   history.jsonl            prompt history
