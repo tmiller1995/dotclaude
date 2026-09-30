@@ -54,7 +54,7 @@ If you catch yourself about to tell a sub-agent "we're building X, so go find Y"
 
 4. **Analyze and decompose the research question:**
     - Break the research question down into composable research areas
-    - Take time to ultrathink about the underlying patterns, connections, and architectural implications the user might be seeking
+    - Identify the underlying patterns, connections, and architectural implications the user is after
     - Identify specific components, patterns, or concepts to investigate
     - Create a research plan using the task tools (`TaskCreate`/`TaskUpdate`) to track all subtasks
     - Include the compatibility posture in the plan so later synthesis and downstream phases inherit the same constraint

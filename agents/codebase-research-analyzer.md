@@ -70,7 +70,7 @@ When two documents cover the same topic:
 - Identify the document's main goal
 - Note the date and context
 - Understand what question it was answering
-- Ultrathink about what in this document would change a decision someone makes today
+- Identify what in this document would change a decision someone makes today
 
 ### Step 2: Extract Strategically
 
