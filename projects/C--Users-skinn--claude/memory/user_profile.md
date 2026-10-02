@@ -6,5 +6,5 @@ type: user
 
 - Primary backend stack: .NET / ASP.NET Core / C#
 - Primary frontend stack: React / TanStack Start
-- Uses CodeAnt in GitHub for code reviews
+- Uses CodeRabbit in GitHub for code reviews (switched from CodeAnt; skill renamed review-codeant → review-coderabbit 2026-10-01)
 - Windows 11 development environment

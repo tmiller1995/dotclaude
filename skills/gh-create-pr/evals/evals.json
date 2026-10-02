@@ -70,11 +70,11 @@
     {
       "id": 6,
       "should_trigger": false,
-      "prompt": "Review the CodeAnt comments on my PR.",
-      "expected_output": "Routes to review-codeant — the PR already exists and the task is triaging automated review feedback",
+      "prompt": "Review the CodeRabbit comments on my PR.",
+      "expected_output": "Routes to review-coderabbit — the PR already exists and the task is triaging automated review feedback",
       "expectations": [
         "Does NOT invoke gh-create-pr: the PR's title, description, and draft state are not modified",
-        "review-codeant handles it, fetching the CodeAnt findings and classifying each as valid or dismissible",
+        "review-coderabbit handles it, fetching the CodeRabbit findings and classifying each as valid or dismissible",
         "No new commit is created and nothing is pushed unless a triaged finding calls for a fix"
       ]
     }

@@ -33,7 +33,7 @@ upstream for EVERY skill.
 ## Skills user has that atomic lacks (custom CRISPY/workflow scaffolding)
 
 - `ask-questions`, `design-discussion`, `structure-outline` — Q/D/S phases of CRISPY not in atomic upstream
-- `review-codeant` — CodeAnt PR triage workflow
+- `review-coderabbit` — CodeRabbit PR triage workflow (was `review-codeant` until 2026-10-01)
 - `testing-anti-patterns` — user swapped this in where atomic uses `test-driven-development` (see debugger/reviewer/worker agents)
 
 ## Skills removed from atomic (PR #653, v2.1.1) — keep removed locally
@@ -59,7 +59,7 @@ Skill-level adaptations to preserve:
 - **`qa-summary`** — adapted to attach summaries to Linear issues / GitHub PRs (no `wit_*`).
 - **`git-branch-namer`** — adapted to Linear ids + trunk-based `main` base.
 - **`create-worktree`** — adapted to Linear issues (branch off `main`, runs `codegraph init -i`).
-- **`review-codeant`** — gained `references/codeant-interactions.md` + a dispute-learning format. Keep the references file on sync.
+- **`review-coderabbit`** (formerly `review-codeant`) — local-only; retargeted to CodeRabbit 2026-10-01 with `references/coderabbit-interactions.md`. Keep the references file on sync.
 - **`QRSPI-WORKFLOW.md`** — workflow doc added at skills root. Keep.
 - **SKIPPED:** `frontend-design` and `teach-impeccable` — intentionally NOT migrated (redundant with `impeccable`). Do NOT re-introduce.
 - **`impeccable`** — KEPT as-is (no de-ADO needed).
@@ -80,7 +80,7 @@ Commit `53630b7` rewrote all 14 agents against Anthropic + HumanLayer subagent b
 ## 2026-07-31 skills best-practices overhaul — preserve on sync
 
 All 15 custom skills (CRISPY five, gh-commit/gh-create-pr/git-branch-namer/create-worktree,
-linear-roadmap, orchestrate, output-html/output-markdown, review-codeant, improve-claude-md)
+linear-roadmap, orchestrate, output-html/output-markdown, review-coderabbit, improve-claude-md)
 were rewritten against the 2026-07 rubric (`.claude/research/skill-reviews/RUBRIC.md`; plan
 docs alongside). Net −188 lines + fixes. Preserve on sync: trigger-shaped descriptions with
 sibling boundaries (≤1024 chars, no XML tags), `references/`+`assets/` layout in the output
