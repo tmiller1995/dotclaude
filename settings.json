@@ -4,10 +4,6 @@
     "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1"
   },
   "includeCoAuthoredBy": false,
-  "statusLine": {
-    "type": "command",
-    "command": "powershell -ExecutionPolicy Bypass -File \"C:\\Users\\skinn\\.claude\\plugins\\cache\\ponytail\\ponytail\\4.10.0\\hooks\\ponytail-statusline.ps1\""
-  },
   "model": "opus",
   "hooks": {
     "UserPromptSubmit": [
@@ -21,11 +17,16 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "powershell -ExecutionPolicy Bypass -File \"C:\\Users\\skinn\\.claude\\plugins\\cache\\ponytail\\ponytail\\4.10.0\\hooks\\ponytail-statusline.ps1\""
+  },
   "enabledPlugins": {
     "csharp-lsp@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": false,
     "warp@claude-code-warp": true,
-    "ponytail@ponytail": true
+    "ponytail@ponytail": true,
+    "impeccable@impeccable": true
   },
   "extraKnownMarketplaces": {
     "claude-code-warp": {
@@ -38,6 +39,12 @@
       "source": {
         "source": "github",
         "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "impeccable": {
+      "source": {
+        "source": "github",
+        "repo": "pbakaus/impeccable"
       }
     }
   },
