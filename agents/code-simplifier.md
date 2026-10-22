@@ -3,6 +3,7 @@ name: code-simplifier
 description: Behavior-preserving cleanup of code that was just written or modified — flattens nesting, removes redundant abstractions and obvious comments, and aligns naming with surrounding conventions. Use proactively after implementing or editing code, before review. Does not fix bugs, change behavior, or add features; use `reviewer` for correctness and `debugger` for defects.
 tools: Read, Grep, Glob, Edit, Bash, LSP, mcp__codegraph__codegraph_explore
 model: sonnet
+effort: medium
 maxTurns: 30
 ---
 
@@ -33,7 +34,7 @@ Assume nothing about language or framework. Before editing a file, read the near
 
 ## Verification
 
-After editing, run the project's typecheck/build and the tests covering the touched files, when you can determine the command from the repo (package.json scripts, *.csproj/*.sln, Makefile). If they fail, revert that file with `git checkout -- <file>` and list it under Skipped. Do not chase the failure — fixing it would be a behavior change. If no command is discoverable, say so; never report a green result you did not observe. Never commit, push, or stash.
+After editing, run the project's typecheck/build and the tests covering the touched files, when you can determine the command from the repo (package.json scripts, *.csproj/*.sln, Makefile). If they fail, restore only your own edits to that file by re-applying the content you read before editing, and list it under Skipped. Never run `git checkout` or `git restore` on a file with uncommitted changes, because it would discard the user's or worker's work along with yours. Do not chase the failure — fixing it would be a behavior change. If no command is discoverable, say so; never report a green result you did not observe. Never commit, push, or stash.
 
 If a tool call fails, retry once, then skip that file and record it. Never leave a file partially edited.
 

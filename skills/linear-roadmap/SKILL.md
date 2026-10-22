@@ -1,6 +1,6 @@
 ---
 name: linear-roadmap
-description: Generate executive-ready release notes, roadmaps, and delivery-flow diagnostics from Linear issues. Use whenever the user mentions release notes, roadmaps, cycle or sprint summaries, issues being stuck or blocked, cycle time, bounce counts, bottlenecks, Sankey or flow diagrams of state transitions, or classifying work as customer-facing vs internal — even when they don't say "roadmap" or "release notes" (e.g., "what shipped this cycle", "why is the team slowing down", "where's ENG-572 stuck", "flow diagnostic", "show the bottleneck", "deep dive on ENG-572"). Also handles "HTML release report" / "markdown release report" — a format keyword routes here rather than to output-html or output-markdown, which this skill calls internally to render. Accepts `--format=html|md` (default `md`).
+description: Generate executive-ready release notes, roadmaps, and delivery-flow diagnostics from Linear issues. Use when the user wants shipped or planned work summarized (release notes, roadmaps, cycle or sprint summaries), delivery flow diagnosed (stuck or blocked issues, cycle time, bounce counts, bottlenecks, Sankey or flow diagrams of state transitions, a single-issue deep dive), or work classified as customer-facing vs internal — even when they don't say "roadmap" or "release notes" (e.g., "what shipped this cycle", "why is the team slowing down", "where's ENG-572 stuck"). Also handles "HTML release report" / "markdown release report" — a format keyword routes here rather than to output-html or output-markdown, which this skill calls internally to render. Accepts `--format=html|md` (default `md`).
 argument-hint: "[mode] [cycle | issue_id] [--format=html|md]"
 ---
 
@@ -27,8 +27,8 @@ A "cycle" can be a Linear cycle, a project, or a milestone — resolve whichever
 
 This skill is the entry point for Linear release/flow data, regardless of whether the user wants HTML or Markdown output. It gathers and structures the data; the output skills (`output-html` / `output-markdown`) handle the scaffolding.
 
-- Default is `--format=md`. Markdown is the right format for GitHub PR descriptions, Linear comments, GitHub, GitLab — and Mermaid diagrams render natively in all of those. Most outputs go to PR or issue-comment contexts where Mermaid renders natively; use `html` for polished customer-share docs.
-- `--format=html` produces a polished single-file HTML document (useful for emailing to a non-engineering audience or pasting into Confluence). `output-html` is self-contained and does not render Mermaid, so **pre-render diagrams to SVG before handing off** and inline the result:
+- Default is `--format=md`, because most outputs land in GitHub PR descriptions, Linear comments, or GitLab, where Mermaid diagrams render natively.
+- `--format=html` produces a polished single-file HTML document for a non-engineering audience (email, Confluence, customer-share docs). `output-html` is self-contained and does not render Mermaid, so pre-render each diagram to SVG before handing off and inline the result:
 
   ```
   npm install -g @mermaid-js/mermaid-cli
@@ -49,10 +49,8 @@ This skill is the entry point for Linear release/flow data, regardless of whethe
 | `roadmap` | union of the above two |
 | `deep_dive` | `references/modes.md` § deep_dive, `references/flow-metrics.md`, `references/mermaid-templates.md` |
 
-Load only the reference files the chosen mode needs.
+## Guardrails
 
-## Non-negotiable guardrails
-
-- **Never invent issues.** If an MCP call fails or returns empty, say so and stop — don't fabricate IDs or fields to fill the template.
+- **Don't invent issues.** If an MCP call fails or returns empty, say so and stop — fabricated IDs or fields would make the whole artifact untrustworthy.
 - **No AI attribution.** The artifact is authored by the engineer/PM, not by the assistant; don't sign it or footnote it.
 - **Don't write back to Linear or GitHub** (comments, issue edits, field changes) without explicit user approval. Producing the artifact is a read operation; pushing it anywhere is a separate write that needs a green light.

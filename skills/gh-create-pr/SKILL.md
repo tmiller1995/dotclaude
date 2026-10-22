@@ -22,17 +22,19 @@ Commit changes, push the branch, and open or update a GitHub pull request using 
 
 ## Tooling
 
-Use the `gh` CLI throughout. If `gh` is missing or unauthenticated, the `mcp__github__*` tools are equivalent — `create_pull_request`, `update_pull_request`, and `list_pull_requests` map to `gh pr create`, `gh pr edit`, and `gh pr view`. If neither is available, prompt the user to run `gh auth login` first. Linear operations use the `mcp__linear__*` MCP tools.
+Use the `gh` CLI throughout. If `gh` is missing or unauthenticated, the `mcp__github__*` tools are equivalent — `create_pull_request`, `update_pull_request`, and `list_pull_requests` map to `gh pr create`, `gh pr edit`, and `gh pr view`. If neither is available, ask the user to run `gh auth login` first. Linear operations use the `mcp__linear__*` MCP tools.
 
 ## Workflow
 
-Throughout the workflow, `<base>` means the "Default branch" value from "Current Repository State" above — substitute it, never assume `main`.
+Throughout the workflow, `<base>` means the "Default branch" value from "Current Repository State" above. Substitute it rather than assuming `main`, because some repos default to another branch.
 
 ### 1. Stage and commit
 
-Follow the **gh-commit** skill for the commit step — Conventional Commits subject format, no AI attribution, and its hook policy: a failed hook means the commit did not happen. Split into multiple commits if the staged diff covers unrelated concerns.
+Follow the **gh-commit** skill for the commit step — Conventional Commits subject format, its confirmation before committing, no AI attribution, and its hook policy: a failed hook means the commit did not happen. Split into multiple commits if the staged diff covers unrelated concerns.
 
-If the user is currently on the default branch (`main` / `master`), switch to a short-lived feature branch *before* committing. Use `feat/<short-topic>` for features and `fix/<short-topic>` for bug fixes (trunk-based — branch off `main`, no `develop`/`release`/`hotfix` flow). If a Linear issue id is known, include it in the branch name (e.g. `feat/ENG-123-jwt-refresh`).
+When you present gh-commit's confirmation, say that the go-ahead also pushes the branch and opens (or updates) the draft PR, and name the new branch when one is created (below), so one confirmation covers the branch, the commit, and the push. If there is nothing new to commit, the user's request for a PR is the go-ahead to push.
+
+If the user is currently on the default branch (`main` / `master`), switch to a short-lived feature branch *before* committing (trunk-based — branch off `<base>`, no `develop`/`release`/`hotfix` flow). Name it with the **git-branch-namer** convention so the branch, the PR title type, and the Linear link agree: `<feat|fix|chore>/<ISSUE-ID>-<kebab-case-title>` with the issue identifier's casing preserved (e.g. `feat/ENG-123-jwt-refresh`), or `<feat|fix|chore>/<short-topic>` when no Linear issue is known. See `skills/git-branch-namer/SKILL.md` for prefix selection and slug rules.
 
 ### 2. Push
 
@@ -44,7 +46,7 @@ git push -u origin "$(git branch --show-current)"
 
 ### 3. Gather context for the PR
 
-Read the *full* diff against the base branch, not just the last commit — a PR title needs to summarize the whole branch, not one step of it.
+Read the full diff against the base branch, not just the last commit, because the PR title summarizes the whole branch.
 
 ```bash
 git diff origin/<base>...HEAD
@@ -54,7 +56,7 @@ Open the files that changed significantly to describe the *why* accurately. If t
 
 ### 4. Identify the Linear issue
 
-Scan the branch name and every commit subject/body on the branch (`git log origin/<base>..HEAD`) for a Linear issue id (e.g. `ENG-123`). If the user mentioned an issue in the prompt, trust that. If the id is uncertain, use `mcp__linear__list_issues` (filter by assignee, team, or project) to surface candidates so the user can confirm — don't guess.
+Scan the branch name and every commit subject/body on the branch (`git log origin/<base>..HEAD`) for a Linear issue id (e.g. `ENG-123`). If the user mentioned an issue in the prompt, use that. If the id is uncertain, use `mcp__linear__list_issues` (filter by assignee, team, or project) to surface candidates and let the user confirm one, since a guessed id links the PR to the wrong issue.
 
 ### 5. Check for an existing PR
 
@@ -133,7 +135,7 @@ Respect the existing title/description if they're already meaningful — enhance
 
 If the Linear MCP tools are unavailable, the `Closes ENG-123` reference in the description already links the issue — report that the first-class attachment was skipped and continue.
 
-Even though the description references the issue, attach the PR to the Linear issue so it shows as a structured relationship:
+Attach the PR to the Linear issue as well, so it shows as a structured relationship rather than a string match:
 
 ```
 mcp__linear__create_attachment {
@@ -156,7 +158,7 @@ mcp__linear__save_comment {
 
 Reviewers are set by the flags in step 7 — `--reviewer` on create, `--add-reviewer` on edit. To request a review on a PR that already exists and was not touched in step 7, run `gh pr edit <number> --add-reviewer <login1>,<login2>`.
 
-Don't auto-assign reviewers the user didn't name — guessing logins is a good way to ping the wrong person, and CODEOWNERS / branch protection rules usually handle default reviewers.
+Request only the reviewers the user named, because guessed logins ping the wrong people and CODEOWNERS / branch protection rules usually handle default reviewers.
 
 ### 10. Report back
 
@@ -166,4 +168,4 @@ Print the PR's web URL (from the `gh pr create` / `gh pr view --json url` output
 
 - **Un-drafting.** When the user is ready for review, un-draft with `gh pr ready <number>`.
 - **CI before ready (optional).** Before un-drafting, confirm the branch's checks are green with `gh pr checks <number>`. If checks are red, surface that instead of marking the PR ready.
-- **No AI attribution.** Commits and PRs are authored solely by the engineer — do not add `Co-Authored-By`, `Assistant-model`, "Generated with Claude", or any similar trailer.
+- **No AI attribution.** Commits and PRs are authored solely by the engineer, so add no `Co-Authored-By`, `Assistant-model`, "Generated with Claude", or similar trailer to commits, titles, or descriptions.

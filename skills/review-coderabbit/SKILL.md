@@ -1,6 +1,6 @@
 ---
 name: review-coderabbit
-description: Fetch, triage, and reply to CodeRabbit review findings on a GitHub pull request — inline threads plus the nitpick and outside-diff-range items folded into the review body — classifying each as valid (worth fixing) or dismissible, and explaining the dismissals in-thread so CodeRabbit records learnings. Use when the user says "review coderabbit", "triage coderabbit comments", "handle coderabbit", "coderabbit review", or "address coderabbit feedback", and also when the user shares a PR URL or number and mentions CodeRabbit, a bot review, or automated review comments without naming this skill. Not for reviewing a diff on its own merits (use /code-review or the reviewer agent), not for running linters or static analysis locally, and not for replying to human reviewers.
+description: Fetch, triage, and reply to CodeRabbit review findings on a GitHub pull request — inline threads plus the nitpick and outside-diff-range items folded into the review body — classifying each as valid (worth fixing) or dismissible, and explaining the dismissals in-thread so CodeRabbit records learnings. Use when the user wants CodeRabbit's feedback on a PR handled (e.g. "review coderabbit", "triage coderabbit comments", "address coderabbit feedback"), including when they share a PR URL or number and mention CodeRabbit, a bot review, or automated review comments without naming this skill. Not for reviewing a diff on its own merits (use /code-review or the reviewer agent), not for running linters or static analysis locally, and not for replying to human reviewers.
 allowed-tools: Bash(gh:*)
 ---
 
@@ -51,7 +51,7 @@ gh pr view <PR_NUMBER> --json number,title,headRefName,baseRefName,url
 
 ## Step 2: Fetch CodeRabbit Findings
 
-CodeRabbit posts findings in two places, and both must be fetched. Its login is `coderabbitai[bot]` in the REST API and `coderabbitai` in GraphQL.
+CodeRabbit posts findings in two places; fetch both, because nitpicks and outside-diff items never appear as threads. Its login is `coderabbitai[bot]` in the REST API and `coderabbitai` in GraphQL.
 
 Run these through the Bash tool. The backslash continuations and single-quoted `--jq` filters are POSIX-shell syntax and will not parse in PowerShell, which is this environment's default shell.
 
@@ -109,7 +109,7 @@ For each CodeRabbit finding, determine the file and code region referenced, then
 
 ### 3a: Understand the Code
 
-Read the referenced code yourself. CodeRabbit often shows the shell commands it ran under `🔎 Supported by static analysis`. Treat that output as a lead and re-check it, because it reflects the commit CodeRabbit reviewed. Delegate only when a finding depends on behavior that spans unfamiliar files, so that bulk reading stays out of the main context:
+Read the referenced code yourself. CodeRabbit often shows the shell commands it ran under `🔎 Supported by static analysis`. Treat that output as a lead and re-check it, because it reflects the commit CodeRabbit reviewed. Delegate only when a finding depends on behavior that spans unfamiliar files, so that bulk reading stays out of the main context; when several findings need it, send those sub-agent calls in one message so they run in parallel:
 
 - **`codebase-analyzer`** — Trace how the referenced code works. Invoke with: "Analyze the implementation at `{file_path}` around lines `{start_line}-{end_line}`. Explain what this code does, its data flow, and any error handling."
 - **`codebase-pattern-finder`** — Check if the code follows existing project patterns. Invoke with: "Find existing patterns in the codebase similar to the code at `{file_path}:{line}`. Does this code conform to established conventions?"
@@ -135,7 +135,7 @@ A comment is **valid** when:
 - It identifies a real bug, race condition, or correctness issue
 - It identifies a security vulnerability (injection, auth bypass, data leak)
 - It identifies a meaningful performance issue (not micro-optimization)
-- The suggested change aligns with existing project patterns (confirmed by `codebase-pattern-finder`)
+- The suggested change aligns with existing project patterns (confirmed in the code, via `codebase-pattern-finder` when the patterns span unfamiliar files)
 
 A comment should be **dismissed** when:
 - It's a style preference not matching project conventions
@@ -148,7 +148,7 @@ If a finding cites `Based on learnings:` and you dismiss it, flag the learning i
 
 ## Step 4: Respond and Plan
 
-Read [references/coderabbit-interactions.md](references/coderabbit-interactions.md) before composing the first reply, or whenever CodeRabbit has not answered a posted reply within about a minute.
+Read [references/coderabbit-interactions.md](references/coderabbit-interactions.md) before composing the first reply, or when CodeRabbit's answer to a posted reply is unexpected.
 
 ### 4a: Present the Remediation Plan
 
@@ -222,11 +222,13 @@ gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
 <REASONING>"
 ```
 
-Check CodeRabbit's answer a minute later. If it argues back with a point you can't refute, bring it to the user instead of replying again.
+Re-fetch the thread once to read CodeRabbit's answer; if it hasn't answered yet, note that in your report and move on. If it argues back with a point you can't refute, bring it to the user instead of replying again.
 
 ### 4d: Implement Approved Fixes, Then Acknowledge
 
-After a fix is pushed, re-run the Step 2 thread query. CodeRabbit resolves addressed threads by itself, so those need no reply. For a fixed thread that is still unresolved, reply with the commit so CodeRabbit verifies the fix and resolves the thread:
+Implement only the approved fixes. Anything else you notice outside those findings goes in your report as a follow-up rather than into this change.
+
+Before re-running Step 2, commit the fixes with `Skill('gh-commit')` (its own confirmation applies), then push with `git push`, or use `Skill('gh-create-pr')` to commit and push in one step. CodeRabbit only sees pushed commits. Then re-run the Step 2 thread query. CodeRabbit resolves addressed threads by itself, so those need no reply. For a fixed thread that is still unresolved, reply with the commit so CodeRabbit verifies the fix and resolves the thread:
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
@@ -239,7 +241,7 @@ For a fixed review-body item, use the PR-level form from 4c with the same `Fixed
 
 - **Implement fixes**: After user approves the remediation plan, implement the changes directly
 - **Run tests**: After implementing fixes, run the project's test suite to verify
-- **Create commit**: Use `Skill('gh-commit')` to commit the fixes
+- **Commit and push**: Use `Skill('gh-commit')` and `git push`, or `Skill('gh-create-pr')`, before re-checking threads (Step 4d)
 
 ## Error Handling
 

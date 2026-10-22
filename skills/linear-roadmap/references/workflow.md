@@ -15,13 +15,13 @@ Check what's available before pulling data.
    - `mcp__linear__list_issue_labels` — resolve the configurable customer-facing label
    - For linked code: `mcp__github__pull_request_read` / `mcp__github__list_commits` (or the `gh` CLI) to enrich PRs/commits referenced in issue attachments
 
-2. **If no Linear MCP is available**, stop and ask the user to paste either a CSV/JSON export of the cycle or the issue details directly, then continue from Step 3 with whatever they provide. Never invent the missing data.
+2. **If no Linear MCP is available**, stop and ask the user to paste either a CSV/JSON export of the cycle or the issue details directly, then continue from Step 3 with whatever they provide. Work only from what they provide; don't fill gaps with invented data.
 
 ## Step 2 — Pull the data
 
 First resolve the **scope**: the user names a cycle, a project, or a milestone — resolve it to an id with `list_cycles` / `list_projects` / `list_milestones`. Also pull `list_issue_statuses` once so state-name comparisons (done-state, forward order) use the team's real states.
 
-Spawn parallel sub-agents per issue only when item count > ~30 — below that the orchestration overhead outweighs the parallelism.
+Fetch directly. Spawn parallel sub-agents per issue (sent in one message) only when the item count exceeds ~30 — below that the orchestration overhead outweighs the parallelism.
 
 For the cycle in scope, fetch:
 
@@ -32,7 +32,7 @@ For the cycle in scope, fetch:
 
 2. **Per issue, capture:**
    - Title, labels (including issue-type labels), workflow state, assignee, priority (0–4), project, cycle/milestone
-   - **State-change history** (`from → to`, timestamp, actor) from `get_issue`. **If transition-level granularity is limited** (the issue history doesn't expose every state hop with an actor), fall back to the `created` / `updated` / `completed` timestamps and note the reduced fidelity in the output rather than fabricating transitions.
+   - **State-change history** (`from → to`, timestamp, actor) from `get_issue`. If transition-level granularity is limited (the issue history doesn't expose every state hop with an actor), fall back to the `created` / `updated` / `completed` timestamps and note the reduced fidelity in the output rather than fabricating transitions.
    - **Comments**, especially around backward transitions (`list_comments`)
    - **Linked artifacts:**
      - GitHub PRs and commits — Linear surfaces these as issue **attachments**. Cross-reference each with `mcp__github__pull_request_read` (merge status, target branch, reviewer state) and `mcp__github__list_commits` (sha, subject, author), or the `gh` CLI.
@@ -59,7 +59,7 @@ Open `modes.md` and follow the per-mode template; the `SKILL.md` load table list
 
 ## Step 5 — Render outputs
 
-This skill **gathers and structures** the data; it does NOT directly write the final scaffolded artifact. After producing the body content per `modes.md`, hand off to the matching output skill:
+This skill gathers and structures the data; the output skill writes the final scaffolded artifact. After producing the body content per `modes.md`, hand off to the matching output skill:
 
 - `--format=md` (default) → `Skill('output-markdown')`
 - `--format=html` → `Skill('output-html')`
@@ -87,11 +87,11 @@ Default: `reports/YYYY-MM-DD-<mode>-<cycle-or-id>.<ext>`. Override if the user s
 
 ### Content-rendering rules (carried through to either output skill)
 
-- **Diagrams** — Sankey uses `sankey-beta`; timelines use `gantt`. Skeletons in `mermaid-templates.md`. In `md` mode the fenced Mermaid blocks pass through unchanged and render natively in GitHub / GitLab / Linear. In `html` mode they must be pre-rendered to inline `<svg>` first — `output-html` treats "no Mermaid" and "all diagrams as inline `<svg>`" as non-negotiable invariants. See "Format selection" in `SKILL.md` for the command.
+- **Diagrams** — Sankey uses `sankey-beta`; timelines use `gantt`. Skeletons in `mermaid-templates.md`. In `md` mode the fenced Mermaid blocks pass through unchanged and render natively in GitHub / GitLab / Linear. In `html` mode, pre-render them to inline `<svg>` first, because `output-html` allows no Mermaid and requires every diagram as inline `<svg>`. See "Format selection" in `SKILL.md` for the command.
 - **Tables** — GitHub-flavored markdown (works in both output formats; `output-markdown` keeps them as pipe tables, `output-html` converts to palette-styled `<table>`). Sort the stuck-items table by `days_in_current_state` desc.
 - **IDs** — include in *internal* sections; omit from *public* sections.
 - **Dates** — convert all relative dates to absolute `YYYY-MM-DD`.
-- **Executive summaries** — ≤ 8 bullets. Detail belongs in tables and diagrams, not prose.
+- **Executive summaries** — use the bullet count `references/modes.md` sets for the mode, so readers get the same length every run. Detail belongs in tables and diagrams, not prose.
 - **Public release notes** — plain language, benefit-focused, no internal jargon, no issue identifiers.
 
 ## Step 6 — Confirm and refine
@@ -106,6 +106,6 @@ Output ready. Want me to:
 4. Post the result as a Linear comment or a GitHub issue/PR comment
 ```
 
-Option 4 is a **write back** — the SKILL.md guardrail still applies. Confirm before pushing anything. When approved:
+Option 4 is a write-back, so the SKILL.md guardrail applies: confirm before pushing anything. When approved:
 - Post to a Linear issue → `mcp__linear__save_comment` (the issue/PR can also be linked via `mcp__linear__create_attachment`).
 - Post to a GitHub issue or PR → `mcp__github__add_issue_comment` (or the `gh` CLI).

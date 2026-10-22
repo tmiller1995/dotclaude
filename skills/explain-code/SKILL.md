@@ -1,111 +1,44 @@
 ---
 name: explain-code
-description: Explain code functionality in detail.
+description: Explain what a piece of code does and how it works — a high-level overview, its structure, a line-range walkthrough of the non-obvious parts, and notes on errors, performance, security, and possible improvements. Use when the user asks to explain, walk through, or help them understand a file, function, snippet, or library usage. For tracing how a component works across the codebase as input to CRISPY research, dispatch the codebase-analyzer agent instead.
 ---
 
 # Analyze and Explain Code Functionality
 
-## Available Tools
+Explain: **$ARGUMENTS**
 
-- **Playwright CLI** (`playwright-cli`): Use to retrieve external documentation, browse web content, and extract data from documentation sites, forums, and GitHub repositories — especially useful for understanding third-party dependencies and their APIs. Invoke via the `/playwright-cli` skill or run `npx playwright-cli` commands directly.
+## Looking up external documentation
 
-<EXTREMELY_IMPORTANT>
-- PREFER to use the playwright-cli (refer to playwright-cli skill) OVER web fetch/search tools
-  - ALWAYS load the playwright-cli skill before usage with the Skill tool.
-  - ALWAYS ASSUME you have the playwright-cli tool installed (if the `playwright-cli` command fails, fallback to `npx playwright-cli`).
-</EXTREMELY_IMPORTANT>
+Use the **playwright-cli** skill for third-party library, framework, and API docs, in preference to WebFetch/WebSearch. Load it with the Skill tool before first use. It is installed; if the bare `playwright-cli` command fails, use `npx playwright-cli`.
 
-### Web Fetch Strategy (token-efficient order)
+Fetch in this order and stop as soon as you have what you need, because each step costs more tokens than the last:
 
-When you need external documentation about a library, framework, or API, use the **playwright-cli** skill (or `curl`) and apply these techniques in order — stop as soon as you have what you need:
+1. **`/llms.txt`** — many docs sites publish an AI-friendly index ([llmstxt.org](https://llmstxt.org/llms.txt)). Try `curl https://<site>/llms.txt` first; it often links straight to the relevant pages in plain text.
+2. **`Accept: text/markdown`** — for an HTML page, try `curl <url> -H "Accept: text/markdown"`. Sites behind Cloudflare's [Markdown for Agents](https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/) return pre-converted Markdown (look for `content-type: text/markdown` and an `x-markdown-tokens` header).
+3. **HTML** — otherwise, navigate with `playwright-cli` to extract the rendered DOM, or `curl` the raw HTML and parse it locally.
 
-1. **Check `/llms.txt` first** — Many modern docs sites publish an AI-friendly index at `/llms.txt` (spec: [llmstxt.org](https://llmstxt.org/llms.txt)). Try `curl https://<site>/llms.txt` before anything else; it often links directly to the most relevant pages in plain text.
-2. **Request Markdown via `Accept: text/markdown`** — For any HTML page, try `curl <url> -H "Accept: text/markdown"` first. Sites behind Cloudflare with [Markdown for Agents](https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/) will return pre-converted Markdown (look for `content-type: text/markdown` and the `x-markdown-tokens` header), which is far cheaper than raw HTML.
-3. **Fall back to HTML parsing** — If neither above yields usable content, navigate the page with `playwright-cli` to extract the rendered DOM, or `curl` the raw HTML and parse locally.
+Check `research/web/` before fetching. When a fetched document is worth keeping (API references, SDK guides, troubleshooting docs), save it to `research/web/<YYYY-MM-DD>-<kebab-case-topic>.md` with a short header noting the source URL and fetch date.
 
-**Persist useful findings to `research/web/`:** When you fetch a document worth keeping for future sessions (API references, SDK guides, troubleshooting docs), save it to `research/web/<YYYY-MM-DD>-<kebab-case-topic>.md` with a short header noting the source URL and fetch date. Check this directory first before re-fetching.
+`playwright-cli` is also the tool for live browser inspection — reproducing frontend behavior when static reading isn't enough.
 
-## Instructions
+## What to cover
 
-Follow this systematic approach to explain code: **$ARGUMENTS**
+Read the code and its surroundings first: language and framework, the file's role in the project, its imports, configuration, and callers. Then explain from high level to detail, covering the areas below that apply to this code and skipping the ones that don't:
 
-1. **Code Context Analysis**
-    - Identify the programming language and framework
-    - Understand the broader context and purpose of the code
-    - Identify the file location and its role in the project
-    - Review related imports, dependencies, and configurations
+1. **Overview** — what the code does, the problem it solves, and how it fits into the larger system.
+2. **Structure** — its logical sections, key classes/functions/types, design patterns, and the data and control flow between them.
+3. **Walkthrough of the non-obvious parts** — the algorithm or approach, complex conditions and loops, recursion or async behavior, data transformations and input/output shapes, and framework- or language-specific idioms a reader might not know (e.g., C# LINQ and `async`/`Task`, TypeScript closures and Promise chains, React/TanStack conventions). Explain the lines that need it, not every line.
+4. **Cross-cutting concerns** — error handling and edge cases, performance and complexity, security (authn/authz, input validation, likely vulnerabilities), external integrations (databases, APIs, services), and how to test or debug it (logging, failure points, test helpers).
+5. **Potential improvements** — refactoring opportunities, maintainability concerns, and risks worth fixing.
+6. **Related code** — the functions, classes, and components it interacts with, its calling context, and relevant docs.
 
-2. **High-Level Overview**
-    - Provide a summary of what the code does
-    - Explain the main purpose and functionality
-    - Identify the problem the code is solving
-    - Describe how it fits into the larger system
+Match the depth and vocabulary to the audience, use analogies for hard concepts, and add a diagram or flowchart when the flow is easier to see than to read.
 
-3. **Code Structure Breakdown**
-    - Break down the code into logical sections
-    - Identify classes, functions, and methods
-    - Explain the overall architecture and design patterns
-    - Map out data flow and control flow
+## Explanation format
 
-4. **Line-by-Line Analysis**
-    - Explain complex or non-obvious lines of code
-    - Describe variable declarations and their purposes
-    - Explain function calls and their parameters
-    - Clarify conditional logic and loops
+Walk through the code as numbered steps tied to line ranges, then close with short labeled notes for whichever cross-cutting concerns matter. Illustrative examples:
 
-5. **Algorithm and Logic Explanation**
-    - Describe the algorithm or approach being used
-    - Explain the logic behind complex calculations
-    - Break down nested conditions and loops
-    - Clarify recursive or asynchronous operations
-
-6. **Data Structures and Types**
-    - Explain data types and structures being used
-    - Describe how data is transformed or processed
-    - Explain object relationships and hierarchies
-    - Clarify input and output formats
-
-7. **Framework and Library Usage**
-    - Explain framework-specific patterns and conventions
-    - Describe library functions and their purposes
-    - Explain API calls and their expected responses
-    - Clarify configuration and setup code
-    - Use the **playwright-cli** skill (following the Web Fetch Strategy above) to look up external library documentation when needed
-
-8. **Error Handling and Edge Cases**
-    - Explain error handling mechanisms
-    - Describe exception handling and recovery
-    - Identify edge cases being handled
-    - Explain validation and defensive programming
-
-9. **Performance Considerations**
-    - Identify performance-critical sections
-    - Explain optimization techniques being used
-    - Describe complexity and scalability implications
-    - Point out potential bottlenecks or inefficiencies
-
-10. **Security Implications**
-    - Identify security-related code sections
-    - Explain authentication and authorization logic
-    - Describe input validation and sanitization
-    - Point out potential security vulnerabilities
-
-11. **Testing and Debugging**
-    - Explain how the code can be tested
-    - Identify debugging points and logging
-    - Describe mock data or test scenarios
-    - Explain test helpers and utilities
-    - Use `playwright-cli` to reproduce browser interactions and validate frontend behavior when applicable
-
-12. **Dependencies and Integrations**
-    - Explain external service integrations
-    - Describe database operations and queries
-    - Explain API interactions and protocols
-    - Clarify third-party library usage
-
-**Explanation Format Examples:**
-
-**For Complex Algorithms:**
+**An algorithm:**
 
 ```
 This function implements a depth-first search algorithm:
@@ -120,7 +53,7 @@ Time Complexity: O(V + E) where V is vertices and E is edges
 Space Complexity: O(V) for the visited set and stack
 ```
 
-**For API Integration Code:**
+**API integration code:**
 
 ```
 This code handles user authentication with a third-party service:
@@ -136,7 +69,7 @@ Error Handling: Catches network errors, invalid credentials, and service unavail
 Security: Uses HTTPS, validates inputs, and sanitizes responses
 ```
 
-**For Database Operations:**
+**A database operation:**
 
 ```
 This function performs a complex database query with joins:
@@ -151,80 +84,3 @@ This function performs a complex database query with joins:
 
 Performance Notes: Uses indexes on filtered columns, implements connection pooling
 ```
-
-13. **Common Patterns and Idioms**
-    - Identify language-specific patterns and idioms
-    - Explain design patterns being implemented
-    - Describe architectural patterns in use
-    - Clarify naming conventions and code style
-
-14. **Potential Improvements**
-    - Suggest code improvements and optimizations
-    - Identify possible refactoring opportunities
-    - Point out maintainability concerns
-    - Recommend best practices and standards
-
-15. **Related Code and Context**
-    - Reference related functions and classes
-    - Explain how this code interacts with other components
-    - Describe the calling context and usage patterns
-    - Point to relevant documentation and resources
-
-16. **Debugging and Troubleshooting**
-    - Explain how to debug issues in this code
-    - Identify common failure points
-    - Describe logging and monitoring approaches
-    - Suggest testing strategies
-
-**Language-Specific Considerations:**
-
-**JavaScript/TypeScript:**
-
-- Explain async/await and Promise handling
-- Describe closure and scope behavior
-- Clarify this binding and arrow functions
-- Explain event handling and callbacks
-
-**Python:**
-
-- Explain list comprehensions and generators
-- Describe decorator usage and purpose
-- Clarify context managers and with statements
-- Explain class inheritance and method resolution
-
-**Java:**
-
-- Explain generics and type parameters
-- Describe annotation usage and processing
-- Clarify stream operations and lambda expressions
-- Explain exception hierarchy and handling
-
-**C#:**
-
-- Explain LINQ queries and expressions
-- Describe async/await and Task handling
-- Clarify delegate and event usage
-- Explain nullable reference types
-
-**Go:**
-
-- Explain goroutines and channel usage
-- Describe interface implementation
-- Clarify error handling patterns
-- Explain package structure and imports
-
-**Rust:**
-
-- Explain ownership and borrowing
-- Describe lifetime annotations
-- Clarify pattern matching and Option/Result types
-- Explain trait implementations
-
-Remember to:
-
-- Use clear, non-technical language when possible
-- Provide examples and analogies for complex concepts
-- Structure explanations logically from high-level to detailed
-- Include visual diagrams or flowcharts when helpful
-- Tailor the explanation level to the intended audience
-- Use the **playwright-cli** skill (following the Web Fetch Strategy above) to look up external library documentation when encountering unfamiliar dependencies, and for live browser inspection when static code analysis is not enough

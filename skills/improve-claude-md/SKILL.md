@@ -3,7 +3,7 @@ name: improve-claude-md
 description: Rewrite an existing CLAUDE.md into conditional "important if" XML blocks so each instruction fires only on the tasks it applies to, pruning linter-territory rules and keeping foundational context bare. Use when the user asks to improve, optimize, restructure, shrink, or clean up a CLAUDE.md, says it has grown too long or bloated, says Claude ignores or forgets CLAUDE.md instructions, or mentions conditional or important-if blocks. To author a CLAUDE.md from scratch use init instead; this skill rewrites a file that already exists.
 ---
 
-Rewrite the target CLAUDE.md following the principles below, then report every rule that was removed and why.
+Rewrite the target CLAUDE.md following the principles below, then report every rule that was removed and why. Read the existing file first; if there is no CLAUDE.md to rewrite, stop and point the user to `init`, because this skill restructures existing content rather than inventing it.
 
 ## Core Problem
 
@@ -54,24 +54,22 @@ Good — each rule has its own narrow trigger:
 </important>
 ```
 
-### 3. Keep it short, use progressive disclosure sparingly
+### 3. Keep it inline, use progressive disclosure sparingly
 
-Do not shard into separate files that require the agent to make tool calls to discover, unless the extra context is incredibly verbose or complex.
+Keep everything in the one file. Shard into separate files only when the extra context is very verbose or complex, because the agent has to spend tool calls to discover sharded content and often won't.
 
 The whole point of `<important if>` blocks is that everything is inline but conditionally weighted — the agent sees it all but only attends to what matches.
 
-Prefer to keep the file concise.
-
 ### 4. Less is more
 
-- Frontier models reliably follow only a few hundred instructions in total, and Claude Code's own system prompt and tools already consume roughly 50 of them. The CLAUDE.md should be as lean as possible.
+- Instruction-following degrades as the instruction count grows, and Claude Code's own system prompt and tools already take a large share of that budget. Keep the CLAUDE.md as lean as possible.
 - Cut any instruction that a linter, formatter, or pre-commit hook can enforce
 - Cut any instruction the agent can discover from existing code patterns. Agents are in-context learners — if the codebase consistently uses a pattern, the agent will follow it after a few searches.
 - Cut code snippets. They go stale and bloat the file. Use file path references instead (e.g., "see `src/utils/example.ts` for the pattern").
 
 ### 5. Keep all commands
 
-Do not drop commands from the original file. The commands table is foundational reference — the agent needs to know what's available even if some commands are used less frequently.
+Keep every command from the original file. The commands table is foundational reference — the agent needs to know what's available even if some commands are used less frequently.
 
 ## Output Structure
 
@@ -115,7 +113,7 @@ When given an existing CLAUDE.md to improve:
 1. **Identify the project identity** — extract a single sentence describing what this is. Leave it bare at the top.
 2. **Extract the directory map** — keep it bare (no `<important if>` wrapper). This is foundational context.
 3. **Extract the tech stack** — if present, keep it bare near the top. Condense to one or two lines.
-4. **Extract commands** — keep ALL commands from the original. Wrap in a single `<important if>` block.
+4. **Extract commands** — keep every command from the original. Wrap in a single `<important if>` block.
 5. **Break apart rules** — split any list of rules into individual `<important if>` blocks with specific conditions. Related rules can share a block; unrelated rules never share one broad condition.
 6. **Wrap domain sections** — testing, API patterns, state management, i18n, etc. each get their own block with a condition describing when that knowledge matters.
 7. **Delete everything principle 4 covers** — linter-enforceable style and formatting rules, code snippets, and vague instructions like "leverage the X agent" or "follow best practices". Where a deleted rule still matters, suggest a pre-commit or pre-push hook instead.
@@ -129,9 +127,16 @@ Check the rewrite against the original:
 - No code snippets remain — each is replaced by a file path reference.
 - Project identity, project map, and tech stack are bare, not wrapped.
 
-Write the rewritten file in place, then list each removed rule with its reason —
-linter territory, discoverable from existing code, vague, or a stale snippet —
-so the user can restore anything that mattered. The example below shows the format.
+Write the rewritten file in place, then report:
+
+- **What was removed and why** — each removed rule with its reason (linter
+  territory, discoverable from existing code, vague, or a stale snippet), so the
+  user can restore anything that mattered.
+- **What was NOT removed** — the deliberate keeps a reader might expect to be cut
+  (e.g., every command kept; project map left bare).
+
+If the user came in asking why Claude ignores their CLAUDE.md, open the report with
+the diagnosis from Core Problem. The example below shows the format.
 
 ## Example
 
@@ -263,3 +268,8 @@ Run with `turbo` from the repo root.
 What was removed and why:
 - camelCase/PascalCase, const vs let, strict equality, template literals, JSDoc, barrel exports — linter and formatter territory, or discoverable from existing code patterns
 - Coding Standards as a grouped section — split into targeted blocks by trigger condition
+
+What was NOT removed:
+- All 8 commands — kept in one block, including rarely used ones (`turbo storybook`, `turbo analyze`)
+- Project map — left bare as foundational context
+- API, testing, and state-management guidance — project-specific, not discoverable from linters

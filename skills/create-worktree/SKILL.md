@@ -1,6 +1,6 @@
 ---
 name: create-worktree
-description: "Create a git worktree for a Linear issue and make it fully ready for development in one shot: branch off the target base (default `main`), mirror the live `.claude` directory (skills, agents, settings) into the new worktree, and build a fresh CodeGraph index there. Use this whenever the user wants to set up a worktree, start an issue in an isolated working copy, spin up a parallel checkout, or says things like 'create a worktree', 'new worktree for ENG-123', 'set up a worktree for this issue', 'worktree off main', or 'spin up a worktree'. Names the worktree as a sibling directory combining repo name and issue id (e.g. myrepo-ENG-123) and runs codegraph init -i automatically."
+description: "Create a git worktree for a Linear issue and make it fully ready for development in one shot: branch off the target base (default `main`), mirror the live `.claude` directory (skills, agents, settings) into the new worktree, and build a fresh CodeGraph index there. Use whenever the user wants to set up a worktree, start an issue in an isolated working copy, or spin up a parallel checkout (e.g. 'create a worktree', 'new worktree for ENG-123', 'worktree off main'). Names the worktree as a sibling directory combining repo name and issue id (e.g. myrepo-ENG-123) and runs codegraph init -i automatically. For a branch name only, with no checkout, use git-branch-namer."
 argument-hint: "<ENG-123> [base-branch]"
 ---
 
@@ -18,8 +18,8 @@ This skill does both, following the conventions already visible in the repo: wor
 Get these from the user (ask only for what's missing):
 
 - **Issue identifier** (e.g. `ENG-123`) — required. Drives both the branch name and the directory name. Preserve its casing exactly.
-- **Branch type** — `feat/`, `fix/`, or `chore/`. Infer from the user's wording using the git-branch-namer keyword rules; only ask if genuinely ambiguous.
-- **Base branch** — defaults to `main`. Use whatever the user names if they specify one (some repos may still override with `develop`).
+- **Branch type** — `feat/`, `fix/`, or `chore/` (see step 2).
+- **Base branch** — defaults to `main`. Use whatever the user names if they specify one (some repos use `develop`).
 - **Title** — only needed to build the slug. If the user didn't give it, fetch it from Linear (see step 2). If Linear is unavailable, ask the user for a short description.
 
 ## Steps
@@ -36,7 +36,7 @@ Use **forward-slash absolute paths** throughout — git-bash and the codegraph N
 
 Follow the `git-branch-namer` skill so names are consistent with the rest of the team's branches. Two facts matter here:
 
-- **Prefix**: `feat/` (features/enhancements), `fix/` (bug fixes), or `chore/` (maintenance, deps, tooling, refactors). Auto-detect from the user's wording; only ask if genuinely ambiguous.
+- **Prefix**: `feat/` (features/enhancements), `fix/` (bug fixes), or `chore/` (maintenance, deps, tooling, refactors). Detect it from the user's wording with the git-branch-namer keyword rules; ask only if it's genuinely ambiguous.
 - **The issue identifier keeps its exact casing** — it's exempt from kebab-lowercasing, so `ENG-123` stays `ENG-123`.
 
 For the full kebab-case conversion rules, read `~/.claude/skills/git-branch-namer/SKILL.md`.
@@ -48,15 +48,15 @@ If only the issue identifier is available, fetch the title from Linear before bu
 
 ### 3. Create the worktree and mirror `.claude`
 
-Run the bundled script — it is **executed, not read**:
+Run the bundled script (there's no need to read it first):
 
 ```bash
 bash ~/.claude/skills/create-worktree/scripts/create-worktree.sh "$SRC" "$DEST" "$BRANCH" "$BASE"
 ```
 
-It performs, in order: pre-flight collision checks (destination path, registered worktree, existing branch), a `fetch` of the base branch, `git worktree add -b` off `origin/$BASE`, a guarded mirror of `.claude`, and removal of the stale runtime lock. `$BASE` defaults to `main`; pass whatever base the user named (e.g. a repo that still uses `develop`).
+It performs, in order: pre-flight collision checks (destination path, registered worktree, existing branch), a `fetch` of the base branch, `git worktree add -b` off `origin/$BASE`, a guarded mirror of `.claude`, and removal of the stale runtime lock. `$BASE` defaults to `main`; pass whatever base the user named (e.g. `develop`).
 
-On a collision the script exits non-zero and names the specific conflict — colliding with an existing worktree or branch is the most common failure. **Stop and report** rather than forcing it. Offer the user the options: reuse the existing worktree (`cd` in), pick a different issue/name, or clean up the old one (`git worktree remove <path>` and/or `git branch -D <branch>`).
+On a collision the script exits non-zero and names the specific conflict — colliding with an existing worktree or branch is the most common failure. Stop and report rather than forcing it, because forcing would clobber existing work. Offer the user the options: reuse the existing worktree (`cd` in), pick a different issue/name, or clean up the old one (`git worktree remove <path>` and/or `git branch -D <branch>`).
 
 If the fetch fails (e.g. offline), the script falls back to the local base branch and says so on stderr — pass that on, since the worktree is then based on a possibly-stale local base.
 
@@ -65,17 +65,17 @@ Why the mirror works the way it does:
 - **Drop `scheduled_tasks.lock`** — it's a runtime lock holding a stale session id/pid. Copying it into a fresh worktree would carry a lock that doesn't belong to that session.
 - **`settings.local.json` is intentionally kept** — it's gitignored, so it would *not* arrive via the git checkout, yet it holds the local permission allowlist. Copying `.claude` wholesale is what carries it across.
 
-Do **not** copy `.codegraph/` — it's per-worktree, ~150 MB, and would point at the wrong root. Step 4 builds a fresh one.
+Leave `.codegraph/` out of the copy — it's per-worktree, ~150 MB, and would point at the wrong root. Step 4 builds a fresh one.
 
 ### 4. Initialize and index CodeGraph
 
-The `codegraph` binary is a Windows `.cmd` and is **not on the bash PATH**, so invoke it through `cmd.exe`. Pass the worktree path as an argument (don't `cd` — a `cd` inside a compound command can trigger a permission prompt):
+The `codegraph` binary is a Windows `.cmd` and is not on the bash PATH, so invoke it through `cmd.exe`. Pass the worktree path as an argument (don't `cd` — a `cd` inside a compound command can trigger a permission prompt):
 
 ```bash
 cmd.exe //c "codegraph init -i $DEST"
 ```
 
-`init -i` initializes `.codegraph/` and runs the initial index in one go (`-i` / `--index`). This is the slow part — indexing a repo this size builds a large database and can take several minutes. Run it with a long timeout, or run it in the background and poll. It needs to finish before the worktree is genuinely "ready," which is the whole point of doing it now instead of on first query.
+`init -i` initializes `.codegraph/` and runs the initial index in one go (`-i` / `--index`). This is the slow part — indexing a repo this size can take several minutes, so run it with a long timeout or in the background. It needs to finish before the worktree counts as ready.
 
 When it returns, verify the index is populated:
 
@@ -91,7 +91,7 @@ If `codegraph` is missing (`command not found` / non-zero from `where codegraph`
 
 ### 5. Report the next step
 
-Finish by printing the worktree details and the command to open a session there. Don't auto-launch — the user opens the new session themselves:
+Finish by printing the worktree details and the command to open a session there. Leave launching to the user, who opens the new session themselves:
 
 ```
 Worktree ready:

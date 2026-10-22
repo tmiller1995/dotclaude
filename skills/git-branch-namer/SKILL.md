@@ -10,11 +10,7 @@ Generate kebab-case git branch names from Linear issues, following a trunk-based
 
 ## Reference files
 
-This skill has supporting documentation in the `references/` directory. Load it when needed:
-
-- **references/trunk-based-branching.md** — Read this when the user asks about the branching model, which branch type to use, what the base branch is, or anything about the trunk-based branching conventions.
-
-For straightforward "give me a branch name" requests, the instructions below are self-contained — no need to load references.
+- **references/trunk-based-branching.md** — read it when the user asks about the branching model, which branch type to use, or what the base branch is. For a plain "give me a branch name" request, the instructions below are self-contained.
 
 ## Input format
 
@@ -30,18 +26,22 @@ The leading segment is the Linear issue identifier (team key + number, e.g. `ENG
 
 ### Optional sourcing step
 
-When the user supplies **only** an issue ID or a Linear issue URL with no title, fetch the title before generating the name:
+When the user supplies only an issue ID or a Linear issue URL with no title, fetch the title before generating the name:
 
 1. Call `mcp__linear__get_issue` with the identifier (e.g. `ENG-1234`) or the URL.
 2. Use the returned `identifier` and `title` to build the input `ENG-1234 - Issue Title`.
 
 If the user already supplied a title, skip this step.
 
+### No Linear issue
+
+When the work has no Linear issue, use `<feat|fix|chore>/<short-kebab-topic>` (e.g. `chore/bump-eslint-config`), applying the same prefix and kebab-case rules below.
+
 ## Determining the branch type
 
 The primary branch prefixes are `feat/` and `fix/`. `chore/` is available for maintenance work that is neither a feature nor a bug fix.
 
-**Auto-detect from the user's wording first.** If keywords clearly indicate the type, use it without asking:
+Detect the type from the user's wording first. If keywords clearly indicate it, use it without asking:
 
 | User keywords | Branch prefix |
 |---|---|
@@ -49,7 +49,7 @@ The primary branch prefixes are `feat/` and `fix/`. `chore/` is available for ma
 | "bug", "fix", "broken", "issue", "patch", "defect", "regression" | fix/ |
 | "chore", "cleanup", "refactor", "deps", "bump", "tooling", "maintenance", "config" | chore/ |
 
-If the type cannot be confidently inferred, ask a single clarifying question: **"Is this a feat, fix, or chore branch?"** — then proceed.
+If the type can't be confidently inferred, ask one clarifying question — "Is this a feat, fix, or chore branch?" — then proceed.
 
 If the user seems uncertain about which type to choose, read `references/trunk-based-branching.md` to give them informed guidance.
 
@@ -64,8 +64,8 @@ If the user seems uncertain about which type to choose, read `references/trunk-b
    - Collapse consecutive hyphens into a single hyphen
    - Strip leading and trailing hyphens from the title portion
 4. **Keep the slug readable**: if the kebab-cased title pushes the full branch name past ~60
-   characters, drop trailing words until it fits. Trim at word boundaries only, and never shorten
-   the prefix or the issue identifier — those are what Linear and `gh-create-pr` parse.
+   characters, drop trailing words until it fits. Trim at word boundaries only, and keep the
+   prefix and the issue identifier whole, because those are what Linear and `gh-create-pr` parse.
 5. **Result**: `prefix/ENG-1234-kebab-case-title`
 
 ## Examples
@@ -108,6 +108,6 @@ User: "Branch name for ENG-7788"
 
 ## Response format
 
-Present the branch name in a code block so the user can easily copy it. Keep the response short — just the branch name. No extra explanation unless the user asks.
+Reply with just the branch name in a code block so the user can copy it; add explanation only when the user asks for it.
 
 This `prefix/ENG-1234-slug` form feeds the `gh-create-pr` skill directly: it parses the issue segment for the PR description and the prefix maps to the conventional-commit type.
