@@ -1,6 +1,6 @@
 ---
 name: output-html
-description: Render existing structured content (writeup, report, summary, analysis, postmortem, RFC) as a polished, self-contained single-file HTML document using a shared scaffold and component vocabulary. Trigger when the user asks for HTML output of content they've already produced or discussed — phrases like "output this in HTML", "render as a self-contained HTML page", "give me an HTML report", "write this up as HTML", "make this an HTML artifact", "produce an HTML writeup" — or when a CRISPY skill (ask-questions, research-codebase, design-discussion, structure-outline, create-spec) or linear-roadmap delegates rendering. Produces a no-CDN, no-external-dependency .html file. Do NOT use this skill when the user wants to BUILD a new UI component, page, or web application — use impeccable for that.
+description: Render existing structured content (writeup, report, summary, analysis, postmortem, RFC) as a polished, self-contained single-file HTML document using a shared scaffold and component vocabulary. Use when the user asks for HTML output of content they've already produced or discussed (e.g., "output this in HTML", "give me an HTML report", "make this an HTML artifact"), or when a CRISPY skill (ask-questions, research-codebase, design-discussion, create-prd, create-tdd, structure-outline, create-spec) or linear-roadmap delegates rendering. Produces a no-CDN, no-external-dependency .html file. Not for building a new UI component, page, or web application (use impeccable).
 ---
 
 # Output: HTML
@@ -9,7 +9,7 @@ This skill renders a polished, self-contained `.html` file. The design vocabular
 
 Two invocation modes are supported:
 
-- **CRISPY mode** — invoked by `/ask-questions`, `/research-codebase`, `/design-discussion`, `/structure-outline`, or `/create-spec`. The caller provides a full render brief with phase, status, ticket, etc. The output file lands in the standard `research/{questions,docs,designs,structures,specs}/` directory.
+- **CRISPY mode** — invoked by `/ask-questions`, `/research-codebase`, `/design-discussion`, `/create-prd`, `/create-tdd`, `/structure-outline`, or `/create-spec`. The caller provides a full render brief with phase, status, ticket, etc., plus the full output stem under the task directory `.agents/artifacts/<task>/`.
 - **Report mode** — invoked directly (e.g., the user says "output this in HTML" or "render this as an HTML report"). The caller provides a title and body content; CRISPY-specific slots are skipped. The output lands in `reports/YYYY-MM-DD-<topic>.html` by default unless the caller specifies a path.
 
 The rendering logic is the same for both — only some slots are absent in Report mode, and the SKIP RULES below tell you which structural elements to omit when their slot is empty.
@@ -30,8 +30,8 @@ The same schema serves both modes. CRISPY mode fills all slots; Report mode fill
 | `{{BRANCH}}` | derived | derived | `git branch --show-current` — same skip behavior if absent |
 | `{{DATE}}` | derived | derived | `date '+%Y-%m-%d %H:%M:%S %Z'` |
 | `{{BODY}}` | required | required | Numbered `<section>` blocks rendered via `references/components.md` |
-| `{{PHASE}}` | required | optional | One of `questions`, `research`, `design`, `structure`, `spec`. Omit in Report mode. |
-| `{{PHASE_LABEL}}` | required | optional | Human label for the eyebrow. In Report mode, set to a free-form subtitle (e.g., `Status report`, `RFC`, `Postmortem`) OR leave empty to skip the eyebrow entirely. |
+| `{{PHASE}}` | required | optional | One of `request`, `questions`, `research`, `design`, `prd`, `tdd`, `structure`, `spec`. Omit in Report mode. |
+| `{{PHASE_LABEL}}` | required | optional | Human label for the eyebrow. CRISPY values, matching `PHASE` in order: `Request`, `Questions`, `Research`, `Design Discussion`, `Product Requirements`, `Technical Design`, `Structure Outline`, `Implementation Spec`. In Report mode, set to a free-form subtitle (e.g., `Status report`, `RFC`, `Postmortem`) OR leave empty to skip the eyebrow entirely. |
 | `{{STATUS}}` | required | optional | Lifecycle status (see CRISPY status list). Empty → skip the badge & summary cell. |
 | `{{STATUS_CLASS}}` | derived | derived | See the CRISPY status table below. Only used when STATUS is non-empty. |
 | `{{TICKET}}` | required | optional | One-line ticket summary or `N/A`. Head-only — emitted as `<meta name="crispy:ticket">`, never rendered visibly. |
@@ -67,8 +67,8 @@ Valid `crispy:status` values, in rough progression order. Each CRISPY phase has 
 | `draft` | `draft` |
 | `ready-for-research` | `ready` |
 | `ready-for-design` | `ready` |
+| `ready-for-tdd` | `ready` |
 | `ready-for-structure` | `ready` |
-| `ready-for-plan` | `ready` |
 | `ready-for-implementation` | `ready` |
 | `complete` | `complete` |
 
@@ -76,14 +76,19 @@ In Report mode, you can use any of these or skip STATUS entirely. Custom status 
 
 ### Phase-specific metadata (CRISPY mode)
 
-Downstream CRISPY skills parse these tags. Field names are stable — never invent new ones ad hoc. The set below is the established schema; extend only by adding new keys, never by renaming.
+Downstream CRISPY skills parse these tags, so the field names are a contract. The set below is the established schema; extend it only by adding new keys deliberately, never by renaming or improvising one-off names.
 
 | Field | Used by |
 | --- | --- |
 | `crispy:phase`, `crispy:status`, `crispy:date`, `crispy:ticket`, `crispy:topic`, `crispy:repo`, `crispy:branch` | Every phase (already in the template — do not duplicate) |
-| `crispy:ticket_source` | `questions` |
+| `crispy:task_dir`, `crispy:flow`, `crispy:repos` | Every phase, passed by the caller in `META_EXTRA`. `task_dir` is `.agents/artifacts/<task>`; `flow` is `design`, `prd-tdd`, `tdd`, `research-only`, or `none` (standalone research); `repos` is comma-separated `<identifier>@<sha>` entries (identifier = `owner/name`, else the repo directory name; sha = full `git rev-parse HEAD`), or `none` |
+| `crispy:request_doc`, `crispy:questions_doc`, `crispy:research_doc`, `crispy:design_doc`, `crispy:prd_doc`, `crispy:tdd_doc`, `crispy:structure_doc` | Any phase that cites that document; the value is its `.agents/artifacts/<task>/NN-<type>-<desc>.<ext>` path. `crispy:questions_doc` is `inline` for standalone research that started from an inline question |
+| `crispy:ticket_source` | `request` |
+| `crispy:breaking_changes_allowed`, `crispy:compatibility_context` | `request`, `questions`, `research` |
 | `crispy:researcher`, `crispy:git_commit`, `crispy:tags` | `research` |
 | `crispy:research_doc`, `crispy:questions_doc`, `crispy:author`, `crispy:decisions_resolved` | `design` |
+| `crispy:request_doc`, `crispy:research_doc`, `crispy:design_doc` (when a design discussion was read) | `prd` |
+| `crispy:request_doc`, `crispy:research_doc`, `crispy:prd_doc` (when a PRD was read), `crispy:design_doc` (when a design discussion was read) | `tdd` |
 | `crispy:design_doc`, `crispy:research_doc`, `crispy:slice_count` | `structure` |
 | `crispy:structure_doc`, `crispy:design_doc`, `crispy:research_doc`, `crispy:author`, `crispy:phase_count` | `spec` |
 | `crispy:last_updated`, `crispy:last_updated_by`, `crispy:last_updated_note` | Any phase, when appending follow-up content |
@@ -103,26 +108,26 @@ In Report mode you can stamp the file with `<meta name="report:*">` tags for dow
 
 ## Rendering procedure
 
-1. **Read `assets/template.html`** in this skill's folder. Copy from `<!DOCTYPE html>` to the end into a new buffer, verbatim — do not link to it, do not import, do not skip the `<style>` block. Self-contained means *every CSS rule is inlined*. The comment above `<!DOCTYPE` is authoring documentation for skill maintainers and must not ship in the artifact.
+1. **Read `assets/template.html`** in this skill's folder. Copy from `<!DOCTYPE html>` to the end into a new buffer, verbatim and including the whole `<style>` block, rather than linking or importing it — self-contained means *every CSS rule is inlined*. Leave out the comment above `<!DOCTYPE`; it is authoring documentation for skill maintainers, not part of the artifact.
 
 2. **Gather shell-derived slots** in one parallel call (Bash tool):
    - `git rev-parse --show-toplevel` (for repo basename — empty string is OK if not in a repo)
    - `git branch --show-current` (empty string is OK)
    - `date '+%Y-%m-%d %H:%M:%S %Z'`
 
-3. **Substitute slot values.** Replace *every* occurrence of each `{{SLOT}}` — six slots appear twice by design: `{{PHASE_LABEL}}` and `{{TOPIC}}` in `<title>`, `{{STATUS}}`, `{{DATE}}`, `{{BRANCH}}`, and `{{REPO}}` in both the `<head>` metadata and the visible header. A second occurrence is expected, not an error.
+3. **Render the body** using the component vocabulary in `references/components.md`. The caller specifies which sections to emit and what content goes in each; you translate that into the correct HTML components. Number sections monotonically with `<div class="sec-head"><span class="num">NN</span><h2>...</h2></div>`. For diagrams, code shapes, and other views beside the prose, follow `references/visual-guidance.md`.
 
-4. **Apply SKIP RULES.** Walk through the table above; for each empty optional slot, remove the wrapping structural element.
+4. **Substitute slot values.** Replace *every* occurrence of each `{{SLOT}}` — six slots appear twice by design: `{{PHASE_LABEL}}` and `{{TOPIC}}` in `<title>`, `{{STATUS}}`, `{{DATE}}`, `{{BRANCH}}`, and `{{REPO}}` in both the `<head>` metadata and the visible header. A second occurrence is expected, not an error.
 
-5. **Verify before writing.** Scan the buffer for each of these; every hit is a defect to fix, not a warning to note:
+5. **Apply SKIP RULES.** Walk through the table above; for each empty optional slot, remove the wrapping structural element.
+
+6. **Verify before writing.** Scan the finished buffer, body included, for each of these; every hit is a defect to fix, not a warning to note:
    - `{{` — a slot went unfilled. The caller's brief was incomplete; stop and surface which slot.
    - `<link rel="stylesheet"`, `<script src=`, `@import`, `https://` inside `src=` or `href=` on an asset — the file is no longer self-contained.
    - Section numbers out of order or skipping — renumber monotonically from `01`.
 
-6. **Render the body** using the component vocabulary in `references/components.md`. The caller specifies which sections to emit and what content goes in each; you translate that into the correct HTML components. Number sections monotonically with `<div class="sec-head"><span class="num">NN</span><h2>...</h2></div>`.
-
 7. **Determine the output path:**
-   - **CRISPY mode** — caller provides `research/<phase-dir>/YYYY-MM-DD-<topic>` as the stem; you append `.html`.
+   - **CRISPY mode** — caller provides the full stem `.agents/artifacts/<task>/NN-<type>-<desc>`; you append `.html`. Create the task directory if it doesn't exist.
    - **Report mode** — caller provides a path, OR defaults to `reports/YYYY-MM-DD-<topic>.html`. Create the `reports/` directory if it doesn't exist.
 
 8. **Write the file.** If the path already exists and you are appending (a follow-up section, an updated report), read the file first, splice in the new section, update `crispy:last_updated` / `crispy:last_updated_by` / `crispy:last_updated_note` in `<head>`, sync the matching `.summary` cells, and rewrite.
@@ -142,12 +147,15 @@ See `references/components.md` for the full catalog: when to use each component,
 - `.file-label` + `<pre>` with `.kw` / `.fn` / `.str` / `.cm` / `.hl` spans — code blocks with palette-aware highlighting
 - `<table>` — palette-styled data tables
 - `aside.reco` — recommendation callout
+- `figure.diagram` + inline `<svg>` + `<figcaption>` — diagrams
 
-If you find yourself wanting a pattern that is not in `references/components.md`, prefer adapting an existing component over inventing new CSS. Inventing means consistency breaks across artifacts.
+`references/visual-guidance.md` covers which view to draw (pseudocode, call tree, component or file tree, flow diagram, contract, focused diff, mockup) and where it goes in each phase's document.
+
+When a pattern is missing from `references/components.md`, adapt an existing component rather than inventing new CSS, so artifacts stay consistent with each other.
 
 ## Self-containment invariants
 
-These are non-negotiable.
+These keep the file rendering correctly offline, anywhere it is opened or pasted. Every artifact meets all of them:
 
 - No `<link rel="stylesheet">` to anything external
 - No `<script src="...">` (inline JS only, and only when a component requires it)

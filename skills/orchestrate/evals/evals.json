@@ -5,13 +5,15 @@
       "id": 1,
       "should_trigger": true,
       "prompt": "coordinate a few agents to migrate every call site of this API and keep me in the loop at each phase",
-      "expected_output": "Orchestration driven from the main context: work decomposed into tasks, sub-agents dispatched per unit of work, and a phase gate reported to the user before the next phase starts",
+      "expected_output": "Orchestration driven from the main context: work decomposed into tasks, sub-agents dispatched per unit of work, and a phase gate reported to the user before the next phase starts, with each phase committed through gh-commit only after the user's go-ahead",
       "expectations": [
         "Keeps all top-level dispatching in the main context rather than delegating orchestration to a nested agent",
-        "Records the units of work with TaskCreate and checks TaskList before deciding what to delegate next",
+        "Records the units of work as tasks (the planner's tasks inside the planner→worker loop, or its own TaskCreate items for delegated work outside it) and checks TaskList before deciding what to delegate next",
+        "Inside the planner→worker loop, does not pre-mark worker tasks in_progress or add its own items to the planner's task list",
         "Dispatches one worker per pending task instead of handing a worker several tasks at once",
-        "Stops at each phase boundary and reports in the Phase [N] Complete — Ready for Manual Verification shape, then waits for the user to confirm the manual steps",
-        "Never checks off a manual verification item on the user's behalf"
+        "Stops at each phase boundary that has manual checks and reports in the Phase [N] Complete — Ready for Manual Verification shape, then waits for the user to confirm the manual steps",
+        "Never checks off a manual verification item on the user's behalf",
+        "Commits each confirmed phase from the main context via Skill('gh-commit'), relying on gh-commit's own confirmation; workers do not commit"
       ]
     },
     {
@@ -24,18 +26,98 @@
         "Writes self-contained prompts — each sub-agent sees only what the prompt carries, not this conversation",
         "Continues an already-running agent with SendMessage rather than re-spawning it",
         "Delegates verbose commands rather than running them inline, or wraps them via the Bash tool with backpressure.sh passing the wrapped command as separate arguments",
-        "Does not attempt the work itself while waiting on a sub-agent"
+        "Does not attempt the work itself while waiting on a sub-agent",
+        "Does not pass a run_in_background parameter to the Agent tool"
       ]
     },
     {
       "id": 3,
       "should_trigger": false,
       "prompt": "spawn parallel sub-agents to document how auth works in this repo",
-      "expected_output": "Routed to research-codebase, which owns parallel sub-agent research for a single research phase — orchestrate should not claim this",
+      "expected_output": "Not an orchestration task: documenting current behavior is one CRISPY research phase, and the phase skills are manual-only, so Claude points the user to /research-codebase (or /ask-questions to start a task directory) instead of opening an orchestration loop",
       "expectations": [
         "Recognizes this as one CRISPY research phase, not a multi-phase long-horizon task, despite the parallel sub-agent phrasing",
-        "Invokes /research-codebase rather than opening an orchestration loop",
+        "Names the /research-codebase command (or /ask-questions to start the task) for the user to run, since the phase skills are manual-only and Claude does not invoke them itself",
         "Creates no task list and no phase gates for what is a single-phase request"
+      ]
+    },
+    {
+      "id": 4,
+      "should_trigger": true,
+      "prompt": "/orchestrate .agents/artifacts/feat-ENG-123-csv-export flow: design — the directory has 01-request-csv-export.html, 02-research-questions-csv-export.html, 03-research-csv-export.html, 04-design-discussion-csv-export.html, and 05-structure-outline-csv-export.html with three slices, each carrying Automated and Manual verification. There is no spec.",
+      "expected_output": "The implement step runs from the task directory: the planner is dispatched with the task directory, decomposes the outline's three slices (the outline outranks the design discussion), the worker loop stops at a gate after each slice using that slice's verification lists, and each confirmed slice is committed and marked ✅ in the outline",
+      "expectations": [
+        "Dispatches the planner with the task directory path rather than pasting document contents or picking a document itself",
+        "The planner treats the structure outline as the governing document (spec > structure outline > TDD > PRD > design discussion > research > request) and creates one phase per slice",
+        "Dispatches one worker per pending task and runs tasks from the next slice only after the current slice's gate is confirmed",
+        "Reports each gate in exactly the Phase [N] Complete — Ready for Manual Verification shape, listing the slice's automated commands with results and its manual steps, then waits",
+        "Never checks off a manual verification item on the user's behalf",
+        "After the user confirms a slice, commits its changes via Skill('gh-commit') with gh-commit's own confirmation, leaving .agents/artifacts/ unstaged",
+        "Updates 05-structure-outline-csv-export.html in place through Skill('output-html'): checks the passed automated items and the user-confirmed manual items, and marks the slice's Implementation Overview item and heading ✅",
+        "When all three slices are done, reports what changed, the checks run, and any manual verification still pending, and offers to open the updated outline for review"
+      ]
+    },
+    {
+      "id": 5,
+      "should_trigger": true,
+      "prompt": "/orchestrate .agents/artifacts/fix-retry-backoff flow: tdd — the directory has a request, research, and an approved 04-tdd-retry-backoff.md; no structure outline or spec.",
+      "expected_output": "With no outline or spec, the planner decomposes the TDD's scope as a single phase and there is one gate at the end listing the TDD's verification expectations",
+      "expectations": [
+        "Dispatches the planner with the task directory; the TDD governs because no spec or outline exists",
+        "Runs the worker loop without intermediate phase gates, since the design scope is a single phase",
+        "Stops once at the end and reports in the Phase [N] Complete — Ready for Manual Verification shape, with the manual steps drawn from the TDD's verification expectations",
+        "Does not invent outline slices or a spec to create extra gates",
+        "Commits through Skill('gh-commit') only after the user confirms the final gate"
+      ]
+    },
+    {
+      "id": 6,
+      "should_trigger": true,
+      "prompt": "/orchestrate .agents/artifacts/feat-ENG-140-audit-export flow: tdd — 05-structure-outline-audit-export.md has two slices. Slice 1's Manual verification reads \"None — fully covered by automated checks\"; Slice 2 lists two manual UI checks.",
+      "expected_output": "Slice 1 continues without a pause once its automated checks pass (after recording progress and offering the commit); the loop pauses at Slice 2 for manual verification",
+      "expectations": [
+        "After Slice 1's tasks complete, confirms its automated verification passed before treating the phase as done",
+        "Does not stop for manual verification after Slice 1, since it has no manual checks; checks Slice 1's automated items and marks it ✅ in the outline via Skill('output-markdown')",
+        "Commits Slice 1 via Skill('gh-commit') once its automated checks pass, through gh-commit's own confirmation",
+        "Pauses after Slice 2 with the Phase [N] Complete — Ready for Manual Verification report listing its two manual checks, then waits"
+      ]
+    },
+    {
+      "id": 7,
+      "should_trigger": true,
+      "prompt": "/orchestrate .agents/artifacts/feat-ENG-123-csv-export flow: design — new session. The outline shows Slice 1 ✅ with all items checked; Slices 2 and 3 are unchecked and both have manual checks. Run the remaining slices straight through, I'll test everything at the end.",
+      "expected_output": "Implementation resumes from Slice 2 (the first incomplete slice) and runs Slices 2 and 3 continuously, verifying automated checks between them and leaving the manual checks pending for the final report",
+      "expectations": [
+        "Resumes from Slice 2, the first incomplete slice; does not re-implement Slice 1, which is marked ✅",
+        "Verifies each slice's automated checks before moving to the next slice, turning any failure into a bug-fix task",
+        "Does not pause for manual verification between Slices 2 and 3, because the user asked for a continuous run",
+        "Leaves the unconfirmed manual checks unchecked in the outline and does not mark Slices 2 and 3 ✅ until the user confirms them",
+        "The final report lists what changed, the checks run with results, and the manual verification still pending for both slices"
+      ]
+    },
+    {
+      "id": 8,
+      "should_trigger": true,
+      "prompt": "/orchestrate .agents/artifacts/feat-ENG-123-csv-export — the export from slice 2 drops the last row when the file has no trailing newline. Fix it.",
+      "expected_output": "The iterate-implementation path: reproduce the bug, fix it through a worker task with a regression test, update affected outline sections and validation markers, and commit through the gate rule",
+      "expectations": [
+        "Reads the task directory's documents and the current diff, then reproduces the reported behavior before changing anything",
+        "Creates a worker task for the fix that includes a regression test, dispatching the debugger first when the cause is not obvious",
+        "Keeps the outline's validation markers accurate (unchecks an item the bug invalidates) and updates affected outline sections in place if the agreed result changes",
+        "Asks at most one targeted question, with a recommended answer, only if the expected behavior is unclear",
+        "Commits the fix via Skill('gh-commit') only with the user's go-ahead"
+      ]
+    },
+    {
+      "id": 9,
+      "should_trigger": true,
+      "prompt": "/orchestrate what's next for .agents/artifacts/feat-ENG-123-csv-export? It has 01-request (complete), 02-research-questions (ready-for-research), 03-research (complete), and 04-prd-csv-export.html with status ready-for-tdd; flow is prd-tdd.",
+      "expected_output": "Claude reads the task directory's NN-<type> files and statuses, identifies the PRD as approved and the TDD as the next step, and names /create-tdd with the task directory and flow without running it",
+      "expectations": [
+        "Determines the current phase from the NN-<type> filenames, their crispy:status values, and the prd-tdd flow",
+        "Names `/create-tdd .agents/artifacts/feat-ENG-123-csv-export flow: prd-tdd` as the next command",
+        "Does not invoke the phase skill itself, since the phase skills are manual-only",
+        "Does not dispatch the planner or workers"
       ]
     }
   ]

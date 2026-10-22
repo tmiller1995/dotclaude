@@ -1,17 +1,17 @@
 ---
 name: humanlayer-qrspi-status
-description: "HumanLayer shipped QRSPI workflow in paid IDE (2026-07); CRISPY name dropped; humanlayer/humanlayer repo deprecated; no adaptations needed to user's CRISPY skills"
-metadata: 
+description: "HumanLayer QRSPI status as of 2026-10-21: phases unchanged; portable `rpi` skill shipped in humanlayer/skills (2026-10-08) with flow menu, optional outline, PRD/TDD; user's CRISPY skills adopted the low-risk refinements only"
+metadata:
   node_type: memory
   type: reference
-  originSessionId: 36c1c761-9929-4717-8d5b-be1a6f7d2517
-  modified: 2026-08-01T01:44:43.187Z
+  originSessionId: ea1e6bff-266f-4a73-9908-9c95ed4d2576
+  modified: 2026-10-21T17:27:45.659Z
 ---
 
-As of 2026-07-31: HumanLayer's IDE (humanlayer.com, paid — $100/user/mo Pro, free ≤3 users) ships the phased workflow branded **QRSPI** (Questions→Research→Design→Structure→Plan→Implement, reviewable artifact per phase). "CRISPY" was Dex Horthy's working name from the March 2026 talk "Everything We Got Wrong About RPI"; it did not become the public brand. "CodeLayer" is an internal codename only.
+As of 2026-10-21 (re-checked; prior check 2026-07-31):
 
-- User's [[user-crispy-workflow]] maps 1:1 onto shipped QRSPI (ticket-isolation rule and vertical slices validated by the talk) — **no adaptations required**.
-- `github.com/humanlayer/humanlayer` (OSS desktop app) is **deprecated**; RPI/QRSPI prompts' open-source location now unconfirmed. Bring-your-own-skills in their IDE: not yet shipped.
-- `github.com/humanlayer/skills` last commit 2026-06-30; still only 4 skills (improve-claude-md unchanged — user's copy basis current, see [[atomic-upstream-skills-source]]).
-- Newer material: "Why Software Factories Fail" (2026-07-27), "Context Forking" (2026-05-15), "Context-Efficient Backpressure" (2025-12-09 — candidate technique for worker/debugger agents). Unread: "Skill Issue: Harness Engineering" (2026-03-12).
-- Cached pages: `C:/Users/skinn/.claude/research/web/2026-07-31-humanlayer-*.md`
+- QRSPI phases unchanged. HumanLayer IDE (paid) ships it; `github.com/humanlayer/humanlayer` deprecated.
+- **New 2026-10-08:** `github.com/humanlayer/skills` PR #13 added a portable `rpi` skill (`plugins/rpi/`) — one skill + 5 agents (locator/analyzer/pattern-finder on sonnet, web-search-researcher, outline-implementer) + per-phase `references/<step>/process.md`. Flow menu after research: design discussion | PRD→TDD | TDD | research-only; structure outline optional; artifacts in `.agents/artifacts/<branch>/NN-<type>-<desc>.md` with `repos:[{identifier,sha}]` frontmatter; authors recommend NOT committing artifacts. Repo now 7 skills incl. `show-me`, `visual-pr`, `improve-claude-md` (cosmetic changes only vs user's fork).
+- **Applied to user's [[user-crispy-workflow]] skills (2026-10-21):** one-decision-at-a-time design interview with recorded rationale, design-system question for frontend work, early-handoff option, in-session/fresh-session handoff note. **Deliberately not adopted (user's call, pending):** flow menu / PRD+TDD, `.agents/artifacts/` layout + NN numbering, not committing artifacts, 2–7 questions (user's evals require 5–10).
+- HumanLayer focus since Aug 2026 is "software factories" (videos 2026-08/09). "Skill Issue: Harness Engineering" (2026-03-12): sub-agents are context firewalls not personas, run them on cheaper models, hooks for control flow, CLAUDE.md < 60 lines.
+- Cached: `C:/Users/skinn/.claude/research/web/2026-10-21-humanlayer-rpi-workflow-md.md` (and older 2026-07-31-humanlayer-*.md).

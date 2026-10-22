@@ -3,44 +3,87 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Create a structure outline for implementing a product wishlist feature. The design discussion has already been completed and saved to research/designs/. Break this into vertical slices with checkpoints.",
-      "expected_output": "A structure document with header-style signatures (TypeScript interfaces/signatures only), a file inventory, vertical slices (end-to-end paths) each with a testable checkpoint, integration points, and a rollback strategy, rendered via the matching output skill",
+      "should_trigger": true,
+      "prompt": "/structure-outline .agents/artifacts/feat-ENG-310-product-wishlist flow: design — the task directory holds 01-request-product-wishlist.html, 02-research-questions-product-wishlist.html, 03-research-product-wishlist.html, and 04-design-discussion-product-wishlist.html (status ready-for-structure, all open questions resolved). Break this into vertical slices with checkpoints.",
+      "expected_output": "A structure outline written to .agents/artifacts/feat-ENG-310-product-wishlist/05-structure-outline-product-wishlist.html with an Implementation Overview, header-style signatures, a file inventory, vertical slices each with a checkpoint plus Automated and Manual verification, integration points, and a rollback strategy, followed by an open-for-review offer and an /orchestrate handoff",
       "expectations": [
+        "Reads the request, research, and design-discussion documents from the task directory in full before writing",
         "Output contains a New types & signatures section with TypeScript interface/type definitions (signatures only, no implementation bodies)",
+        "Output contains an Implementation Overview checklist with one unchecked item per slice, in slice order",
         "Output contains at least 2 vertical slices, each touching multiple layers (e.g., database + API + UI), not a single horizontal layer",
-        "Each vertical slice has a concrete Checkpoint describing how to verify it works (not just 'it compiles'), prefixed with the checkpoint marker",
-        "Slices are ordered so dependencies flow forward (Slice N+1 depends on Slice N, never reverse), with the last slice being the hardening slice",
+        "Each slice card follows the slice-card contract: a `### Slice N — Name` heading, a goal line, a files-touched list with NEW / MODIFY / DELETE tags, a checkpoint line prefixed with the checkpoint marker, an Automated verification list naming the repository's actual commands, and a Manual verification list of human-only steps",
+        "Each slice card has a Change outline (full target shapes for new code, focused diff blocks for changed shapes) and a Tests (following the repo's existing patterns) block naming test types and locations modeled on the repository's existing tests",
+        "Slices are ordered so dependencies flow forward (Slice N+1 depends on Slice N, never reverse), with a hardening slice last unless each slice carries its own error paths and tests",
         "Output contains a File inventory listing new and modified files with NEW / MODIFY / DELETE tags",
-        "Slice cards follow the output skills' slice-card contract: a `### Slice N — Name` heading, a goal line, a files-touched list with change tags, and a checkpoint line",
         "The render brief uses only the established slot names (PHASE, PHASE_LABEL, STATUS, STATUS_CLASS, TOPIC, TITLE, TICKET, PROMPT_TEXT, META_EXTRA, SUMMARY_EXTRA) and does not invent new slots",
-        "The skill delegates rendering to Skill('output-html') by default, or Skill('output-markdown') when --format=md is passed, writing to research/structures/YYYY-MM-DD-topic with PHASE=structure and STATUS=ready-for-plan"
+        "META_EXTRA includes crispy:task_dir, crispy:flow (design), crispy:repos, crispy:request_doc, crispy:research_doc, crispy:design_doc, and crispy:slice_count, with doc links pointing at .agents/artifacts/ paths",
+        "Delegates rendering to Skill('output-html') with the stem .agents/artifacts/feat-ENG-310-product-wishlist/05-structure-outline-product-wishlist, PHASE=structure and STATUS=ready-for-implementation",
+        "Ends by offering to open the document for review (VS Code, Cursor, or browser) rather than offering to commit it, names `/orchestrate .agents/artifacts/feat-ENG-310-product-wishlist flow: design` as the next command with `/create-spec` as an optional alternative, says it can run here, after compaction, or in a new session, and then waits"
       ]
     },
     {
       "id": 2,
-      "prompt": "Define the implementation structure for adding real-time notifications using WebSockets. We need to support order status updates, new message alerts, and price drop alerts for wishlisted items. Use --format=md.",
-      "expected_output": "Structure outline with header-style signatures for notification types and the WebSocket service, vertical slices progressing from basic WebSocket connection through each notification type, rendered as Markdown via the output-markdown skill",
+      "should_trigger": true,
+      "prompt": "/structure-outline .agents/artifacts/realtime-notifications --format=md flow: tdd — the directory has 01-request-realtime-notifications.md, 02-research-questions-realtime-notifications.md, 03-research-realtime-notifications.md, and an approved 04-tdd-realtime-notifications.md (status ready-for-structure) covering WebSocket order status updates, new message alerts, and price drop alerts for wishlisted items.",
+      "expected_output": "A Markdown structure outline at .agents/artifacts/realtime-notifications/05-structure-outline-realtime-notifications.md, governed by the TDD, with slices progressing from base WebSocket infrastructure through each notification type, rendered via output-markdown",
       "expectations": [
+        "Treats the TDD as the governing document and carries its Program Design signatures over rather than redesigning them",
         "New types & signatures section defines notification-related interfaces (NotificationType, NotificationPayload, WebSocket service signatures) as signatures only",
         "Vertical slices are truly vertical — each slice delivers a working end-to-end notification path, not a horizontal layer",
-        "The first slice establishes the base WebSocket infrastructure as a foundation",
-        "Subsequent slices add individual notification types (order status, messages, price drops) incrementally",
-        "No slice only touches the database or only touches the UI — each must be independently verifiable via its checkpoint",
-        "Checkpoints are specific and testable (e.g., 'WebSocket connects and receives ping/pong' not 'WebSocket works')",
+        "The first slice establishes the base WebSocket infrastructure; later slices add the individual notification types (order status, messages, price drops) incrementally",
+        "Each slice has a specific, testable checkpoint (e.g., 'WebSocket connects and receives ping/pong' not 'WebSocket works') plus separate Automated verification and Manual verification checklists",
         "File inventory notes when the same file is touched by multiple slices",
-        "Because --format=md was passed, the skill delegates to Skill('output-markdown') and writes to research/structures/YYYY-MM-DD-topic.md"
+        "META_EXTRA includes crispy:tdd_doc, crispy:flow (tdd), and crispy:repos; no crispy:design_doc is invented since no design discussion exists",
+        "Because --format=md was passed, the skill delegates to Skill('output-markdown') and writes to .agents/artifacts/realtime-notifications/05-structure-outline-realtime-notifications.md"
       ]
     },
     {
       "id": 3,
-      "prompt": "Here's the research doc for the wishlist feature at research/2026-07-14-wishlist.md. Give me the structure outline with vertical slices.",
-      "expected_output": "The skill recognizes it was handed a research document rather than a design document, stops, and redirects the user to /design-discussion instead of producing a structure outline",
+      "should_trigger": true,
+      "prompt": "/structure-outline .agents/artifacts/feat-ENG-322-wishlist-sharing — the directory has a request, research, and 04-design-discussion-wishlist-sharing.html whose status is still draft with two unresolved open questions about link expiry and permissions.",
+      "expected_output": "The skill sees that the governing design discussion still has unresolved open questions, stops without writing an outline, and sends the user back to /design-discussion",
       "expectations": [
         "The skill does not produce a structure outline or a file inventory",
-        "The skill does not invoke Skill('output-html') or Skill('output-markdown') and writes no file to research/structures/",
-        "The response names the missing prerequisite (a completed design document) as the reason for stopping",
-        "The response directs the user to run /design-discussion first",
-        "The skill does not attempt to perform the design phase itself by inventing design decisions from the research doc"
+        "The skill does not invoke Skill('output-html') or Skill('output-markdown') and writes no structure-outline file into the task directory",
+        "The response names the unresolved open questions in the design discussion as the reason for stopping",
+        "The response directs the user to finish the design with /design-discussion on the same task directory",
+        "The skill does not resolve the open questions itself or invent design decisions from the research"
+      ]
+    },
+    {
+      "id": 4,
+      "should_trigger": false,
+      "prompt": "Can you break the wishlist feature into vertical slices for me?",
+      "expected_output": "structure-outline does not auto-trigger: it is a manual-only phase skill (disable-model-invocation), so Claude tells the user to run /structure-outline with the task directory instead of starting the phase itself",
+      "expectations": [
+        "Does not invoke the structure-outline skill on its own — the user invokes each CRISPY phase",
+        "Names the `/structure-outline <task directory>` command for the user to run",
+        "Writes no structure-outline document"
+      ]
+    },
+    {
+      "id": 5,
+      "should_trigger": true,
+      "prompt": "/structure-outline .agents/artifacts/feat-ENG-322-wishlist-sharing — the design discussion is still draft with two open questions about link expiry and permissions, but I want to move on: proceed anyway and keep those two as open questions.",
+      "expected_output": "Because the user explicitly asked to proceed, the skill writes the outline instead of stopping and carries the two unresolved design questions into the outline's Open Questions section, with status draft",
+      "expectations": [
+        "Does not stop and send the user back to /design-discussion, since the user explicitly asked to proceed",
+        "Writes the structure outline into the task directory via the output skill",
+        "Carries the link-expiry and permissions questions into Section 08 Open Questions rather than deciding them itself",
+        "Sets STATUS to draft (STATUS_CLASS draft) while those open questions remain",
+        "The handoff names the open questions that still need the user"
+      ]
+    },
+    {
+      "id": 6,
+      "should_trigger": true,
+      "prompt": "/structure-outline .agents/artifacts/feat-ENG-330-bulk-import flow: prd-tdd — the directory has a request, research, 04-prd-bulk-import.html (its Open Questions section still lists one product question about CSV size limits), and 05-tdd-bulk-import.html, approved with status ready-for-structure and no open questions; the TDD settles the size limit at 10 MB.",
+      "expected_output": "The TDD governs and has no open questions, so the skill proceeds: the PRD's leftover open question is superseded by the TDD and does not block the outline",
+      "expectations": [
+        "Identifies the TDD as the governing document (TDD > PRD > design discussion)",
+        "Checks only the governing TDD for open questions and proceeds, rather than stopping on the PRD's leftover question",
+        "Uses the TDD's 10 MB decision where the outline needs a size limit",
+        "Writes 06-structure-outline-bulk-import.html with STATUS ready-for-implementation and META_EXTRA including crispy:prd_doc and crispy:tdd_doc"
       ]
     }
   ]

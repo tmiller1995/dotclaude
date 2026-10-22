@@ -4,79 +4,94 @@
     {
       "id": 1,
       "should_trigger": true,
-      "prompt": "Generate research questions for this ticket: 'Add CSV export to the orders dashboard. Agents need to download filtered order lists for month-end reconciliation. Must respect the existing column visibility settings.'",
-      "expected_output": "A questions artifact with 5-10 targeted, current-state questions tagged by category, a human-only Context section, a determined compatibility posture, rendered via Skill('output-html') to research/questions/YYYY-MM-DD-topic.html",
+      "prompt": "/ask-questions 'Add CSV export to the orders dashboard. Agents need to download filtered order lists for month-end reconciliation. Must respect the existing column visibility settings.' (current branch: feat/ENG-123-csv-export; .agents/ is not git-ignored)",
+      "expected_output": "Two documents in .agents/artifacts/feat-ENG-123-csv-export/ — 01-request-csv-export.html and 02-research-questions-<area>.html (named for the area under study, e.g. export-downloads) — rendered via Skill('output-html'), after one AskUserQuestion call covering the flow (with chart and recommendation) and the compatibility posture, ending with a /research-codebase handoff that names the task directory and flow",
       "expectations": [
-        "Produces 5-10 questions total, each beginning with a category tag (e.g. [data-model], [call-graph], [entry-points])",
-        "Every question is about the codebase as it exists today (how exports/downloads currently work, where column visibility settings live), never 'how should we build X'",
-        "Does NOT read any codebase files, grep, or glob — the only input read is the ticket itself",
-        "Section 01 Context contains the human-only callout stating the section is stripped before being passed to /research-codebase",
-        "Determines the compatibility posture (breaking_changes_allowed) by inference or a single AskUserQuestion, and records crispy:breaking_changes_allowed + crispy:compatibility_context in META_EXTRA with a matching Breaking changes SUMMARY_EXTRA row",
-        "Delegates rendering to Skill('output-html') with PHASE=questions and STATUS=ready-for-research, writing to research/questions/YYYY-MM-DD-<topic>",
-        "Presents the questions for review, offers to commit via gh-commit, and does NOT proceed to research automatically"
+        "Resolves the task directory from the branch name with '/' replaced by '-' (.agents/artifacts/feat-ENG-123-csv-export/) and states the path",
+        "Writes two documents: NN-request-<desc> (PHASE=request, STATUS=complete) first, then NN-research-questions-<desc> (PHASE=questions, STATUS=ready-for-research) with the next number, both via Skill('output-html') with the full stem passed",
+        "The questions document has 2-7 current-state questions, each beginning with a category tag and carrying a concrete starting pointer; none reveals the desired CSV export change",
+        "The questions document's TOPIC, TITLE, and filename <desc> name the area under study (e.g. order export and downloads), not the CSV export feature; the request document keeps the feature name (01-request-csv-export)",
+        "The questions document has no human-only Context section; the desired change appears only in the request document (Original request, Desired result, Constraints and acceptance criteria, Source pointers, Flow and compatibility)",
+        "Does not read source files itself; at most one small codebase-locator pass is dispatched, given the topic area (exports/downloads, column visibility) rather than the desired change",
+        "Shows the box-drawing flow chart (no Mermaid), briefly recommends a flow, includes the note that implementation can start from any step, and asks the flow and compatibility posture in the same AskUserQuestion call",
+        "Because the task directory is new and .agents/ is not ignored, offers once to add .agents/ to .git/info/exclude and acts only on agreement",
+        "Request document META_EXTRA carries crispy:ticket_source, crispy:breaking_changes_allowed, crispy:compatibility_context, crispy:task_dir, crispy:flow, crispy:repos; the questions document carries the posture fields plus crispy:task_dir, crispy:flow, crispy:repos",
+        "Hands off with saved paths, an offer to open the documents for review (no gh-commit offer), and the command '/research-codebase .agents/artifacts/feat-ENG-123-csv-export flow: <chosen-flow>' runnable here, after compaction, or in a new session; does not start research"
       ]
     },
     {
       "id": 2,
       "should_trigger": true,
-      "prompt": "Generate research questions for this request using --format=md: 'Our background jobs sometimes process the same message twice. Investigate what we'd need to know before adding idempotency.'",
-      "expected_output": "A Markdown questions artifact whose questions force exploration of the current job/queue infrastructure, with no implementation opinions, written to research/questions/YYYY-MM-DD-topic.md",
+      "prompt": "/ask-questions --format=md flow: tdd 'Our background jobs sometimes process the same message twice. Investigate what we'd need to know before adding idempotency.' (current branch: main)",
+      "expected_output": "Markdown request and research-questions documents in a slug-named task directory such as .agents/artifacts/job-idempotency/, with the flow taken from the command line rather than asked",
       "expectations": [
-        "Because --format=md was passed, delegates to Skill('output-markdown') and writes research/questions/YYYY-MM-DD-<topic>.md",
-        "Questions target current state: how jobs are dispatched and consumed, where message handling lives, existing dedup/retry behavior, test patterns for job handlers",
-        "No question asks for a design opinion ('what's the best way', 'how should') and none names specific files to change",
-        "Questions are pruned to 5-10 — vague or redundant candidates are cut rather than padded",
-        "Does not interrogate the user for more feature context; the only permitted user question is the compatibility posture when it cannot be inferred",
-        "Output uses the shared slot vocabulary (PHASE, STATUS, TOPIC, TITLE, TICKET, PROMPT_TEXT, META_EXTRA, SUMMARY_EXTRA) without inventing new slots"
+        "On main, uses a short kebab-case slug from the request for the task directory under .agents/artifacts/ and states the path",
+        "Because --format=md was passed, delegates both documents to Skill('output-markdown'), writing NN-request-<desc>.md and NN-research-questions-<desc>.md",
+        "Because flow: tdd was given, does not ask the flow question and records crispy:flow = tdd on both documents",
+        "Questions target current state — how jobs are dispatched and consumed, where message handling lives, existing dedup/retry behavior, test patterns for job handlers — and stay within 2-7",
+        "No question asks for a design opinion ('what's the best way', 'how should') or names files to change",
+        "Does not interrogate the user for more feature context; the only question asked, if any, is the compatibility posture when the request does not settle it",
+        "crispy:repos is gathered as <identifier>@<sha> entries from gh repo view / git rev-parse HEAD",
+        "Uses only the shared slot vocabulary (PHASE, STATUS, TOPIC, TITLE, TICKET, PROMPT_TEXT, META_EXTRA, SUMMARY_EXTRA) without inventing new slots",
+        "Handoff names '/research-codebase .agents/artifacts/<task> flow: tdd'"
       ]
     },
     {
       "id": 3,
-      "should_trigger": true,
+      "should_trigger": false,
       "prompt": "ENG-412: Tenants can't rotate their API keys without support intervention. Self-serve rotation from the settings page, old key valid for 24h. Where do we start?",
-      "expected_output": "The Questions phase fires on a bare pasted ticket with no skill or action named, producing a questions artifact at research/questions/YYYY-MM-DD-topic.html rather than an answer, a plan, or a code change",
+      "expected_output": "ask-questions does not trigger — it is a manual-only CRISPY phase (disable-model-invocation: true), so a pasted ticket without /ask-questions is handled as an ordinary conversation",
       "expectations": [
-        "Triggers on the pasted ticket alone — the user never says 'ask questions', 'generate questions', or names the skill",
-        "Answers 'where do we start?' by producing the questions artifact, not by proposing an implementation approach or naming files to change",
-        "Produces 5-10 current-state questions (how API keys are currently issued and stored, how the settings page is routed and authorized, what existing expiry/grace-period handling looks like, how tenant scoping is enforced, test patterns for credential flows)",
-        "Does NOT read codebase files, grep, or glob — the ticket text is the only input consulted",
-        "Asks the user nothing beyond the Step 5 compatibility posture, and only if the ticket does not settle it",
-        "Section 01 Context carries the human-only callout; the ticket body appears there and in PROMPT_TEXT, never inside the questions themselves"
+        "Does NOT invoke ask-questions: the user did not run /ask-questions, and the skill is manual-only",
+        "No documents are written to .agents/artifacts/",
+        "May answer directly or suggest running /ask-questions with the ticket to start the CRISPY workflow"
       ]
     },
     {
       "id": 4,
       "should_trigger": true,
-      "prompt": "Generate research questions for this ticket: 'PLAT-88: Add pagination to the public /v1/reports endpoint. This endpoint is published in our partner API docs and three external integrators poll it today, so existing callers must keep working through the migration window.'",
-      "expected_output": "A questions artifact whose compatibility posture is inferred as breaking_changes_allowed: false directly from the ticket, with no AskUserQuestion round-trip, and a Breaking changes summary row reading 'not allowed'",
+      "prompt": "/ask-questions 'PLAT-88: Add pagination to the public /v1/reports endpoint. This endpoint is published in our partner API docs and three external integrators poll it today, so existing callers must keep working through the migration window.'",
+      "expected_output": "Request and research-questions documents whose compatibility posture is inferred as breaking_changes_allowed: false from the ticket, so AskUserQuestion asks only the flow, with a Breaking changes summary row reading 'not allowed'",
       "expectations": [
-        "Infers crispy:breaking_changes_allowed: false from the ticket's published-API and external-consumer language — does NOT call AskUserQuestion, because the ticket already settles the posture",
-        "Records crispy:compatibility_context in META_EXTRA with a one-line explanation citing the published endpoint and external integrators",
-        "The SUMMARY_EXTRA Breaking changes row reads 'not allowed'",
-        "Questions cover the current state relevant to a compatibility-constrained change: how the endpoint is currently routed and versioned, how responses are serialized, what existing pagination conventions exist elsewhere, how API contract or schema tests are written",
-        "No question proposes a pagination design (cursor vs offset) — that is the Design phase, not Questions"
+        "Infers crispy:breaking_changes_allowed: false from the published-API and external-integrator language and does not ask about the posture; the AskUserQuestion call asks only the flow",
+        "Records crispy:compatibility_context on both documents with a one-line explanation citing the published endpoint and external integrators",
+        "The SUMMARY_EXTRA Breaking changes row reads 'not allowed' on both documents",
+        "Questions cover current state relevant to a compatibility-constrained change: how the endpoint is routed and versioned, how responses are serialized, existing pagination conventions elsewhere, how API contract or schema tests are written",
+        "No question proposes a pagination design (cursor vs offset); the request document's Constraints section carries the 'existing callers must keep working' requirement",
+        "The questions document's TICKET slot holds only the identifier (PLAT-88) and its PROMPT_TEXT is a neutral area statement, not the ticket body"
       ]
     },
     {
       "id": 5,
       "should_trigger": false,
       "prompt": "Research how our auth middleware validates tenant scope and write up what you find.",
-      "expected_output": "Routes to research-codebase, not ask-questions — the user is asking for answers about the current codebase, not for a list of questions",
+      "expected_output": "ask-questions does not trigger — the user wants answers about the current codebase, not questions, and CRISPY phases are manual-only",
       "expectations": [
-        "Does NOT invoke ask-questions: no questions artifact is written to research/questions/",
-        "Recognized as the Research phase — the request is to open files and report findings, which is exactly what this skill forbids in Step 2",
-        "research-codebase handles it, spawning sub-agents and producing research/docs/YYYY-MM-DD-topic.<ext>"
+        "Does NOT invoke ask-questions: no request or research-questions documents are written",
+        "Recognized as a research request; the user can run /research-codebase with the question for a standalone research document"
       ]
     },
     {
       "id": 6,
       "should_trigger": false,
       "prompt": "Here's the research doc from yesterday — what should the design look like?",
-      "expected_output": "Routes to design-discussion, not ask-questions — a completed research artifact means the Questions phase is already behind us",
+      "expected_output": "ask-questions does not trigger — a finished research document means the Questions phase is already behind us",
       "expectations": [
-        "Does NOT invoke ask-questions: the input is a finished research document, not a ticket needing investigation",
-        "Recognized as the Design phase — the user is asking for design direction and trade-offs, which questions-phase output explicitly excludes",
-        "design-discussion handles it, consuming the research document and producing a design artifact"
+        "Does NOT invoke ask-questions: the input is a finished research document, not a ticket needing scoping",
+        "Recognized as a design request; the user can run /design-discussion, /create-prd, or /create-tdd with the task directory"
+      ]
+    },
+    {
+      "id": 7,
+      "should_trigger": true,
+      "prompt": "/ask-questions .agents/artifacts/feat-ENG-123-csv-export add a question about how large result sets are streamed to the browser (the directory already has 01-request-csv-export.html and 02-research-questions-export-downloads.html)",
+      "expected_output": "The existing 02-research-questions-export-downloads.html is updated in place with the new question; no new numbered document is created",
+      "expectations": [
+        "Uses the given task directory and updates the existing research-questions document in place, keeping its path and number",
+        "Does not create 03-* documents or rewrite the request document unless the user asks",
+        "The added question is a current-state question with a starting pointer, and the total stays within 2-7 unless the task warrants more",
+        "Does not re-ask the flow or posture; both are already recorded in the documents",
+        "Ends with an offer to open the document for review and the '/research-codebase .agents/artifacts/feat-ENG-123-csv-export flow: <flow>' handoff"
       ]
     }
   ]

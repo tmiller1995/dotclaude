@@ -8,6 +8,7 @@ crispy:
   repo: {{REPO}}
   branch: {{BRANCH}}
 {{META_EXTRA}}
+{{REPOS_LIST}}
 ---
 
 # {{TITLE}}

@@ -1,0 +1,48 @@
+{
+  "skill_name": "create-prd",
+  "evals": [
+    {
+      "id": 1,
+      "should_trigger": true,
+      "prompt": "/create-prd .agents/artifacts/feat-ENG-210-shared-reviews flow: prd-tdd — the task directory holds 01-request-shared-reviews.html, 02-research-questions-shared-reviews.html, and 03-research-shared-reviews.html describing how document sharing and comments work today.",
+      "expected_output": "A small starting PRD written to .agents/artifacts/feat-ENG-210-shared-reviews/04-prd-shared-reviews.html, followed by a one-question-at-a-time interview (problem, success measure, product decisions), a whole-solution approval, status ready-for-tdd, and a handoff to /create-tdd",
+      "expectations": [
+        "Reads the request and research documents fully before writing, and does not read the research-questions document as the research",
+        "If a product decision depends on current behavior the research doesn't establish, dispatches one focused codebase-analyzer or codebase-locator for that fact and folds the finding into 03-research-shared-reviews.html in place",
+        "Writes the starting document immediately through Skill('output-html') with the stem .agents/artifacts/feat-ENG-210-shared-reviews/04-prd-shared-reviews (next available NN, no extension), PHASE=prd, PHASE_LABEL=Product Requirements, STATUS=draft",
+        "The starting document has a drafted Problem to Solve and empty Success, Proposed Solution, and Solution Details sections, then quotes the problem statement and asks one question to confirm or correct it",
+        "META_EXTRA includes crispy:task_dir, crispy:flow (prd-tdd), crispy:repos, crispy:request_doc, and crispy:research_doc",
+        "Agrees a success measure (adoption, benchmark, errors, latency, qualitative, or a recorded 'none' with the user's agreement) before interviewing solution decisions",
+        "Presents one product decision per message with 2-3 options, tradeoffs, and a recommendation, waits for the answer, and updates the PRD in place after each",
+        "Technical questions (schemas, storage, code structure) are recorded under Deferred to TDD instead of being decided",
+        "Section headers state results, and the final document has Problem to Solve, Success, Proposed Solution, Solution Details, Alternative Solutions Considered, Scope, and Deferred to TDD when present",
+        "Asks the user to review Solution Details as a whole and approve before setting STATUS to ready-for-tdd",
+        "Handoff gives the saved path, offers to open it for review (VS Code, Cursor, or browser) rather than to commit it, names `/create-tdd .agents/artifacts/feat-ENG-210-shared-reviews flow: prd-tdd` as the usual next step with outline or implementation as alternatives, and waits"
+      ]
+    },
+    {
+      "id": 2,
+      "should_trigger": true,
+      "prompt": "/create-prd .agents/artifacts/bulk-invite --format=md — the directory holds 01-request-bulk-invite.md, 02-research-questions-bulk-invite.md, and 03-research-bulk-invite.md. The feature adds a bulk-invite dialog to the team settings page.",
+      "expected_output": "A Markdown PRD at .agents/artifacts/bulk-invite/04-prd-bulk-invite.md rendered via output-markdown, with UI choices illustrated by a mockup HTML file saved beside it and linked relatively",
+      "expectations": [
+        "Delegates rendering to Skill('output-markdown') because --format=md was passed, writing .agents/artifacts/bulk-invite/04-prd-bulk-invite.md",
+        "For the dialog's UI choices, saves a focused mockup-<desc>.html in .agents/artifacts/bulk-invite/ that matches the product's visual conventions with realistic labels, and links it with an ordinary relative link beside its explanation",
+        "Uses the research's design-system findings when drawing the mockup",
+        "Asks one question per message rather than batching the problem, success, and solution questions together",
+        "Updates the same 04-prd file in place as decisions settle instead of creating new numbered files"
+      ]
+    },
+    {
+      "id": 3,
+      "should_trigger": false,
+      "prompt": "Break the shared-reviews work in .agents/artifacts/feat-ENG-210-shared-reviews into a task list I can hand to workers.",
+      "expected_output": "create-prd does not trigger: the request is for a task breakdown, and the skill is manual-only, so no PRD is written",
+      "expectations": [
+        "The create-prd skill is not invoked, because the user asked for a task list and CRISPY phase skills are manual-only",
+        "No NN-prd document is written to the task directory",
+        "No product-requirements interview (problem, success measure, solution decisions) is started"
+      ]
+    }
+  ]
+}

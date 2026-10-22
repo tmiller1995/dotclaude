@@ -4,56 +4,57 @@
     {
       "id": 1,
       "should_trigger": true,
-      "prompt": "Research the codebase using the questions artifact at research/questions/2026-06-01-csv-export.html. The artifact's Context section describes a CSV export feature ticket; its Questions section asks how exports, downloads, and column-visibility settings currently work.",
-      "expected_output": "A research document at research/docs/YYYY-MM-DD-topic.html synthesized from parallel sub-agent findings, containing only facts about the current codebase with file:line references, with the ticket context never forwarded to sub-agents",
+      "prompt": "/research-codebase .agents/artifacts/feat-ENG-123-csv-export flow: prd-tdd (the directory holds 01-request-csv-export.html and 02-research-questions-export-downloads.html; the questions ask how exports, downloads, and column-visibility settings currently work)",
+      "expected_output": "A research document at .agents/artifacts/feat-ENG-123-csv-export/03-research-export-downloads.html synthesized from parallel sub-agent findings, facts only with file:line references, built from the questions document alone, ending with a /create-prd handoff",
       "expectations": [
-        "Reads the questions artifact fully in the main context, but sub-agent prompts contain ONLY questions and scope — never the ticket, feature description, or phrasing like 'we are adding CSV export'",
-        "Inherits crispy:breaking_changes_allowed from the questions artifact instead of re-asking the user, and threads it into every sub-agent prompt",
-        "Spawns parallel sub-agents (codebase-locator, codebase-analyzer, codebase-pattern-finder, research-locator/analyzer as relevant) rather than doing deep file reading in the main context",
-        "Waits for ALL sub-agents before synthesizing; findings cite concrete file:line references",
-        "The document contains no recommendations or evaluative language — current state only (documentarian, not evaluator)",
-        "Emits the full crispy:* metadata set including breaking_changes_allowed and compatibility_context, with matching visible Summary rows",
-        "Body sections appear in order: research question, compatibility context, summary, detailed findings, code references, architecture & conventions, historical context, related research",
-        "Presents an executive summary, offers to commit the artifact via gh-commit, and asks for follow-up questions"
+        "Resolves 02-research-questions-export-downloads.html from the task directory by type and reads it fully in the main context; never opens 01-request-csv-export.html",
+        "Sub-agent prompts contain only individual questions, pointers, and scope — never the request, ticket, or phrasing like 'we are adding CSV export'",
+        "Inherits crispy:breaking_changes_allowed from the questions document instead of re-asking, and threads it into every sub-agent prompt",
+        "Spawns parallel sub-agents (usually 2–6, one per research area: codebase-locator, codebase-analyzer, codebase-pattern-finder, research locator/analyzer as relevant); the research locator is told to exclude the current task directory, and the research analyzer receives only paths the locator returned",
+        "Waits for all sub-agents before synthesizing; findings cite concrete file:line references and contain no recommendations",
+        "Each detailed-findings deep-dive title states the finding (e.g. 'Exports stream rows through the job queue', not 'Export service'), and each component has a tests block (locations, test types, fixtures/mocks, or 'no tests found'); any check claimed as passing cites its command and observed result",
+        "Writes NN-research-<desc> with the next number (03) via Skill('output-html'), with the full crispy:* set including crispy:task_dir, crispy:flow = prd-tdd, crispy:repos, crispy:questions_doc, and the posture fields, plus matching Summary rows",
+        "Body sections appear in order: research questions, compatibility context, summary, detailed findings, code references, architecture & conventions, historical context, related research",
+        "Hands off with the saved path, an offer to open the document for review (no gh-commit offer), and '/create-prd .agents/artifacts/feat-ENG-123-csv-export flow: prd-tdd' runnable here, after compaction, or in a new session; does not start the next phase"
       ]
     },
     {
       "id": 2,
       "should_trigger": true,
-      "prompt": "Research this inline query with --format=md: 'I'm building a notification center feature — find out how our SignalR hubs are registered and how clients subscribe to them.'",
-      "expected_output": "A Markdown research document where the inline query was rephrased into pure current-state questions before any sub-agent was spawned, with the feature intent stripped",
+      "prompt": "/research-codebase --format=md I'm building a notification center feature — find out how our SignalR hubs are registered and how clients subscribe to them. (current branch: main; no matching task directory exists)",
+      "expected_output": "A standalone Markdown research document in a slug-named task directory under .agents/artifacts/, with the inline query rephrased into intent-free questions before any sub-agent was spawned, and no flow handoff",
       "expectations": [
-        "Rephrases the query into intent-free questions (e.g. 'how are SignalR hubs registered and how do clients subscribe') — the phrase 'building a notification center' never reaches a sub-agent",
-        "Because no questions artifact exists, determines the compatibility posture itself: infers from the request or asks the user once via AskUserQuestion before decomposing",
-        "Because --format=md was passed, delegates to Skill('output-markdown') and writes research/docs/YYYY-MM-DD-<topic>.md with crispy:* keys in YAML frontmatter",
-        "Runs fresh codebase research via sub-agents rather than relying solely on existing research documents",
-        "Handles follow-up questions by appending to the same document and updating crispy:last_updated metadata in sync with the visible Summary cells",
-        "Writes no artifacts outside the research/ directory"
+        "Treats the inline question as standalone research, chooses a short kebab-case slug task directory under .agents/artifacts/, states the path, and writes 01-research-<desc>.md",
+        "Rephrases the query into intent-free questions (how SignalR hubs are registered, how clients subscribe) — 'building a notification center' never reaches a sub-agent",
+        "Because no questions document exists, determines the compatibility posture itself: infers it or asks once via AskUserQuestion before decomposing",
+        "Delegates to Skill('output-markdown') with crispy:* keys in YAML frontmatter, crispy:flow = none, and crispy:repos gathered from gh repo view / git rev-parse HEAD",
+        "Ends with the saved path, an offer to open it for review, and an invitation for follow-up questions — no next-phase command",
+        "A follow-up question updates the same document in place, refreshing crispy:last_updated metadata in sync with the visible Summary cells",
+        "Writes nothing outside the task directory"
       ]
     },
     {
       "id": 3,
       "should_trigger": true,
-      "prompt": "Find out how our per-tenant rate limiting is configured in the API gateway middleware and document what you find.",
-      "expected_output": "A research document that reports what the sub-agents actually found — including that the premise of the question does not hold (rate limiting is enforced elsewhere, or is not per-tenant) — with the misframing surfaced to the user before the document is finalized",
+      "prompt": "/research-codebase Find out how our per-tenant rate limiting is configured in the API gateway middleware and document what you find.",
+      "expected_output": "A research document that reports what the sub-agents actually found — including that the premise does not hold (rate limiting is enforced elsewhere, or is not per-tenant) — with the misframing surfaced to the user before the document is finalized",
       "expectations": [
-        "Triggers on a bare research request with no questions artifact and no skill named — the phrasing 'find out how ... and document what you find' is enough",
-        "When sub-agent findings contradict the question's framing (no per-tenant limiting in the gateway middleware, or the limiting lives in a different layer), flags the misframing to the user before finalizing rather than burying it or quietly answering a different question",
-        "Documents the mechanism that actually exists, with file:line references, instead of describing the assumed one",
-        "Records the contradiction in the document (Summary and, where unresolved, Section 09 Open questions) rather than only mentioning it in chat",
-        "Still produces no recommendations — the misframing is reported as a fact about current state, not as a defect to fix",
-        "Determines the compatibility posture before decomposing, since no questions artifact supplies it"
+        "When findings contradict the question's framing, flags the misframing to the user before finalizing rather than burying it or quietly answering a different question",
+        "Documents the mechanism that actually exists, with file:line references, instead of the assumed one",
+        "Records the contradiction in the document (Summary and, where unresolved, Section 09 Open questions), not only in chat",
+        "Does one targeted follow-up investigation for any question still open, weaves its results into the affected sections, and keeps remaining uncertainty explicit",
+        "Produces no recommendations — the misframing is reported as a fact about current state, not a defect to fix",
+        "Determines the compatibility posture before decomposing, since no questions document supplies it"
       ]
     },
     {
       "id": 4,
       "should_trigger": false,
       "prompt": "How does the formatCurrency helper in src/utils.ts work?",
-      "expected_output": "A direct answer from reading the single named file — no sub-agent fan-out, no research artifact",
+      "expected_output": "A direct answer from reading the single named file — no sub-agent fan-out, no research document",
       "expectations": [
-        "Does NOT invoke research-codebase: no document is written to research/docs/",
-        "Recognized as a single-file lookup with the file already named — the answer comes from reading src/utils.ts directly",
-        "Spawning parallel sub-agents and producing a research artifact would be disproportionate to a one-function question"
+        "Does NOT invoke research-codebase: it is manual-only, and nothing is written to .agents/artifacts/",
+        "The answer comes from reading src/utils.ts directly; a research document would be disproportionate to a one-function question"
       ]
     },
     {
@@ -62,9 +63,31 @@
       "prompt": "Take the research we just did and render it as a self-contained HTML doc.",
       "expected_output": "Routes to output-html, not research-codebase — the research already exists and only needs rendering",
       "expectations": [
-        "Does NOT invoke research-codebase: no new sub-agents are spawned and no fresh codebase investigation runs",
-        "Recognized as a rendering request over content already in the conversation, which is output-html's job",
+        "Does NOT invoke research-codebase: no sub-agents are spawned and no fresh investigation runs",
         "output-html handles it, producing a no-CDN single-file .html from the existing findings"
+      ]
+    },
+    {
+      "id": 6,
+      "should_trigger": false,
+      "prompt": "Find out how our per-tenant rate limiting is configured in the API gateway middleware and document what you find.",
+      "expected_output": "research-codebase does not trigger — it is a manual-only CRISPY phase (disable-model-invocation: true), so a plain research request without /research-codebase is handled as an ordinary conversation",
+      "expectations": [
+        "Does NOT invoke research-codebase: the user did not run /research-codebase",
+        "No research document is written to .agents/artifacts/",
+        "May investigate and answer in chat, or suggest running /research-codebase for a saved research document"
+      ]
+    },
+    {
+      "id": 7,
+      "should_trigger": true,
+      "prompt": "/research-codebase .agents/artifacts/fix-cache-stampede (the directory holds 01-request-cache-stampede.md and 02-research-questions-cache-stampede.md with crispy:flow = research-only)",
+      "expected_output": "A research document 03-research-<desc> carrying crispy:flow = research-only, ending with an implementation handoff rather than a design phase",
+      "expectations": [
+        "Takes the flow from the questions document's crispy:flow because none was given on the command line",
+        "Never reads 01-request-cache-stampede.md",
+        "Handoff offers implementation from the research: '/orchestrate .agents/artifacts/fix-cache-stampede', or implementing directly in the session for a small change",
+        "Mentions that '/structure-outline .agents/artifacts/fix-cache-stampede flow: research-only' can be added if useful, and offers to open the document for review rather than committing it"
       ]
     }
   ]

@@ -3,58 +3,79 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Produce a design discussion from the research document at research/docs/2026-06-01-csv-export.html, which contains a thorough current-state map of the export and column-visibility code with file:line references.",
-      "expected_output": "A 150-250 line design artifact with contrastive decision cards, open questions resolved one at a time via AskUserQuestion, promoted to ready-for-structure, written to research/designs/YYYY-MM-DD-topic.html",
+      "should_trigger": true,
+      "prompt": "/design-discussion .agents/artifacts/feat-ENG-123-csv-export flow: design — the task directory holds 01-request-csv-export.html, 02-research-questions-csv-export.html, and 03-research-csv-export.html, a thorough current-state map of the export and column-visibility code with file:line references.",
+      "expected_output": "A 150-250 line design discussion with contrastive decision cards, open questions resolved one at a time via AskUserQuestion, promoted to ready-for-structure, written to .agents/artifacts/feat-ENG-123-csv-export/04-design-discussion-csv-export.html, ending with an open-for-review offer and the next command for the design flow",
       "expectations": [
-        "Reads the research document fully and does NOT re-research — missing facts become Open Questions, not new investigation",
-        "Every design decision is a contrastive card with 2-3 concrete options, pros/cons, a chosen option, and explicit why-not rationale for the rejected options",
-        "The artifact stays within the 150-250 line target (hard ceiling 300) — implementation code, file-by-file change lists, and task breakdowns are absent",
-        "Contains Current State (with file:line citations), Desired End State, Design Decisions, Patterns to Reuse, Open Questions, and Non-Goals sections",
-        "Walks the user through EVERY open question individually using AskUserQuestion — never batched, never skipped — promoting each answer into Design Decisions",
+        "Reads the request, research-questions, and research documents fully and does not re-research; a fact the research lacks gets one focused codebase-locator/analyzer/pattern-finder dispatch, folded into 03-research-csv-export.html in place",
+        "Writes through Skill('output-html') with the stem .agents/artifacts/feat-ENG-123-csv-export/04-design-discussion-csv-export (next available NN, no extension), PHASE=design and PHASE_LABEL=Design Discussion",
+        "META_EXTRA includes crispy:task_dir, crispy:flow (design), crispy:repos (<identifier>@<sha> entries or none), crispy:request_doc, crispy:questions_doc, crispy:research_doc, crispy:author, and crispy:decisions_resolved",
+        "The first draft puts every real choice under Open Questions with 2-3 concrete options, tradeoffs, and a codebase-grounded Recommendation, with no agent-picked 'Chosen:' line; Design Decisions starts empty unless the request already fixed a choice, and each promoted card gets the chosen option and explicit why-not rationale for the rejected options",
+        "The prose stays within the 150-250 line target (ceiling 300), not counting the Proposed Architecture views; file-by-file change lists and task breakdowns are absent",
+        "Contains Current State and Desired End State described in terms of what users see and can do, a Proposed Architecture section with focused before/after views (trees, contracts, pseudocode, or diff blocks), Design Decisions, Patterns to Reuse, Open Questions, and Non-Goals",
+        "Patterns to Reuse gives each pattern's file:line, a short example from the existing code, and how that area is tested today",
+        "Walks the user through every open question individually using AskUserQuestion (not batched, none skipped), promoting each answer into Design Decisions",
         "Updates crispy:decisions_resolved and its visible Summary cell as questions resolve, and sets status to ready-for-structure only after all are resolved",
-        "Closes by offering to commit the artifact via gh-commit and suggesting /structure-outline with the artifact path"
+        "Closes by offering to open the document for review (VS Code, Cursor, or browser) rather than offering to commit it, then names `/structure-outline .agents/artifacts/feat-ENG-123-csv-export flow: design` as optional, with direct implementation as an alternative, and waits without starting the next phase"
       ]
     },
     {
       "id": 2,
-      "prompt": "Produce a design discussion from research/docs/2026-06-02-stub.html. That document contains only two sentences of prose with no file references or current-state map.",
+      "should_trigger": true,
+      "prompt": "/design-discussion .agents/artifacts/notifications-refactor --format=md — the directory holds 01-request-notifications-refactor.md, 02-research-questions-notifications-refactor.md, 03-research-notifications-refactor.md, and 04-design-discussion-notifications-refactor.md, which has two decisions resolved and two open questions left. Let's pick up where we left off.",
+      "expected_output": "The existing 04-design-discussion document is updated in place in Markdown (not a new 05 file), and the interview resumes with the first remaining open question",
+      "expectations": [
+        "Reuses the existing task directory and updates 04-design-discussion-notifications-refactor.md in place, keeping its path and number; no 05- file is created",
+        "Delegates rendering to Skill('output-markdown') because --format=md was passed",
+        "Resumes with the first remaining open question only, presenting options, tradeoffs, and a codebase-grounded recommendation, and waits for the answer before the next",
+        "Increments crispy:decisions_resolved from 2 as each remaining question is resolved",
+        "Does not re-open the two already-resolved decisions unless the user asks",
+        "If the user explicitly asks to move on to /structure-outline before the remaining questions are answered, saves the settled and open choices (status draft) and hands off to that step, noting it will carry the open items into its own Open Questions, instead of refusing"
+      ]
+    },
+    {
+      "id": 3,
+      "should_trigger": true,
+      "prompt": "/design-discussion .agents/artifacts/stub-task — the directory's 02-research-stub-task.html contains only two sentences of prose with no file references or current-state map.",
       "expected_output": "The skill aborts without writing a design artifact, telling the user the research document is too thin and to run /research-codebase first",
       "expectations": [
         "Detects that the research document lacks file:line references and a current-state map",
-        "Stops WITHOUT producing a design document or rendering anything via the output skills",
+        "Stops without producing a design document or rendering anything via the output skills",
         "Tells the user to run /research-codebase first rather than silently doing the research itself",
         "Does not fabricate current-state claims that the research document cannot support"
       ]
     },
     {
-      "id": 3,
-      "prompt": "We've got the research done on the notifications refactor (research/docs/2026-06-10-notifications.html). Before you plan anything out, talk me through the approach and what the options are.",
-      "expected_output": "The design-discussion skill is selected from the natural-language request alone, without the user naming it, and produces a design artifact rather than a plan or a structure outline",
+      "id": 4,
+      "should_trigger": false,
+      "prompt": "We've got the research done on the notifications refactor in .agents/artifacts/notifications-refactor. Before you plan anything out, talk me through the approach and what the options are.",
+      "expected_output": "design-discussion does not auto-trigger from a plain-language request because it is manual-only (disable-model-invocation: true); the user invokes /design-discussion themselves",
       "expectations": [
-        "The design-discussion skill triggers even though the user never names it or types /design-discussion",
-        "Produces a design artifact under research/designs/ — not a task plan, not a file-by-file change list, not signatures or types",
-        "Reads research/docs/2026-06-10-notifications.html rather than starting fresh investigation of the notifications code",
-        "Surfaces the approach as contrastive decision cards with named options and rejected alternatives, matching the user's ask for 'what the options are'"
+        "The design-discussion skill is not invoked by the model, because the CRISPY phase skills are manual-only and the user runs each phase",
+        "No NN-design-discussion document is written to the task directory",
+        "If the response points anywhere, it suggests running `/design-discussion .agents/artifacts/notifications-refactor` rather than writing the design itself"
       ]
     },
     {
-      "id": 4,
-      "prompt": "Take research/designs/2026-06-10-notifications.html and give me the function signatures and types, broken into vertical slices.",
-      "expected_output": "Routes to structure-outline; design-discussion does not fire and no design artifact is written",
+      "id": 5,
+      "should_trigger": false,
+      "prompt": "Take .agents/artifacts/notifications-refactor/04-design-discussion-notifications-refactor.html and give me the function signatures and types, broken into vertical slices.",
+      "expected_output": "design-discussion does not fire and no design artifact is written; this is structure-outline territory, which the user invokes manually",
       "expectations": [
-        "The structure-outline skill is selected, not design-discussion",
-        "No new design artifact is written to research/designs/",
+        "The design-discussion skill is not selected",
+        "No new design-discussion document is written and the existing one is not modified",
         "No decision cards, open questions, or AskUserQuestion design walkthrough are produced",
         "The named input is treated as a completed design document to consume, not as something to redesign"
       ]
     },
     {
-      "id": 5,
+      "id": 6,
+      "should_trigger": false,
       "prompt": "Figure out how the export pipeline currently works and write it up.",
-      "expected_output": "Routes to research-codebase; design-discussion does not fire and no design artifact is written",
+      "expected_output": "design-discussion does not fire and no design artifact is written; documenting current behavior is research, not design",
       "expectations": [
-        "The research-codebase skill is selected, not design-discussion",
-        "No design artifact is written to research/designs/",
+        "The design-discussion skill is not selected",
+        "No design-discussion document is written",
         "No design decisions, open-question cards, or desired-end-state content are produced against a codebase that has not been researched yet",
         "The request is treated as documenting current behavior, not as choosing between architectural options"
       ]

@@ -1,119 +1,173 @@
 ---
 name: ask-questions
-description: Generate targeted research questions from a feature ticket, user story, or feature request, so the research phase is forced to touch every relevant region of the codebase. The Questions phase of the CRISPY workflow (Questions → Research → Design → Structure → Plan → Implement → Review); its output feeds /research-codebase. Does not answer the questions or open codebase files — that is research-codebase. Accepts `--format=html|md` to select output format (default `html`).
-argument-hint: "<ticket text or file path> [--format=html|md]"
+description: Turn a feature ticket, user story, or change request into the first two CRISPY documents in the task directory under `.agents/artifacts/` — a request document (desired result, constraints, source pointers, chosen flow, compatibility posture) and a research-questions document of 2–7 current-state questions with starting pointers. The Questions phase of CRISPY; asks which flow follows research (design discussion, PRD then TDD, TDD, or research only) and hands off to /research-codebase. Invoked manually. Does not answer the questions or read source code (use /research-codebase). Accepts `--format=html|md` (default `html`).
+argument-hint: "<ticket text or file path> [--format=html|md] [flow: <flow>]"
 disable-model-invocation: true
 ---
 
 # Ask Questions (CRISPY Q Phase)
 
-Generate a focused list of research questions from the feature ticket, user story, or implementation request in **$ARGUMENTS**.
+Turn the feature ticket, user story, or implementation request in **$ARGUMENTS** into two documents: a **request** document that records what the user wants, and a **research-questions** document that tells the research phase what to look at. This phase produces those two documents only — not research findings and not an implementation plan.
 
-This is the **Questions (q)** phase of the CRISPY workflow. The output of this phase directly drives the Research phase. Good questions produce good research; vague questions produce vague research.
+## Why this phase splits the request from the questions
 
-## The Core Principle
+An agent handed the whole ticket forms opinions about the solution before it understands the code. So the desired change lives in the request document, which later design and implementation sessions read, and the questions document describes only the current system. `/research-codebase` reads the questions document alone, so research stays a neutral map of what exists. Good questions produce good research; vague questions produce vague research.
 
-This phase produces **targeted questions** only — not an implementation plan, and not research findings. The questions become the input to `/research-codebase`.
+## What good questions look like
 
-## Why This Phase Exists
+Good questions are specific, describe the current state, and point at where to start: they make the research phase open specific files and follow specific call chains. Attach a starting pointer to each question — a path, package, or component named in the ticket, or found by the locator pass in Step 4.
 
-An agent handed the whole ticket forms opinions about the solution before it understands the code. Extracting **just the questions** into their own artifact does four things:
-
-1. Keep the research phase focused on facts, not opinions
-2. Prevent the feature ticket from contaminating the research context (the ticket stays hidden from sub-agents during Research)
-3. Force the human to think about what the agent needs to know before it starts looking
-4. Create a durable artifact that can be reviewed and refined
-
-## What Good Questions Look Like
-
-**Good questions are specific and trace-oriented.** They force the research phase to open specific files and follow specific call chains.
-
-Example — Ticket: "Add a new endpoint to reticulate splines across tenants"
+<example>
+Illustrative only. Ticket: "Add a new endpoint to reticulate splines across tenants"
 
 Good questions:
-- How do existing endpoints get registered and routed in this codebase?
-- Where is the spline data model defined and how is it persisted?
-- What existing code paths touch spline reticulation (trace all call sites)?
-- How does the current tenant isolation pattern work — middleware, query filters, or something else?
-- Are there existing background workers or queue handlers that process splines?
-- What validation patterns are used for endpoint inputs (Zod, FluentValidation, manual)?
-- How are cross-tenant operations currently authorized (if at all)?
-- What test patterns exist for endpoints that touch tenant-scoped data?
+- How do existing endpoints get registered and routed? (start: `src/Api/Endpoints/`)
+- Where is the spline data model defined and how is it persisted? (start: `src/Domain/Splines/`)
+- How does the current tenant isolation pattern work — middleware, query filters, or something else? (start: `src/Api/Middleware/TenantResolver.cs`)
+- How are cross-tenant operations currently authorized, if at all?
+- What test patterns exist for endpoints that touch tenant-scoped data? (start: `tests/Api.Tests/`)
 
-**Bad questions** are vague or premature:
+Bad questions:
 - "What's the best way to add this endpoint?" (asks for opinion, not facts)
 - "How should tenant isolation work?" (asks for design, not current state)
-- "What files need to change?" (that's the Plan phase, not Research)
-- "Is there a library for spline math?" (too narrow, doesn't explore the codebase)
+- "What files need to change?" (that's planning, not research)
+- "How does the endpoint for reticulating splines across tenants handle auth?" (smuggles the desired change into the question)
+</example>
 
 ## Workflow
 
-### Step 1: Parse arguments and pick the output format
+### Step 1: Parse arguments
 
-Extract `--format=html|md` from `$ARGUMENTS`. Default to `html` if not specified. The rest of `$ARGUMENTS` is the ticket input (inline text or a file path). Remember the chosen format — Step 6 hands off to the matching output skill.
+Extract `--format=html|md` (default `html`) and an optional `flow: <flow>` (`design`, `prd-tdd`, `tdd`, or `research-only`) from `$ARGUMENTS`. The rest is the ticket input — inline text or a file path. A task directory or artifact path in the input means the user is iterating on existing documents (see Step 2).
 
-### Step 2: Read the Ticket Carefully
+### Step 2: Resolve the task directory
 
-If the user provided a ticket file path, read it fully. If they provided inline text, parse it for:
-- The **feature/change** being requested
-- Any **constraints or non-goals** mentioned
-- Any **acceptance criteria**
-- Any **linked documents, tickets, or prior discussions**
+All documents for one task live in `.agents/artifacts/<task>/` at the repo root.
 
-Stop at the ticket — no file reads beyond it, no grep, no glob. Opening codebase files or forming an implementation opinion at this point is the contamination this phase exists to prevent.
+- An explicit task directory or artifact path in the arguments wins.
+- Otherwise, reuse an existing directory under `.agents/artifacts/` whose name or filenames obviously match the request or the current branch, without asking. If one looks close but could belong to another task, or several are plausible, ask which to use before writing.
+- Otherwise create one: `<task>` is the current branch name with `/` replaced by `-` when the branch identifies the task (`feat/ENG-123-csv-export` → `feat-ENG-123-csv-export`); on `main`/`master`, or when the branch doesn't identify the task, use a short kebab-case slug from the request.
 
-### Step 3: Identify the Unknowns
+State the chosen path. Remember whether the directory is new — Step 6 needs it.
 
-Think deeply about what you would need to know to implement this feature correctly. Break it down into categories:
+**Create vs update.** If the directory already holds a `request` or `research-questions` document and the user is iterating or resuming, update that document in place, keeping its path and number; when several of a type match, use the highest-numbered and name it. Create new documents only when none exists or the user asks for new ones.
 
-1. **Existing patterns** — What does the codebase already do in this area? What conventions exist?
-2. **Data model** — What data structures, schemas, or entities are involved?
-3. **Entry points** — How does the relevant code get invoked (routes, events, CLI, etc.)?
-4. **Call graph** — What other code paths will be touched or affected?
-5. **Cross-cutting concerns** — Auth, validation, logging, error handling, telemetry
-6. **Test patterns** — How are similar things tested?
-7. **External dependencies** — What libraries, services, or APIs are involved?
-8. **Historical context** — Any prior research docs, specs, or tickets on this topic?
+### Step 3: Read the ticket
 
-For each category, write 1-3 questions that would force the research phase to explore it.
+Read the ticket file and any files it names in full; for inline text, parse it directly. Pull out:
+- The feature or change being requested and the desired result
+- Constraints, non-goals, and acceptance criteria
+- Exact paths, package names, repository names, URLs, and linked tickets or docs — preserve these verbatim as source pointers
 
-### Step 4: Prune Ruthlessly
+### Step 4: Find starting pointers (optional, one small pass)
 
-**Aim for 5-10 questions total, not 20+.** Too many questions blow the instruction budget in the research phase. Check each question against four tests:
+When the ticket doesn't name enough concrete places to start, dispatch **one** `codebase-locator` sub-agent with the topic area only — for example "order export and download code; column visibility settings" — not the desired change, and use the paths it returns as pointers. Keep it to that single pass and don't open source files yourself: this phase scopes the research, and code read here pulls implementation opinions into the questions. A pointer says where to start looking, never which files to change.
 
-- Is this question about **the codebase as it exists today**, not about how to build the feature?
-- Will answering it produce **facts** (file paths, function signatures, data flows), not **opinions**?
-- Is it **specific enough** that a research agent can open files and find the answer?
-- Does it **force exploration** of a region that's likely to be relevant?
+### Step 5: Draft and prune the questions
 
-If a question doesn't pass all four checks, cut it or rewrite it.
+Work out what you would need to know about the current system to implement this correctly, across these categories:
 
-### Step 5: Determine the Compatibility Posture
+1. **Existing patterns** — what the codebase already does in this area and its conventions
+2. **Data model** — structures, schemas, or entities involved
+3. **Entry points** — how the relevant code is invoked (routes, events, CLI, jobs)
+4. **Call graph** — other code paths that touch this area
+5. **Cross-cutting concerns** — auth, validation, logging, error handling, telemetry
+6. **Test patterns** — how similar things are tested
+7. **External dependencies** — libraries, services, or APIs involved
+8. **Historical context** — prior task directories or research docs on this topic
+9. **Design system** *(frontend work)* — existing components, colors and hex codes, typography, spacing, borders, shadows, theming; include one question on this for any frontend task so later mockups match the project
 
-Research and every downstream phase need to know whether this work may break existing behavior.
+Keep 2–7 questions; go beyond 7 only when the task genuinely spans more areas, because each extra question dilutes the research phase's attention. Rewrite or cut any question that fails these checks:
 
-- Infer from the ticket: explicit permission for breaking changes, cleanup, or "no real users yet" → `breaking_changes_allowed: true`. Mentions of production users, published APIs, downstream consumers, or migration safety → `false`.
-- If the ticket doesn't settle it, ask the user exactly one question via `AskUserQuestion` — this is the sole exception to not interrogating the user, because the posture changes how research documents everything it finds.
-- Record the result in the render brief as `crispy:breaking_changes_allowed` and `crispy:compatibility_context` (Step 6). `/research-codebase` inherits the posture from these fields instead of re-asking.
+- It asks about the codebase as it exists today, not how to build the feature.
+- Answering it produces facts (paths, signatures, data flows), not opinions.
+- It is specific enough that a research agent knows where to open files.
+- It contains nothing that reveals the desired change — that content belongs in the request document.
 
-### Step 6: Prepare the Render Brief and Delegate
+### Step 6: Choose the flow and compatibility posture
 
-Assemble a **render brief** with the values and section content listed below, then invoke the matching output skill via the Skill tool:
+Both answers shape every downstream phase, so settle them here, in one `AskUserQuestion` call where possible. When updating existing documents, keep the flow and posture they already record unless the user changes them.
 
-- `--format=html` → `Skill('output-html')`
-- `--format=md` → `Skill('output-markdown')`
+**Flow.** Skip this if `flow:` was given on the command line. Otherwise show this chart in your message, recommend one flow in a sentence or two based on the request, and include the note below:
 
-Both output skills share one slot schema and component vocabulary, so this brief renders unchanged in either format. The output skill reads its template + `components.md` and produces the file. This skill stays in the conversation as the upstream caller — answer any clarification the output skill asks for, and otherwise let it write the file.
+```text
+┌────────────────────┐      ┌──────────┐
+│ Research questions │─────▶│ Research │
+└────────────────────┘      └────┬─────┘
+       ┌─────────────────────────┘
+       │    ┌──────────────────────┐
+       ├───▶│ 1. Design discussion │───┐
+       │    └──────────────────────┘   │
+       │    ┌────────┐    ┌─────┐      │
+       ├───▶│ 2. PRD │───▶│ TDD │──────┤
+       │    └────┬───┘    └─────┘      │
+       │         └─────────────────────┤
+       │    ┌────────┐                 │
+       ├───▶│ 3. TDD │─────────────────┤
+       │    └────────┘                 │    ┌────────────┐
+       │                               ├───▶│  Outline   │
+       │                               │    │ (optional) │
+       │                               │    └─────┬──────┘
+       │                               └──────────┤
+       │      4. Research only                    ▼
+       └─────────────────────────────────▶ Spec (optional) → Implement
+```
 
-#### Output path
+> Implementation can start from any step — if a phase's document specifies the task well enough, say so and we'll skip the rest.
 
-- Directory: `research/questions/`
-- Stem: `YYYY-MM-DD-<topic>` (topic in kebab-case)
-- Extension: chosen by the output skill (`.html` or `.md`)
+| Option | `crispy:flow` | Fits |
+| --- | --- | --- |
+| Design discussion | `design` | a change with a few clear options; product and technical choices together |
+| PRD then TDD | `prd-tdd` | a larger feature with open product questions |
+| TDD | `tdd` | fixes, cleanup, refactors where the desired behavior is clear |
+| Research only | `research-only` | answer questions about the current system, then implement |
 
-#### Slot values
+Put the recommended option first, labeled "(Recommended)".
 
-These slot names match the output skills' slot schema exactly — do not invent new ones.
+**Compatibility posture.** Infer it from the ticket when you can: explicit permission for breaking changes, cleanup, or "no real users yet" → `breaking_changes_allowed: true`; production users, published APIs, downstream consumers, or migration safety → `false`. Ask only when the ticket doesn't settle it. `/research-codebase` and later phases inherit this posture instead of re-asking.
+
+**Local exclude.** If the task directory is new and `git check-ignore -q .agents/artifacts` fails, mention once that these documents are working files that aren't committed, and offer to add `.agents/` to `.git/info/exclude` (local-only, not committed). Include this as a question in the same `AskUserQuestion` call when you are asking anything else; otherwise offer it in the handoff. Act only if the user agrees:
+
+```bash
+echo ".agents/" >> "$(git rev-parse --git-path info/exclude)"
+```
+
+### Step 7: Gather metadata and render both documents
+
+Gather `crispy:repos`: one `<identifier>@<sha>` entry per repository the task covers (usually just the current one), comma-separated — identifier from `gh repo view --json nameWithOwner -q .nameWithOwner`, else the repo directory name; sha from `git rev-parse HEAD`; `none` when no repository applies.
+
+Pick numbers: `NN` is the next available two-digit prefix in the task directory, counting every existing `NN-` file of any type (first file is `01`). New documents get the request first, then the questions (e.g. `01-request-csv-export`, `02-research-questions-export-downloads`). The request's `<desc>` names the feature; the questions document's `<desc>` names the area under study, for the same reason as its slots below. Documents being updated keep their paths.
+
+Render each document by invoking the matching output skill once per document — `Skill('output-html')` for `html`, `Skill('output-markdown')` for `md` — passing the full stem without extension; the output skill appends the extension and creates the directory. Both output skills share one slot schema, so the brief renders unchanged in either format. Stay in the conversation as the caller: answer any clarification the output skill asks for, then let it write.
+
+These slot and `crispy:*` names are the output skills' schema; use only these.
+
+#### Request document — `.agents/artifacts/<task>/NN-request-<desc>`
+
+| Slot | Value |
+| --- | --- |
+| `PHASE` | `request` |
+| `PHASE_LABEL` | `Request` |
+| `STATUS` | `complete` |
+| `STATUS_CLASS` | `complete` |
+| `TOPIC` | kebab-case topic |
+| `TITLE` | `Request: <Topic>` |
+| `TICKET` | one-line ticket summary (with its identifier, if any) |
+| `PROMPT_TEXT` | the originating ticket body, in prose (1–2 sentences) |
+| `META_EXTRA` | `crispy:ticket_source` (file path the ticket came from, or `inline`), `crispy:breaking_changes_allowed` (`true`/`false`), `crispy:compatibility_context` (one-line posture explanation), `crispy:task_dir`, `crispy:flow`, `crispy:repos`, `crispy:questions_doc` (path of the questions document) |
+| `SUMMARY_EXTRA` | rows: **Source** = path or `inline`, **Flow** = chosen flow, **Breaking changes** = `allowed` / `not allowed` |
+
+Body sections, numbered monotonically:
+
+1. **Original request** — the ticket or request as given, verbatim apart from light cleanup.
+2. **Desired result** — what should be true when the work is done, in a short paragraph.
+3. **Constraints and acceptance criteria** — constraints, non-goals, and acceptance criteria from the ticket. Omit if there are none.
+4. **Source pointers** — exact paths, package names, repository names, URLs, and linked tickets or docs from the request and the locator pass.
+5. **Flow and compatibility** — the chosen flow with a one-line reason, and the compatibility posture with its reason.
+
+#### Research-questions document — `.agents/artifacts/<task>/NN-research-questions-<desc>`
+
+This is everything `/research-codebase` reads, so keep the desired change out of every slot and section — including `TICKET` and `PROMPT_TEXT`. `TOPIC`, `TITLE`, and the filename `<desc>` name the area under study, like `PROMPT_TEXT`, not the feature being built; the request document keeps the feature name.
 
 | Slot | Value |
 | --- | --- |
@@ -121,42 +175,35 @@ These slot names match the output skills' slot schema exactly — do not invent 
 | `PHASE_LABEL` | `Questions` |
 | `STATUS` | `ready-for-research` |
 | `STATUS_CLASS` | `ready` |
-| `TOPIC` | kebab-case topic |
-| `TITLE` | `Research Questions: <Topic>` |
-| `TICKET` | one-line ticket summary |
-| `PROMPT_TEXT` | the originating ticket body, in prose (1-2 sentences) |
-| `META_EXTRA` | `crispy:ticket_source` (the file path the ticket came from, or `inline`), `crispy:breaking_changes_allowed` (`true`/`false` from Step 5), `crispy:compatibility_context` (one-line posture explanation) |
-| `SUMMARY_EXTRA` | three rows: **Source** = `<path or 'inline'>`, **Questions** = `<count>` (accent the count), **Breaking changes** = `allowed` / `not allowed` |
+| `TOPIC` | kebab-case area under study (e.g. `order-export-downloads`) |
+| `TITLE` | `Research Questions: <Area>` (e.g. "Research Questions: Order Export and Downloads") |
+| `TICKET` | the ticket identifier only (e.g. `ENG-412`), or `N/A` |
+| `PROMPT_TEXT` | one neutral sentence naming the area under study, e.g. "Current-state questions about order export, downloads, and column visibility settings." |
+| `META_EXTRA` | `crispy:breaking_changes_allowed`, `crispy:compatibility_context`, `crispy:task_dir`, `crispy:flow`, `crispy:repos` |
+| `SUMMARY_EXTRA` | rows: **Questions** = count (accent the count), **Flow** = chosen flow, **Breaking changes** = `allowed` / `not allowed` |
 
-`crispy:ticket_source` is the questions-phase metadata field owned by this phase in the output skills' schema — keep that exact key. The two compatibility fields are read by `/research-codebase`, which inherits the posture rather than re-asking.
+Body sections, numbered monotonically:
 
-#### Body sections
+1. **Context pointers** — the exact paths, package names, repository names, and URLs research should start from, each with a few neutral words on what lives there. Omit if there are none.
+2. **Questions** — a sec-intro line ("Current-state questions for the research phase, each answerable with file:line references.") and an ordered list of the 2–7 questions. Each item starts with a plain category tag such as `data-model`, `call-graph`, or `validation`, then the question, then its starting pointer as inline code. The tags are non-modifying labels, so the output skill's default muted tag applies; its `components.md` owns the markup.
+3. **Notes** *(optional — omit if empty)* — known-unknowns or areas the user flagged, phrased as facts to check about the current system.
 
-Emit three numbered sections in this order. Number them monotonically (`01`, `02`, `03`).
+### Step 8: Hand off
 
-**Section 01 — Context** *(human-only, stripped when this artifact is passed to `/research-codebase`)*
-- A neutral `.callout` (HTML) or `> [!NOTE]` (MD) containing exactly: "**For the human, not sub-agents.** When these questions are passed to `/research-codebase`, this section is STRIPPED. It exists only for the human reviewing this document."
-- A 2-3 sentence prose description of what the feature request is.
+After both documents are written:
 
-**Section 02 — Questions**
-- A sec-intro line: "5-10 targeted questions that force the research phase to touch the relevant parts of the codebase. Each question is about *current state*, answerable with file:line references."
-- An ordered list of 5-10 questions. Each item begins with a **plain category tag** such as `data-model`, `call-graph`, or `validation`. These are non-modifying category labels, so the output skill's default muted tag applies rather than the change tags; `components.md` in the chosen output skill owns the exact markup for both formats, including inline file paths and identifiers.
+1. Show the saved paths and the list of questions.
+2. Ask whether any question is missing, wrong, or could use a better starting pointer. Apply revisions to the questions document in place.
+3. Offer to open the documents for review in VS Code, Cursor, or the browser.
+4. Make the local-exclude offer from Step 6 if it hasn't been made.
+5. Name the next command and say it can run here, after compaction, or in a new session — the questions document carries everything research needs:
 
-**Section 03 — Notes** *(optional — omit entirely if there are no notes)*
-- Free prose for known-unknowns, gotchas the human spotted, or areas the user explicitly flagged for investigation.
+   ```text
+   /research-codebase .agents/artifacts/<task> flow: <flow>
+   ```
 
-### Step 7: Present to the User
+Then wait. Research starts only when the user runs it.
 
-After the output skill writes the file:
+## Scope of user questions
 
-1. Show the user the list of questions
-2. Ask if any are missing, wrong, or should be refined
-3. Do NOT proceed to research automatically — wait for the user to explicitly start the next phase
-4. Offer to commit the new artifact via `Skill('gh-commit')` — committed CRISPY artifacts survive worktree teardown and are reviewable in PRs (the `thoughts sync` equivalent)
-5. Suggest the next command: `/research-codebase research/questions/YYYY-MM-DD-topic.<ext>`
-
-## Important Rules
-
-- **Do not interrogate the user.** Turning the ticket into questions is the job; ask for more feature context only when the ticket is genuinely ambiguous about what is being requested. (Step 5's compatibility question is the one standing exception.)
-
-The questions are the leverage point — `/research-codebase` answers them, and must never see the ticket.
+Turning the ticket into questions is the job, so don't interrogate the user. The Step 6 call (flow, compatibility posture, local exclude) is the standing exception; ask for more feature context only when the ticket is genuinely ambiguous about what is being requested.

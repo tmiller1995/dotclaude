@@ -41,6 +41,18 @@
         "Consults references/conventional-commits.md if the correct breaking-change form is uncertain",
         "Still presents the message for confirmation before committing"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Commit my changes. The working tree has a fix in src/export/csv.ts plus its test, and new and modified files under .agents/artifacts/feat-ENG-123-csv-export/ (the research and outline documents).",
+      "expected_output": "A single fix commit containing only src/export/csv.ts and its test, with everything under .agents/artifacts/ left unstaged and mentioned as intentionally excluded",
+      "expectations": [
+        "Stages src/export/csv.ts and its test explicitly with `git add <paths>`, not `git add -A` or `git add .`",
+        "Leaves every file under `.agents/artifacts/` unstaged, because those are CRISPY working documents and the user did not ask to commit them",
+        "The presented plan lists only the code files and notes that the `.agents/artifacts/` changes were left out",
+        "Uses `fix` as the type and waits for the user's confirmation before running `git commit`",
+        "Adds no AI attribution trailer and does not pass `--no-verify` or `--amend`"
+      ]
     }
   ]
 }

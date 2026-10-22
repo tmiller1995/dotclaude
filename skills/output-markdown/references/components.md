@@ -7,6 +7,7 @@ Dialect: **GitHub-flavored Markdown (GFM)**.
 **Contents:** [Section structure](#section-structure) · [Inline elements](#inline-elements) ·
 [Lists](#lists) · [Code blocks](#code-blocks) · [Tables](#tables) · [Callouts](#callouts) ·
 [Cards](#cards) · [Vertical-slice cards](#vertical-slice-cards) · [Collapsibles](#collapsibles) ·
+[Diagrams](#diagrams) ·
 [Recommendation aside](#recommendation-aside) · [Component-selection cheat sheet](#component-selection-cheat-sheet) ·
 [What not to do](#what-not-to-do)
 
@@ -275,7 +276,7 @@ The centerpiece of structure-outline and create-spec artifacts. Use `###` headin
 `Size: ~80 LOC` · `Surfaces: web`
 ```
 
-Required parts: `### Slice N — Name`, `**Goal:**`, `**Files touched:**` list, `**Checkpoint:** ✓ ...`. Chips and any "Implementation steps" / "Tests" / "Automated verification" / "Manual verification" sub-blocks are optional but conventional (in `create-spec`); the verification sub-blocks render as `- [ ]` checklists.
+Required parts: `### Slice N — Name`, `**Goal:**`, `**Files touched:**` list, `**Checkpoint:** ✓ ...`. Chips and any "Implementation steps" / "Tests" / "Automated verification" / "Manual verification" sub-blocks are optional; `structure-outline` slices carry the two verification sub-blocks and `create-spec` phases carry all four. The verification sub-blocks render as `- [ ]` checklists.
 
 ## Collapsibles
 
@@ -300,6 +301,29 @@ Tenant ID is resolved in `TenantResolutionMiddleware.cs:45`...
 ```
 
 The blank lines around the inner Markdown matter — without them GFM may not parse the body as Markdown. Set `open` on the first / most important deep dive.
+
+## Diagrams
+
+Maps to the HTML `figure.diagram` component. In CRISPY mode, use a fenced `mermaid` block — GitHub and VS Code render it — followed by a one-line italic caption that states the point:
+
+````markdown
+```mermaid
+flowchart LR
+    ExportButton --> exportCsv["exportCsv()"] --> ReportService
+```
+
+_The button calls one server function, which delegates to the existing report service._
+````
+
+In Report mode, draw the same view as ASCII in a ` ```text ` block, because a report may be pasted where Mermaid doesn't render:
+
+````markdown
+```text
+ExportButton ──▶ exportCsv() ──▶ ReportService
+```
+````
+
+Trees, pseudocode, and diffs stay as plain fenced blocks in both modes; `skills/output-html/references/visual-guidance.md` covers which view to use.
 
 ## Recommendation aside
 
@@ -328,6 +352,7 @@ A heading-inside-blockquote pattern. Use at most one per section. Light bulb emo
 | A vertical slice | `### Slice N — Name` + Goal/Files/Checkpoint sub-blocks |
 | A self-contained sub-topic with a heading | `### …` |
 | A 5+ line deep dive that not everyone needs | `<details>` (first one `open`) |
+| A flow, sequence, or component map | ` ```mermaid ` block (CRISPY) or ` ```text ` ASCII (Report) + italic caption |
 | The "headline" recommendation for a section | `> ### 💡 Recommendation` blockquote |
 | Metrics / counts inline | space-separated backticked pairs with `·` |
 | An inline file path or identifier | single backticks |
@@ -335,7 +360,7 @@ A heading-inside-blockquote pattern. Use at most one per section. Light bulb emo
 
 ## What not to do
 
-- **Don't reach for HTML when Markdown would do.** The point of this format is grep-ability and renderer portability. Save HTML for `<details>` and a few other cases where there's no alternative.
-- **Don't over-emphasize.** Bolding every phrase teaches the reader nothing stands out. One emphasized phrase per paragraph at most.
-- **Don't mix decision-card formats.** Pick the checkbox-options style (`- [x] B. ...`) and stay consistent — readers learn to recognize the chosen option visually.
-- **Don't omit language hints on code blocks.** Even ` ```text ` is better than no hint; renderers can use it to disable highlighting cleanly.
+- **Prefer Markdown to HTML.** The point of this format is grep-ability and renderer portability; use HTML only for `<details>` and the few other cases with no Markdown alternative.
+- **Emphasize at most one phrase per paragraph.** When everything is bold, nothing stands out.
+- **Use one decision-card format** — the checkbox-options style (`- [x] B. ...`) — so readers learn to recognize the chosen option visually.
+- **Give every code block a language hint.** Even ` ```text ` beats none; renderers use it to disable highlighting cleanly.

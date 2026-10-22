@@ -3,7 +3,7 @@
   "html-effectiveness" essay (thariqs.github.io/html-effectiveness).
 
   Every CRISPY skill (ask-questions, research-codebase, design-discussion,
-  structure-outline, create-spec) emits a self-contained .html file using
+  create-prd, create-tdd, structure-outline, create-spec) emits a self-contained .html file using
   this skeleton. Inline the ENTIRE <style> block into each generated
   artifact — do not link this file or share a stylesheet. The output must
   render anywhere it is opened or pasted.
@@ -273,6 +273,16 @@
       font-size: 1rem; text-transform: uppercase; letter-spacing: 0.08em;
       color: var(--clay); margin: 0 0 0.5rem;
     }
+
+    /* ────────── Diagrams (inline SVG) ────────── */
+    figure.diagram { margin: 1.25rem 0; }
+    figure.diagram svg { display: block; width: 100%; height: auto; max-width: 100%; }
+    figure.diagram text { fill: var(--ink); font: 0.8125rem var(--sans); }
+    figure.diagram .node { fill: var(--code-bg); stroke: var(--border); stroke-width: 1; }
+    figure.diagram .node.accent { stroke: var(--clay); }
+    figure.diagram .edge { fill: none; stroke: var(--muted); stroke-width: 1.25; }
+    figure.diagram .arrow { fill: var(--muted); }
+    figure.diagram figcaption { color: var(--muted); font-size: 0.8125rem; margin-top: 0.4rem; }
 
     /* ────────── Lists ────────── */
     ul, ol { padding-left: 1.4rem; max-width: 68ch; }

@@ -1,6 +1,6 @@
 ---
 name: gh-commit
-description: Stage, review, and create well-formed Conventional Commits from the current working tree — reads the staged diff, splits unrelated changes into separate commits, drafts a typed subject and a why-focused body, and confirms with the user before committing. Use whenever the user wants to commit work, including phrasings like "commit this", "commit my changes", "stage and commit", "write a commit message", "split this into separate commits", "what should this commit say", or "check this in". Also use when a message needs a type, a scope, or a BREAKING CHANGE marker. Stops at the commit — use gh-create-pr instead when the request also involves pushing the branch or opening a pull request. Never skips hooks, never amends, and never adds AI attribution trailers.
+description: Stage, review, and create well-formed Conventional Commits from the current working tree — reads the staged diff, splits unrelated changes into separate commits, drafts a typed subject and a why-focused body, and confirms with the user before committing. Use whenever the user wants to commit work or needs a commit message written (e.g. "commit this", "write a commit message", "split this into separate commits"), including choosing a type, scope, or BREAKING CHANGE marker. Stops at the commit — use gh-create-pr instead when the request also involves pushing the branch or opening a pull request. Never skips hooks, never amends, and never adds AI attribution trailers.
 argument-hint: "[paths to stage, or a hint about the message]"
 ---
 
@@ -18,11 +18,11 @@ Create well-formatted commit: $ARGUMENTS
 
 ## Workflow
 
-1. **Stage.** Name the files to commit explicitly — `git add <paths>` beats `git add -A` / `git add .`. Blind wildcards can sweep in secrets, build artifacts, and editor scratch files. If specific files are already staged, commit only those. Auto-staging all modified and new files is a *fallback* only when no explicit paths are obvious.
-2. **Read the diff.** Run `git diff --cached` and actually *read* it. The subject needs to describe *what changed and why*, not *which files changed*.
-3. **Split if needed.** If the staged diff covers multiple unrelated logical changes, propose splitting into separate commits. One commit = one logical change = one reason to change.
+1. **Stage.** Name the files to commit explicitly with `git add <paths>` rather than `git add -A` / `git add .`, because blind wildcards can sweep in secrets, build artifacts, and editor scratch files. If specific files are already staged, commit only those. Stage all modified and new files only as a fallback, when no explicit paths are obvious. Leave anything under `.agents/artifacts/` unstaged unless the user explicitly asks to commit it, because those are CRISPY working documents that stay out of history.
+2. **Read the diff.** Run `git diff --cached` and read it. The subject describes *what changed and why*, not *which files changed*.
+3. **Split if needed.** If the staged diff covers multiple unrelated logical changes, propose separate commits: one commit per logical change.
 4. **Draft the message.** Use Conventional Commits format (below): a subject line, and a body as bullets or a short paragraph explaining *why*.
-5. **Present the plan** to the user — files to be committed, subject, and body — and **ask for confirmation before running `git commit`**. This gate is mandatory: surface the proposed message and the exact files first, then wait for the go-ahead. On multi-commit splits, list each commit's files and subject.
+5. **Present the plan** to the user — the exact files to be committed, subject, and body — and wait for their go-ahead before running `git commit`, because the user owns the history and should see what goes into it. On multi-commit splits, list each commit's files and subject.
 6. **Commit** with `git commit --message "<subject>" --message "<body>"`. On multi-commit splits, stage and commit each change separately.
 7. **Show the result** with `git log -1` (or `git log --oneline -N` for multi-commit splits) so the user can confirm.
 
@@ -42,7 +42,7 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 
 Mark a breaking change with a `!` immediately before the colon (`feat(api)!: send an email when a product ships`), with a `BREAKING CHANGE: <description>` footer, or with both.
 
-Read `references/conventional-commits.md` for the full 1.0.0 specification — needed for footer token rules, the revert convention, and unusual breaking-change cases.
+Read `references/conventional-commits.md` for the full 1.0.0 specification when you need footer token rules, the revert convention, or an unusual breaking-change case.
 
 ## Putting it together
 
@@ -57,6 +57,6 @@ git log -1
 
 ## Standing rules
 
-- **Never skip hooks.** No `--no-verify`, no `--no-gpg-sign`. Pre-commit checks (e.g. defined in `.pre-commit-config.yaml`) are signal, not noise — if a hook fails, the commit did not happen. Fix the underlying issue, re-stage, and create a *new* commit.
-- **Never amend.** A failed pre-commit means the commit didn't happen, so there's nothing to amend — `--amend` would modify the *previous* commit and destroy history. Stage, commit fresh.
-- **No AI attribution.** Commits are authored by the engineer. Do not add `Co-Authored-By`, `Assistant-model`, "Generated with Claude", or any other AI/co-authorship trailer — write the message as if the user wrote it.
+- **Run hooks.** Don't pass `--no-verify` or `--no-gpg-sign`. Pre-commit checks (e.g. defined in `.pre-commit-config.yaml`) are signal: if a hook fails, the commit did not happen. Fix the underlying issue, re-stage, and create a new commit.
+- **Don't amend.** After a failed hook there is nothing to amend, and `--amend` would rewrite the *previous* commit instead. Stage and commit fresh.
+- **No AI attribution.** Commits are authored by the engineer, so write the message as if the user wrote it, with no `Co-Authored-By`, `Assistant-model`, "Generated with Claude", or other AI/co-authorship trailer.

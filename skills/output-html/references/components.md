@@ -16,6 +16,7 @@ Treat this like a shared design system. If two artifacts both have "design decis
 - [Cards](#cards) — generic, decision-with-options, `.tradeoffs` grid
 - [Vertical-slice cards](#vertical-slice-cards) — the structure-outline / create-spec centerpiece
 - [Collapsibles](#collapsibles) — `<details>` deep dives
+- [Diagrams (inline SVG)](#diagrams-inline-svg) — `figure.diagram` for flows, sequences, and component maps
 - [Recommendation aside](#recommendation-aside)
 - [Component-selection cheat sheet](#component-selection-cheat-sheet) — content shape → component
 - [What not to do](#what-not-to-do)
@@ -160,7 +161,7 @@ The `.file-label` above the `<pre>` is part of the component — emit them toget
 | `.cm` | comments | `<span class="cm">// note: ...</span>` |
 | `.hl` | visually-emphasized region | `<span class="hl">deprecated</span>` |
 
-The template's palette renders these in Thariq's clay/gold/olive/gray scheme automatically. **Do not** import a syntax-highlighter library — handwriting the spans is the convention.
+The template's palette renders these in Thariq's clay/gold/olive/gray scheme automatically. Hand-write the spans; a syntax-highlighter library would break self-containment.
 
 ### When NOT to use a code block
 
@@ -296,7 +297,7 @@ This is the centerpiece of structure-outline and create-spec artifacts.
 </div>
 ```
 
-Required children: `<h3>` (slice number + name), `.goal` (one sentence of what success looks like for the user), and `.checkpoint` (the testable acceptance). `<ul>` of files-touched and `.chips` for metrics are optional but conventional. `create-spec` additionally emits "Implementation steps", "Tests", "Automated verification", and "Manual verification" sub-blocks — render each as a labeled `<strong>` line followed by a `<ul>` inside the same `.slice` card.
+Required children: `<h3>` (slice number + name), `.goal` (one sentence of what success looks like for the user), and `.checkpoint` (the testable acceptance). `<ul>` of files-touched and `.chips` for metrics are optional but conventional. `structure-outline` slices add "Automated verification" and "Manual verification" sub-blocks, and `create-spec` phases also add "Implementation steps" and "Tests" — render each as a labeled `<strong>` line followed by a `<ul>` inside the same `.slice` card.
 
 ## Collapsibles
 
@@ -318,6 +319,41 @@ Use `<details>` for "deep dive on component X" — readers can collapse what the
 ```
 
 The `<span class="where">` on the right side of `<summary>` is the conventional path/location annotation.
+
+## Diagrams (inline SVG)
+
+For a flow, sequence, or component map that reads better as a picture than as a tree in a `<pre>`. Draw it as inline `<svg>` inside `<figure class="diagram">` with a `<figcaption>` that states the point. The template styles the classes below with its CSS variables, so the diagram follows light and dark mode; leave colors, fonts, and strokes out of the SVG attributes.
+
+```html
+<figure class="diagram">
+  <svg viewBox="0 0 520 90" role="img" aria-labelledby="dg-export-title">
+    <title id="dg-export-title">Export request flow</title>
+    <defs>
+      <marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path class="arrow" d="M0,0 L10,5 L0,10 z"/>
+      </marker>
+    </defs>
+    <rect class="node" x="10" y="25" width="130" height="40" rx="6"/>
+    <text x="75" y="50" text-anchor="middle">ExportButton</text>
+    <rect class="node accent" x="195" y="25" width="130" height="40" rx="6"/>
+    <text x="260" y="50" text-anchor="middle">exportCsv()</text>
+    <rect class="node" x="380" y="25" width="130" height="40" rx="6"/>
+    <text x="445" y="50" text-anchor="middle">ReportService</text>
+    <path class="edge" d="M140,45 H193" marker-end="url(#dg-arrow)"/>
+    <path class="edge" d="M325,45 H378" marker-end="url(#dg-arrow)"/>
+  </svg>
+  <figcaption>The button calls one server function, which delegates to the existing report service.</figcaption>
+</figure>
+```
+
+| Class | Use for |
+| --- | --- |
+| `.node` | boxes for components, services, or states |
+| `.node.accent` | the one node the section is about (new or changed) |
+| `.edge` | connector lines and paths |
+| `.arrow` | arrowhead marker fill |
+
+Keep it to the nodes and edges the point needs. Give each diagram's `<title>` and marker unique ids so several diagrams can share a page. No external scripts or diagram libraries — the SVG is hand-written so the file stays self-contained. For a layout or visual too dense for one figure, save a separate `diagram-<desc>.html` beside the document and link it. `visual-guidance.md` covers when a diagram beats a tree or a diff.
 
 ## Recommendation aside
 
@@ -349,6 +385,7 @@ Renders with a clay border and uppercase heading. Use at most one per section.
 | A vertical slice | `.slice` |
 | A self-contained sub-topic with a heading | `.card` |
 | A 5+ line deep dive that not everyone needs | `<details>` (first one `open`) |
+| A flow, sequence, or component map | `figure.diagram` + inline `<svg>` |
 | The "headline" recommendation for a section | `aside.reco` |
 | Metrics / counts inline | `.chips` |
 | An inline file path or identifier | `<code>` |
@@ -356,8 +393,8 @@ Renders with a clay border and uppercase heading. Use at most one per section.
 
 ## What not to do
 
-- **Don't invent new CSS classes inline.** If a pattern is missing, raise it in the conversation rather than adding ad-hoc styles that downstream skills can't recognize.
-- **Don't import a CSS framework or font.** The template is self-contained for a reason.
-- **Don't use `<br>` for spacing.** Use the existing margin from `<p>` and section spacing.
-- **Don't add inline `style=""` attributes** unless adapting an existing structural property (e.g., grid-template-columns for a one-off table layout). Color, font, padding, border — those belong in the stylesheet.
-- **Don't break the section numbering.** `01`, `02`, `03`, ... monotonic, no skips.
+- **Use only the template's classes.** If a pattern is missing, raise it in the conversation instead of adding ad-hoc CSS classes, which downstream skills can't recognize.
+- **Import no CSS framework or font**, so the file stays self-contained.
+- **Space with the existing `<p>` margins and section spacing**, not `<br>`.
+- **Reserve inline `style=""`** for adapting a structural property (e.g., grid-template-columns for a one-off table layout). Color, font, padding, and border belong in the stylesheet.
+- **Keep section numbering monotonic** — `01`, `02`, `03`, ... with no skips.

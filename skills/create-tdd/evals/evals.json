@@ -1,0 +1,60 @@
+{
+  "skill_name": "create-tdd",
+  "evals": [
+    {
+      "id": 1,
+      "should_trigger": true,
+      "prompt": "/create-tdd .agents/artifacts/feat-ENG-210-shared-reviews flow: prd-tdd — the task directory holds 01-request-shared-reviews.html, 02-research-questions-shared-reviews.html, 03-research-shared-reviews.html, and 04-prd-shared-reviews.html (approved, status ready-for-tdd) with two items under Deferred to TDD.",
+      "expected_output": "A TDD at .agents/artifacts/feat-ENG-210-shared-reviews/05-tdd-shared-reviews.html built System Design first, then Program Design, each separately approved, ending at ready-for-structure with a handoff to an optional /structure-outline or direct implementation",
+      "expectations": [
+        "Reads the request, research, and PRD fully, and settles the PRD's Deferred to TDD items in the design",
+        "Writes the starting document through Skill('output-html') with the stem .agents/artifacts/feat-ENG-210-shared-reviews/05-tdd-shared-reviews (next available NN, no extension), PHASE=tdd, PHASE_LABEL=Technical Design, STATUS=draft",
+        "META_EXTRA includes crispy:task_dir, crispy:flow (prd-tdd), crispy:repos, crispy:request_doc, crispy:research_doc, and crispy:prd_doc; no crispy:design_doc because the directory has no design discussion",
+        "System Design covers component interactions, contracts, and schemas, shows current versus proposed behavior, and draws flows with the inline-SVG diagram component from output-html's components.md (or a linked diagram-<desc>.html), not Mermaid",
+        "Presents one technical decision per message with 2-3 options, tradeoffs, and a codebase-grounded recommendation, waits for the answer, and updates the TDD in place",
+        "Asks for System Design approval as a separate step before discussing Program Design",
+        "Program Design uses concrete code views (call trees, file trees, DI maps, signatures, or pseudocode), with diffs for changes to existing shapes, and gets its own approval",
+        "Patterns to Follow cites source paths with short examples, including test seams",
+        "Sets STATUS to ready-for-structure only after both approvals",
+        "Handoff offers to open the document for review rather than to commit it, names `/structure-outline .agents/artifacts/feat-ENG-210-shared-reviews flow: prd-tdd` as optional with direct implementation as an alternative, and waits"
+      ]
+    },
+    {
+      "id": 2,
+      "should_trigger": true,
+      "prompt": "/create-tdd .agents/artifacts/fix-retry-backoff --format=md flow: tdd — the directory holds 01-request-fix-retry-backoff.md, 02-research-questions-fix-retry-backoff.md, and 03-research-fix-retry-backoff.md. There is no PRD; the desired behavior (exponential backoff with jitter for the webhook worker) is clear from the request.",
+      "expected_output": "A Markdown TDD at .agents/artifacts/fix-retry-backoff/04-tdd-fix-retry-backoff.md started from the request and research alone, with Mermaid flow diagrams, rendered via output-markdown",
+      "expectations": [
+        "Starts without a PRD, working from the request and research, and does not ask the user to write a PRD first",
+        "Delegates rendering to Skill('output-markdown') because --format=md was passed, writing .agents/artifacts/fix-retry-backoff/04-tdd-fix-retry-backoff.md",
+        "crispy:flow is tdd and no crispy:prd_doc is emitted",
+        "Draws the retry control flow as a Mermaid block in the Markdown output",
+        "Keeps System Design and Program Design approvals separate even for a small fix",
+        "If a technical choice would change user-facing behavior, raises it with the user instead of deciding silently"
+      ]
+    },
+    {
+      "id": 3,
+      "should_trigger": false,
+      "prompt": "Turn the technical design in .agents/artifacts/fix-retry-backoff into a list of tasks for the workers to pick up.",
+      "expected_output": "create-tdd does not trigger: the request is for a task breakdown, and the skill is manual-only, so no TDD is written or modified",
+      "expectations": [
+        "The create-tdd skill is not invoked, because the user asked for a task list and CRISPY phase skills are manual-only",
+        "No NN-tdd document is written and any existing TDD is left unchanged",
+        "No System Design or Program Design interview is started"
+      ]
+    },
+    {
+      "id": 4,
+      "should_trigger": true,
+      "prompt": "/create-tdd .agents/artifacts/feat-ENG-300-audit-log flow: tdd — the directory holds 01-request-audit-log.html, 02-research-questions-audit-log.html, 03-research-audit-log.html, and 04-design-discussion-audit-log.html with two resolved decisions (events are written in the same transaction; retention is 90 days).",
+      "expected_output": "A TDD at .agents/artifacts/feat-ENG-300-audit-log/05-tdd-audit-log.html that carries the design discussion's settled choices forward and cites it as crispy:design_doc",
+      "expectations": [
+        "Reads 04-design-discussion-audit-log.html in full alongside the request and research",
+        "Treats the two resolved decisions as settled: they appear in System Design without being re-asked",
+        "META_EXTRA includes crispy:design_doc pointing at the design discussion, and no crispy:prd_doc",
+        "If a decision needs a fact the research lacks, dispatches a focused codebase-analyzer, codebase-locator, or codebase-pattern-finder and folds the finding into 03-research-audit-log.html in place"
+      ]
+    }
+  ]
+}

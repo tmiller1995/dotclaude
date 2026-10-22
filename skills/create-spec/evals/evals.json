@@ -3,48 +3,79 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Create the implementation spec from the structure outline at research/structures/2026-06-03-csv-export.html. The outline defines three vertical slices, each with a goal, files-touched list, and checkpoint, and links to a completed design document with all open questions resolved.",
-      "expected_output": "A phased spec at research/specs/YYYY-MM-DD-topic.html where each phase mirrors a slice and carries implementation steps, tests, automated verification, and manual verification, plus a mandatory Non-goals section",
+      "should_trigger": true,
+      "prompt": "/create-spec .agents/artifacts/feat-ENG-210-csv-export flow: design — the directory holds 01-request-csv-export.html, 02-research-questions-csv-export.html, 03-research-csv-export.html, 04-design-discussion-csv-export.html (all open questions resolved), and 05-structure-outline-csv-export.html, which defines three vertical slices, each with a goal, files-touched list, checkpoint, and Automated and Manual verification.",
+      "expected_output": "A phased spec at .agents/artifacts/feat-ENG-210-csv-export/06-spec-csv-export.html where each phase mirrors a slice and carries implementation steps, tests, automated verification, and manual verification, plus a mandatory Non-goals section, followed by an open-for-review offer and an /orchestrate handoff",
       "expectations": [
-        "Phases map 1:1 to the structure outline's slices — boundaries, goals, and checkpoints are copied, never redrawn",
+        "Uses the structure outline as the governing document (it outranks the design discussion) and reads it, the design discussion, the research, and the request in full",
+        "Phases map 1:1 to the structure outline's slices — boundaries, goals, checkpoints, and verification are copied, correcting only commands that don't match the repository",
         "Each phase slice-card contains Implementation steps with file:line citations from the research doc, a Tests checklist, an Automated verification checklist of literal runnable commands, and a Manual verification checklist of human-only steps",
         "Section 04 Non-goals is present and ends with the out-of-scope confirmation line, even when the design doc lists few non-goals",
-        "Output goes to research/specs/YYYY-MM-DD-<topic> (the standard CRISPY convention), with crispy:structure_doc, crispy:design_doc, crispy:research_doc, crispy:author, and crispy:phase_count metadata mirrored in visible Summary rows — crispy:date and a Date row are NOT added to the brief, since the output template already stamps the date",
+        "Writes to the stem .agents/artifacts/feat-ENG-210-csv-export/06-spec-csv-export (next available NN), with crispy:task_dir, crispy:flow, crispy:repos, crispy:request_doc, crispy:research_doc, crispy:structure_doc, crispy:design_doc, crispy:author, and crispy:phase_count metadata, the human-facing ones mirrored in visible Summary rows — crispy:date and a Date row are NOT added to the brief, since the output template already stamps the date",
         "Makes no architectural decisions and asks the user no questions — this is a transcription spot-check, not a design pass",
         "No dates or week-based time estimates appear in the phases",
-        "Closes with the executive summary, an offer to commit via gh-commit, and the planner-agent next step"
+        "Closes with the executive summary, an offer to open the spec for review (VS Code, Cursor, or browser) rather than an offer to commit it, and the next command `/orchestrate .agents/artifacts/feat-ENG-210-csv-export flow: design`, noting it can run here, after compaction, or in a new session"
       ]
     },
     {
       "id": 2,
-      "prompt": "Create the implementation spec from research/structures/2026-06-04-notifications.html. Its linked design document still contains an Open Questions section with two unresolved questions about delivery guarantees.",
+      "should_trigger": true,
+      "prompt": "/create-spec .agents/artifacts/notifications — the directory has a request, research, and 04-design-discussion-notifications.html that is still draft with an Open Questions section holding two unresolved questions about delivery guarantees. There is no structure outline.",
       "expected_output": "The skill aborts without writing a spec, directing the user back to /design-discussion to resolve the open questions",
       "expectations": [
-        "Scans the linked design document and detects the unresolved Open Questions section before any rendering",
-        "Stops WITHOUT writing a spec artifact and tells the user to return to /design-discussion",
+        "Identifies the design discussion as the governing document and detects the unresolved Open Questions before any rendering",
+        "Stops without writing a spec document and tells the user to return to /design-discussion with the same task directory",
         "Does not attempt to resolve the open questions itself or proceed with assumptions",
         "Does not perform the earlier phases' work (no design decisions, no research) to fill the gap"
       ]
     },
     {
       "id": 3,
-      "prompt": "Break research/specs/2026-06-05-csv-export.html into tasks with dependencies so the worker agents can pick them up one at a time.",
-      "expected_output": "create-spec does NOT trigger — decomposing a finished spec into a task graph is the planner agent's job, not the Plan phase's",
+      "should_trigger": false,
+      "prompt": "Break .agents/artifacts/feat-ENG-210-csv-export/06-spec-csv-export.html into tasks with dependencies so the worker agents can pick them up one at a time.",
+      "expected_output": "create-spec does NOT trigger — it is manual-only, and decomposing a finished spec into a task graph is the planner agent's job, not the spec step's",
       "expectations": [
         "Does not invoke create-spec — the spec already exists and is the input, not the deliverable",
-        "Routes to the planner agent, which persists tasks via TaskCreate",
-        "Writes no new artifact under research/specs/"
+        "Routes to the planner agent (directly or through /orchestrate with the task directory), which persists tasks via TaskCreate",
+        "Writes no new spec document into the task directory"
       ]
     },
     {
       "id": 4,
-      "prompt": "Create the implementation spec from research/structures/2026-06-06-audit-log.html --format=md. The outline defines two vertical slices and links to a complete design document.",
-      "expected_output": "A Markdown spec at research/specs/YYYY-MM-DD-audit-log.md rendered by output-markdown from the same brief the HTML path would use",
+      "should_trigger": true,
+      "prompt": "/create-spec .agents/artifacts/audit-log --format=md flow: tdd — the directory has 01-request-audit-log.md, 02-research-questions-audit-log.md, 03-research-audit-log.md, and an approved 04-tdd-audit-log.md (System Design and Program Design both approved). There is no structure outline.",
+      "expected_output": "A Markdown spec at .agents/artifacts/audit-log/05-spec-audit-log.md, governed by the TDD, rendered by output-markdown from the same brief the HTML path would use",
       "expectations": [
-        "Parses --format=md from the arguments and strips it before treating the remainder as the structure outline path",
+        "Parses --format=md and flow: tdd from the arguments and treats the remainder as the task directory",
+        "With no structure outline, uses the TDD as the governing document and carves its scope into vertical phases, taking signatures and file trees from its Program Design rather than redesigning them",
         "Delegates to output-markdown rather than output-html, handing over the same slot vocabulary unchanged",
-        "Writes to research/specs/YYYY-MM-DD-audit-log.md — the stem passes through unchanged and the output skill appends the extension",
+        "Writes to .agents/artifacts/audit-log/05-spec-audit-log.md — the stem passes through unchanged and the output skill appends the extension",
+        "META_EXTRA includes crispy:tdd_doc and crispy:flow (tdd) and does not invent a crispy:structure_doc",
         "Each phase renders as `### Phase N — Name` with `- [ ]` checklists for the Tests, Automated verification, and Manual verification blocks"
+      ]
+    },
+    {
+      "id": 5,
+      "should_trigger": true,
+      "prompt": "/create-spec .agents/artifacts/notifications — the design discussion is still draft with two open questions about delivery guarantees, but I'd like the spec now: go ahead and keep those as open questions.",
+      "expected_output": "Because the user explicitly asked to proceed, the skill writes the spec instead of aborting and carries the two delivery-guarantee questions into Section 08 Open Questions with status draft",
+      "expectations": [
+        "Does not abort to /design-discussion, since the user explicitly asked to proceed",
+        "Writes the spec into the task directory via the output skill, still carrying the mandatory Non-goals section",
+        "Lists the two delivery-guarantee questions under Section 08 Open Questions without deciding them",
+        "Sets STATUS to draft (STATUS_CLASS draft) while those open questions remain"
+      ]
+    },
+    {
+      "id": 6,
+      "should_trigger": true,
+      "prompt": "/create-spec .agents/artifacts/feat-ENG-330-bulk-import/03-research-bulk-import.html — that directory also has 04-prd-bulk-import.html (one leftover open product question) and 05-tdd-bulk-import.html, approved with no open questions.",
+      "expected_output": "The research document's path resolves to its task directory, which holds a design document, so the skill proceeds: the TDD governs, and the PRD's leftover question doesn't block because the TDD supersedes it",
+      "expectations": [
+        "Resolves the research document path to its task directory instead of aborting for being 'only a research document'",
+        "Picks the TDD as the governing document since no structure outline exists",
+        "Checks only the governing TDD for open questions and does not abort on the PRD's leftover question",
+        "Writes 06-spec-bulk-import.html with STATUS ready-for-implementation and META_EXTRA including crispy:tdd_doc and crispy:prd_doc"
       ]
     }
   ]
