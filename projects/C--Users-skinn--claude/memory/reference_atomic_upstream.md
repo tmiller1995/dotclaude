@@ -1,5 +1,5 @@
 ---
-name: atomic upstream skills source
+name: atomic-upstream
 description: flora131/atomic is the upstream source of user's skills and agents — cloned locally for diff/sync
 type: reference
 originSessionId: 3a7a217a-db3d-4612-951d-d1edeb23c816
