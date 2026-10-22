@@ -19,7 +19,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "powershell -ExecutionPolicy Bypass -File \"C:\\Users\\skinn\\.claude\\plugins\\cache\\ponytail\\ponytail\\4.10.0\\hooks\\ponytail-statusline.ps1\""
+    "command": "powershell -ExecutionPolicy Bypass -File \"C:\\Users\\skinn\\.claude\\plugins\\cache\\ponytail\\ponytail\\5.3.2\\hooks\\ponytail-statusline.ps1\""
   },
   "enabledPlugins": {
     "csharp-lsp@claude-plugins-official": false,
