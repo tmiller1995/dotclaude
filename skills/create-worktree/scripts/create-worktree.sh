@@ -39,6 +39,10 @@ if git -C "$SRC" show-ref --verify --quiet "refs/heads/$BRANCH"; then
   fail "branch already exists: $BRANCH (choose another name, or 'git branch -D $BRANCH')"
 fi
 
+if [ ! -d "$SRC/.claude" ]; then
+  fail "no .claude directory to mirror at: $SRC/.claude"
+fi
+
 # --- Create the worktree from the latest base -------------------------------
 
 if git -C "$SRC" fetch origin "$BASE"; then
@@ -56,10 +60,6 @@ git -C "$SRC" worktree add -b "$BRANCH" "$DEST" "$START"
 
 if ! git -C "$DEST" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   fail "refusing to modify a path that is not a git worktree: $DEST"
-fi
-
-if [ ! -d "$SRC/.claude" ]; then
-  fail "no .claude directory to mirror at: $SRC/.claude"
 fi
 
 rm -rf "$DEST/.claude"

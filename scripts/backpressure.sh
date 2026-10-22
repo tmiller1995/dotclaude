@@ -17,10 +17,11 @@ fi
 
 LOG_DIR="${BACKPRESSURE_LOG_DIR:-$HOME/.claude/logs/backpressure}"
 mkdir -p "$LOG_DIR"
+find "$LOG_DIR" -name '*.log' -mtime +14 -delete 2>/dev/null || true
 
 slug=$(printf '%s' "$*" | tr -cs '[:alnum:]' '-' | cut -c1-48)
 slug=${slug#-}; slug=${slug%-}
-log="$LOG_DIR/$(date +%Y%m%d-%H%M%S)-${slug:-cmd}.log"
+log="$LOG_DIR/$(date +%Y%m%d-%H%M%S)-$$-${slug:-cmd}.log"
 
 "$@" >"$log" 2>&1
 status=$?
