@@ -18,6 +18,9 @@
 !/commands/
 !/scripts/
 
+# claude.ai synced-skills cache (runtime state, re-synced on demand).
+/skills/synced/
+
 # --- Tracked: curated memory (nested under the excluded projects/) -----------
 # Drill down: un-ignore each parent, then re-ignore its other contents, so
 # ONLY the memory/ folder surfaces — the rest of projects/ stays excluded.

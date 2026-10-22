@@ -12,3 +12,7 @@
 *.pdf binary
 *.woff binary
 *.woff2 binary
+
+# cmd.exe mis-resolves batch labels in LF files; keep launchers CRLF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
