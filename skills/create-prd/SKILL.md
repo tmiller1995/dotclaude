@@ -90,15 +90,15 @@ Agree on the problem first, and rework Problem to Solve once the user settles th
 
 Then discuss how to tell whether the change helps users once it ships. Propose a measure suited to the work: adoption, a benchmark, errors, latency, or a qualitative result. For small work with no useful measure, record "none" in Success along with the user's agreement, so the omission is a decision rather than a gap.
 
-Ask one question per message and wait for the answer, because a stack of questions gets skimmed answers.
+Ask one question per message and wait for the answer, because a stack of questions gets skimmed answers. Never ask a vague "any feedback?" and never tack on "and also..." follow-ups; each message carries one concrete decision.
 
 ## Step 6: Interview the user about the solution
 
 Present one product decision per message with two or three options, their tradeoffs, and a recommendation grounded in the request and research. Ask with `AskUserQuestion`, wait for the answer, and answer clarifying questions until the choice is settled. Then have the output skill update the PRD in place: revise Solution Details, refine Proposed Solution, and record the set-aside options under Alternative Solutions Considered and any boundary changes under Scope, so the document reads as one coherent spec rather than a decision log. Then present the next decision.
 
-Choose and place visuals per `skills/output-html/references/visual-guidance.md`. For UI choices, save a focused `mockup-<desc>.html` in the task directory that matches the user's product (its colors, type, spacing, and components) with realistic labels, and link it with an ordinary relative link beside its explanation, both in the PRD and in the conversation. Update mockups as decisions change.
+Choose and place visuals per `skills/output-html/references/visual-guidance.md`. For UI choices, save a focused `mockup-<desc>.html` in the task directory that matches the user's product (its colors, type, spacing, and components) with realistic labels, and link it with an ordinary relative link beside its explanation, both in the PRD and in the conversation. Update mockups as decisions change. When the user asks for changes to a mockup, pause the question flow, iterate on the mockup until they approve it, then resume.
 
-When a question is technical (schemas, storage, endpoints, code structure), record it under Deferred to TDD and return to product behavior; the TDD settles it with the right context.
+When a question is technical (schemas, storage, endpoints, code structure), record it under Deferred to TDD and return to product behavior; the TDD settles it with the right context. When an answer corrects a fact about current behavior, verify it against the code before recording it.
 
 ## Step 7: Get approval of the whole solution
 

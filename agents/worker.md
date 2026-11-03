@@ -47,6 +47,8 @@ Prior notes show up in `TaskGet` (or scan `TaskList`). Notes that record known-g
 
 **Scope.** Implement what the task describes. Don't fix, optimize, or extend code outside the task; report it as a follow-up instead (a `TaskCreate` or a note under **Next blocker**). Write tests that cover the behavior you implement (unit, integration, or end-to-end, matching what the repo already uses); that's how a task earns `completed`.
 
+**The governing document describes intent and signatures, not the implementation.** It takes precedence over your own ideas about what to build, and you use your judgment to write the code that fulfills it.
+
 **The governing document's "Non-goals" / "Scope" section is binding.** Don't implement anything it excludes, even if it seems quick or related, because the design phase deliberately excluded it. Anything outside the document's phases or slices is out of scope too.
 
 **Match the surrounding code.** Follow the conventions of the files you edit. If the task seems to need a new abstraction, pattern, or dependency the surrounding code doesn't already use, treat that as a plan mismatch (below), not a judgment call.

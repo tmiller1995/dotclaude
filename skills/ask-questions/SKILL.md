@@ -75,7 +75,7 @@ Work out what you would need to know about the current system to implement this 
 6. **Test patterns** — how similar things are tested
 7. **External dependencies** — libraries, services, or APIs involved
 8. **Historical context** — prior task directories or research docs on this topic
-9. **Design system** *(frontend work)* — existing components, colors and hex codes, typography, spacing, borders, shadows, theming; include one question on this for any frontend task so later mockups match the project
+9. **Design system** *(frontend work)* — existing components, colors and hex codes, typography, spacing, borders, shadows, theming; include one question on this whenever the change touches UI, even when the ticket doesn't say so, so later mockups match the project
 
 Keep 2–7 questions; go beyond 7 only when the task genuinely spans more areas, because each extra question dilutes the research phase's attention. Rewrite or cut any question that fails these checks:
 

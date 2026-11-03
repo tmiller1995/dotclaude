@@ -150,7 +150,7 @@ Plan each slice as a slice-card matching the output skills' slice-card contract 
 - A **Tests (following the repo's existing patterns)** sub-block: the tests the slice adds or changes, by type (unit, integration, e2e) and location, modeled on the repository's existing test files and fixtures
 - A `checkpoint` line: the testable thing the user can verify (prefix with `✓`), stated as an observable result
 - An **Automated verification** sub-block: a checklist of the repository's actual commands that prove the slice works unattended (build, tests, typecheck, lint — e.g. `dotnet test`, `npm run typecheck`), each with what it verifies
-- A **Manual verification** sub-block: a checklist of steps only a human can confirm (UI behavior, visual checks, end-to-end flows in a real environment), each written as an instruction to the human. Implementation pauses at these, and only the user checks them off. Write "None — fully covered by automated checks" only when that is literally true.
+- A **Manual verification** sub-block: a checklist of steps only a human can confirm (UI behavior, visual checks, end-to-end flows in a real environment), each written as an instruction to the human. Implementation pauses at these, and only the user checks them off. Don't add manual steps just to have them, and don't make manual what a command can check; but a slice with nothing a human can observe is usually too small or not vertical enough, so recut it rather than pad the list. Write "None — fully covered by automated checks" only when that is literally true.
 - An optional `chips` row with metrics: `Size: ~80 LOC`, `Surfaces: web`, `Behind flag: enable_reticulation`
 
 Render the Change outline, Tests, and both verification sub-blocks as labeled lines followed by their lists or code blocks inside the same slice card, as the output skills' slice-card contract describes.
@@ -226,7 +226,7 @@ Unresolved scope or slice-order questions, one per item. Omit the section when t
 Run the brief past these questions. On a miss, fix the brief and recheck before delegating.
 
 - Does every slice touch more than one layer? If a slice is only database or only UI and isn't a safe preparatory slice, recut it.
-- Does every slice have a change outline, a Tests block following the repository's existing patterns, a concrete checkpoint, an Automated verification list naming the repository's real commands, and a Manual verification list?
+- Does every slice have a change outline, a Tests block following the repository's existing patterns, a concrete checkpoint, an Automated verification list naming the repository's real commands, and a Manual verification list? Can slice N be verified without slice N+1?
 - Is the last slice the hardening slice (auth, validation, error handling, telemetry, migration), or do the slices carry their own error paths and tests?
 - Does the Implementation Overview have exactly one item per slice, in slice order?
 - Does any signature or target-shape block contain a function body? Shapes only; `diff` blocks show just the changed shape.
@@ -242,7 +242,7 @@ Invoke the matching output skill, passing the stem so it appends the extension:
 
 ### Step 9: Apply Outline Feedback
 
-When the user corrects facts, scope, slice order, or verification, verify factual corrections against the code, then revise the outline in place (same path). Fold settled answers into the relevant sections, remove them from Open Questions, keep the Implementation Overview in sync with the slices, and set the status to `ready-for-implementation` once no open questions remain.
+Treat all feedback as instructions to update the outline, never as a signal to start implementing. When the user corrects facts, scope, slice order, or verification, verify factual corrections against the code, then revise the outline in place (same path). Fold settled answers into the relevant sections, remove them from Open Questions, keep the Implementation Overview in sync with the slices, and set the status to `ready-for-implementation` once no open questions remain.
 
 ### Step 10: Hand Off
 

@@ -67,7 +67,7 @@ Between gates, keep the loop moving without checking in; stop for the user only 
 
 ### Iterating after implementation
 
-For a bug report or review feedback on work already implemented, read the task directory's documents (same precedence) and the current diff, then reproduce the issue or check the requested change against the code and tests. If the expected behavior is unclear, ask the user one targeted question with a recommended answer. Then create a worker task for the fix that includes a regression test (dispatch the `debugger` first when the cause isn't obvious), update the affected design or outline sections in place when the agreed result changes, and keep the outline's or spec's validation markers accurate — uncheck any item the change invalidates. Commit through the gate rule above.
+For a bug report or review feedback on work already implemented, read the task directory's documents (same precedence), the current diff, and the commits since the last phase gate (the document's ✅ markers say which phases are done), then reproduce the issue or check the requested change against the code and tests. If the expected behavior is unclear, or several fixes are viable, ask the user one targeted question with a recommended answer. Then create a worker task for the fix that includes a regression test (dispatch the `debugger` first when the cause isn't obvious), update the affected design or outline sections in place when the agreed result changes, and keep the outline's or spec's validation markers accurate — uncheck any item the change invalidates. Commit through the gate rule above.
 
 ### "What's next?"
 

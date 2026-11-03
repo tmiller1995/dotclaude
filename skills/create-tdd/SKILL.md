@@ -86,7 +86,7 @@ Then open the interview with the first system-design decision: a short explanati
 
 ## Step 5: Discuss System Design
 
-Show current behavior and the proposed change within this section. Present one decision per message with two or three options, their tradeoffs, and a recommendation grounded in the codebase; ask with `AskUserQuestion`, wait for the answer, and work through clarifications until it is settled. Then have the output skill rework System Design in place so its prose and diagrams stay a coherent description of the architecture, recording the chosen approach, the rationale, and why the alternatives were set aside. Then present the next decision.
+Show current behavior and the proposed change within this section. Present one decision per message with two or three options, their tradeoffs, and a recommendation grounded in the codebase; ask with `AskUserQuestion`, wait for the answer, and work through clarifications until it is settled. Never ask a vague "any feedback?" and never tack on "and also..." follow-ups. Then have the output skill rework System Design in place so its prose and diagrams stay a coherent description of the architecture, recording the chosen approach, the rationale, and why the alternatives were set aside. Then present the next decision.
 
 ## Step 6: Get System Design approval
 
@@ -96,7 +96,7 @@ Ask the user to review System Design from start to finish and approve it, and of
 
 Show the code shape that implements the approved system. When comparing options, give each its own code block: a focused diff for changes to an existing shape, and the complete target shape for new code or when omitted context would hide ownership or order. Choose the views that expose the decision rather than every view available.
 
-Ask one question at a time, wait for the decision, and then rework Program Design in place. Fill in Patterns to Follow as patterns come up. If a technical choice changes product scope or user experience, discuss it with the user and, when a PRD exists, update the PRD (and its mockups) in place through the output skill so the two documents agree.
+Ask one question at a time, wait for the decision, and then rework Program Design in place. In both halves, when an answer corrects a fact about the code, verify it against the source before recording it; decisions are the user's, facts are checked. Fill in Patterns to Follow as patterns come up. If a technical choice changes product scope or user experience, discuss it with the user and, when a PRD exists, update the PRD (and its mockups) in place through the output skill so the two documents agree.
 
 ## Step 8: Get Program Design approval
 

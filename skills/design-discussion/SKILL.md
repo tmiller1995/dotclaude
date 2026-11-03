@@ -149,7 +149,7 @@ This is the brain-surgery moment, and it happens by default with no trigger phra
 3. Have the output skill update the document in place: move the card from Open questions to Design decisions, mark the chosen option, capture the rationale (including the user's reasoning), add a why-not line for each alternative set aside, and retitle the card so it states the outcome. Bring Proposed architecture and the state sections in line with the decision.
 4. Update `crispy:decisions_resolved` and its visible Summary cell so the count tracks progress.
 
-Every open question gets this treatment; none are skipped.
+Every open question gets this treatment; none are skipped. A clear statement in chat ("for X we should do Y") settles that question too; record it the same way. Decisions are the user's to make, but when an answer corrects a fact about the code, verify it against the source before recording it.
 
 If the user wants to stop while questions remain, save the settled decisions, leave the rest under Open questions with status `draft`, and give the handoff. If the user explicitly asks to move on to a later step anyway, save the settled and open choices the same way, then give the handoff for the step they asked for; that step carries the open items into its own Open Questions rather than stopping.
 

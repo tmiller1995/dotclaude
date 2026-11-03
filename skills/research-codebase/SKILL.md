@@ -72,7 +72,7 @@ How the rule applies:
 
 6. **Spawn parallel sub-agents.**
 
-    Dispatch sub-agents via the `Agent` tool, sending independent dispatches in one message so they run concurrently. Fan out when areas are independent or would flood your context; a question one direct file read answers can be read directly.
+    Dispatch sub-agents via the `Agent` tool, sending independent dispatches in one message so they run concurrently. Use only the agents named below: `general-purpose`, `Explore`, and `Plan` inherit the main model and its cost, and lack the documenting-not-evaluating framing. Fan out when areas are independent or would flood your context; a question one direct file read answers can be read directly.
 
     **Codebase:**
     - **codebase-locator** — find WHERE files and components live
@@ -132,7 +132,7 @@ How the rule applies:
 
     #### Body sections
 
-    Emit numbered sections in this order. Use the collapsible deep-dive component (`<details>` in both formats) for per-component deep dives so readers can collapse what they don't need.
+    Emit numbered sections in this order. The document reads as an explainer of the codebase, not a list of answers or a file index: citations support the narrative, and adjacent lines in one file cite as a range (`file.ts:45-67`), not one bullet per line. Use the collapsible deep-dive component (`<details>` in both formats) for per-component deep dives so readers can collapse what they don't need.
 
     Current-state views — call trees, contracts, component or file trees, sequence flows — may sit beside the prose they support when they make the structure clearer: Mermaid in Markdown, inline SVG in HTML. Follow `skills/output-html/references/visual-guidance.md` for choosing and placing them.
 
@@ -154,7 +154,7 @@ How the rule applies:
     - The first deep dive set to `open`, so the document isn't a wall of collapsed triangles
 
     **Section 05 — Code references**
-    A 2-column table: Location | What's there. Inline code for the location.
+    A 2-column table: Location | What's there. Inline code for the location; directories are allowed. Mark coverage in the intro line or per row: exhaustive for the area, or key files only.
 
     **Section 06 — Architecture & conventions**
     Prose describing current patterns and design implementations; a table when listing 3+ related patterns.
