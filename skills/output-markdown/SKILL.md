@@ -149,6 +149,8 @@ Anything else the report needs (`author`, `source`, `tags`, …) goes through `{
 
 3. **Render the body** using the component conventions in `references/components.md`. Number sections monotonically (`## 01. Title`, `## 02. Title`, ...). For diagrams, code shapes, and other views beside the prose, follow `skills/output-html/references/visual-guidance.md` (shared with output-html).
 
+   Then review the rendered body against `skills/output-html/references/prose.md` and that visual guidance: cut words and sections that don't earn their place, replace dense prose with the smallest view that makes the point, and keep each view beside the text it supports. The caller's slot values, section order, components, and `crispy:*` fields stay as given.
+
 4. **Substitute slot values.** Replace every occurrence of each `{{SLOT}}` — `{{STATUS}}`, `{{STATUS_EMOJI}}`, `{{REPO}}`, `{{DATE}}`, and `{{BRANCH}}` each appear more than once in the template (across the frontmatter, header blockquote, and summary table) by design.
 
 5. **Apply SKIP RULES.** Walk the table above; for each empty optional slot, remove the surrounding structural element.

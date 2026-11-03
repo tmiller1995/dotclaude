@@ -117,6 +117,8 @@ In Report mode you can stamp the file with `<meta name="report:*">` tags for dow
 
 3. **Render the body** using the component vocabulary in `references/components.md`. The caller specifies which sections to emit and what content goes in each; you translate that into the correct HTML components. Number sections monotonically with `<div class="sec-head"><span class="num">NN</span><h2>...</h2></div>`. For diagrams, code shapes, and other views beside the prose, follow `references/visual-guidance.md`.
 
+   Then review the rendered body against `references/prose.md` and `references/visual-guidance.md`: cut words and sections that don't earn their place, replace dense prose with the smallest view that makes the point, and keep each view beside the text it supports. The caller's slot values, section order, components, and `crispy:*` fields stay as given.
+
 4. **Substitute slot values.** Replace *every* occurrence of each `{{SLOT}}` — six slots appear twice by design: `{{PHASE_LABEL}}` and `{{TOPIC}}` in `<title>`, `{{STATUS}}`, `{{DATE}}`, `{{BRANCH}}`, and `{{REPO}}` in both the `<head>` metadata and the visible header. A second occurrence is expected, not an error.
 
 5. **Apply SKIP RULES.** Walk through the table above; for each empty optional slot, remove the wrapping structural element.
@@ -149,7 +151,7 @@ See `references/components.md` for the full catalog: when to use each component,
 - `aside.reco` — recommendation callout
 - `figure.diagram` + inline `<svg>` + `<figcaption>` — diagrams
 
-`references/visual-guidance.md` covers which view to draw (pseudocode, call tree, component or file tree, flow diagram, contract, focused diff, mockup) and where it goes in each phase's document.
+`references/prose.md` holds the writing rules every document is reviewed against before it is written. `references/visual-guidance.md` covers which view to draw (pseudocode, call tree, component or file tree, flow diagram, contract, focused diff, mockup) and where it goes in each phase's document.
 
 When a pattern is missing from `references/components.md`, adapt an existing component rather than inventing new CSS, so artifacts stay consistent with each other.
 
