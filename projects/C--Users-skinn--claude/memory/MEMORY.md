@@ -3,4 +3,4 @@
 - [CRISPY Workflow](user_crispy_workflow.md) — HumanLayer RPI-aligned flows (design | prd-tdd | tdd | research-only), .agents/artifacts task dirs, manual-only phases, artifacts not committed
 - [Atomic Upstream](reference_atomic_upstream.md) — flora131/atomic at C:\GitHub\atomic is now reference-only (upstream dropped its agent/skill fleet); local 2026-07-31 baseline is canonical; only gh-commit/gh-create-pr/gh-stack overlap
 - [Subagent Nesting](reference_subagent_nesting.md) — sub-agents CAN nest (5 deep, v2.1.172+); Agent granted to worker/debugger/reviewer/planner; orchestrate skill keeps main-context dispatch by choice
-- [HumanLayer QRSPI Status](reference_humanlayer_qrspi.md) — 2026-11-02: product open-sourced 2026-10-22; rpi skill 1.1.0 adds prose-review step (adopted in output-html/output-markdown); riptide plugin in main repo is older, nothing to adopt
+- [HumanLayer QRSPI Status](reference_humanlayer_qrspi.md) — 2026-11-02: product open-sourced 2026-10-22; rpi skill 1.1.0 adds prose-review step (adopted in output-html/output-markdown); riptide plugin (older) diffed skill-by-skill, gaps folded in 2026-11-02
