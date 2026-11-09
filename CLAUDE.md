@@ -8,3 +8,7 @@ In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the re
 
 If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
 <!-- CODEGRAPH_END -->
+
+## Herdr
+
+Before changing anything in the Herdr app (layouts, keys, mods, spaces, tabs, panes) or driving it with `herdr-app` / `hc`, read `~/.config/herdr-app/AGENTS.md` in full. The app rewrites it on every start, so re-read it each session rather than relying on memory.
