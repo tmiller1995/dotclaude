@@ -5,6 +5,14 @@
   },
   "includeCoAuthoredBy": false,
   "model": "fable",
+  "deniedMcpServers": [
+    {
+      "serverName": "claude.ai Firecrawl"
+    },
+    {
+      "serverName": "claude.ai Firecrawl (2)"
+    }
+  ],
   "hooks": {
     "UserPromptSubmit": [
       {
