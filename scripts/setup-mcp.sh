@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Registers the secret-bearing MCP servers at user scope with ${VAR} references,
 # so ~/.claude.json (untracked, per-machine) never holds a literal key.
-# Set the five variables below in your user environment first, then run this once per machine.
+# Set the four variables below in your user environment first, then run this once per machine.
 
 set -eu
 export MSYS_NO_PATHCONV=1
 
 missing=0
-for v in GITHUB_MCP_TOKEN GRAFANA_MCP_BASIC_AUTH SERPAPI_API_KEY CONTEXT7_API_KEY FIRECRAWL_API_KEY; do
+for v in GITHUB_MCP_TOKEN SERPAPI_API_KEY CONTEXT7_API_KEY FIRECRAWL_API_KEY; do
   [ -n "${!v:-}" ] || { echo "missing env var: $v" >&2; missing=1; }
 done
 [ "$missing" -eq 0 ] || exit 1
@@ -20,7 +20,6 @@ add() {
 }
 
 add github '{"type":"http","url":"https://api.githubcopilot.com/mcp/","headers":{"Authorization":"Bearer ${GITHUB_MCP_TOKEN}"}}'
-add grafana '{"type":"http","url":"https://tempo-prod-30-prod-us-east-3.grafana.net/tempo/api/mcp","headers":{"Authorization":"Basic ${GRAFANA_MCP_BASIC_AUTH}"}}'
 add serpapi '{"type":"http","url":"https://mcp.serpapi.com/${SERPAPI_API_KEY}/mcp"}'
 add context7 "{\"command\":\"$npx\",\"args\":[\"-y\",\"@upstash/context7-mcp\",\"--api-key\",\"\${CONTEXT7_API_KEY}\"]}"
 add firecrawl "{\"command\":\"$npx\",\"args\":[\"-y\",\"firecrawl-mcp\"],\"env\":{\"FIRECRAWL_API_KEY\":\"\${FIRECRAWL_API_KEY}\"}}"
