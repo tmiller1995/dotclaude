@@ -1,6 +1,6 @@
 ---
 name: output-html
-description: Render existing structured content (writeup, report, summary, analysis, postmortem, RFC) as a polished, self-contained single-file HTML document using a shared scaffold and component vocabulary. Use when the user asks for HTML output of content they've already produced or discussed (e.g., "output this in HTML", "give me an HTML report", "make this an HTML artifact"), or when a CRISPY skill (ask-questions, research-codebase, design-discussion, create-prd, create-tdd, structure-outline, create-spec) or linear-roadmap delegates rendering. Produces a no-CDN, no-external-dependency .html file. Not for building a new UI component, page, or web application (use impeccable).
+description: Render existing structured content (writeup, report, summary, analysis, postmortem, RFC) as a polished, self-contained single-file HTML document using a shared scaffold and component vocabulary. Use when the user asks for HTML output of content they've already produced or discussed (e.g., "output this in HTML", "give me an HTML report", "make this an HTML artifact"), or when a CRISPY phase skill (a create-* or iterate-* document phase) or linear-roadmap delegates rendering. Produces a no-CDN, no-external-dependency .html file. Not for building a new UI component, page, or web application (use impeccable).
 ---
 
 # Output: HTML
@@ -9,7 +9,7 @@ This skill renders a polished, self-contained `.html` file. The design vocabular
 
 Two invocation modes are supported:
 
-- **CRISPY mode** — invoked by `/ask-questions`, `/research-codebase`, `/design-discussion`, `/create-prd`, `/create-tdd`, `/structure-outline`, or `/create-spec`. The caller provides a full render brief with phase, status, ticket, etc., plus the full output stem under the task directory `.agents/artifacts/<task>/`.
+- **CRISPY mode** — invoked by a CRISPY `create-*` or `iterate-*` document phase (`/create-research-questions` through `/create-plan` and their `/iterate-*` pairs). The caller provides a full render brief with phase, status, ticket, etc., plus the full output stem under the task directory `.agents/artifacts/<task>/`.
 - **Report mode** — invoked directly (e.g., the user says "output this in HTML" or "render this as an HTML report"). The caller provides a title and body content; CRISPY-specific slots are skipped. The output lands in `reports/YYYY-MM-DD-<topic>.html` by default unless the caller specifies a path.
 
 The rendering logic is the same for both — only some slots are absent in Report mode, and the SKIP RULES below tell you which structural elements to omit when their slot is empty.
@@ -30,8 +30,8 @@ The same schema serves both modes. CRISPY mode fills all slots; Report mode fill
 | `{{BRANCH}}` | derived | derived | `git branch --show-current` — same skip behavior if absent |
 | `{{DATE}}` | derived | derived | `date '+%Y-%m-%d %H:%M:%S %Z'` |
 | `{{BODY}}` | required | required | Numbered `<section>` blocks rendered via `references/components.md` |
-| `{{PHASE}}` | required | optional | One of `request`, `questions`, `research`, `design`, `prd`, `tdd`, `structure`, `spec`. Omit in Report mode. |
-| `{{PHASE_LABEL}}` | required | optional | Human label for the eyebrow. CRISPY values, matching `PHASE` in order: `Request`, `Questions`, `Research`, `Design Discussion`, `Product Requirements`, `Technical Design`, `Structure Outline`, `Implementation Spec`. In Report mode, set to a free-form subtitle (e.g., `Status report`, `RFC`, `Postmortem`) OR leave empty to skip the eyebrow entirely. |
+| `{{PHASE}}` | required | optional | One of `request`, `questions`, `research`, `design`, `prd`, `tdd`, `structure`, `plan` (`spec` in documents written before 2026-11-21). Omit in Report mode. |
+| `{{PHASE_LABEL}}` | required | optional | Human label for the eyebrow. CRISPY values, matching `PHASE` in order: `Request`, `Questions`, `Research`, `Design Discussion`, `Product Requirements`, `Technical Design`, `Structure Outline`, `Implementation Plan`. In Report mode, set to a free-form subtitle (e.g., `Status report`, `RFC`, `Postmortem`) OR leave empty to skip the eyebrow entirely. |
 | `{{STATUS}}` | required | optional | Lifecycle status (see CRISPY status list). Empty → skip the badge & summary cell. |
 | `{{STATUS_CLASS}}` | derived | derived | See the CRISPY status table below. Only used when STATUS is non-empty. |
 | `{{TICKET}}` | required | optional | One-line ticket summary or `N/A`. Head-only — emitted as `<meta name="crispy:ticket">`, never rendered visibly. |
@@ -90,7 +90,7 @@ Downstream CRISPY skills parse these tags, so the field names are a contract. Th
 | `crispy:request_doc`, `crispy:research_doc`, `crispy:design_doc` (when a design discussion was read) | `prd` |
 | `crispy:request_doc`, `crispy:research_doc`, `crispy:prd_doc` (when a PRD was read), `crispy:design_doc` (when a design discussion was read) | `tdd` |
 | `crispy:design_doc`, `crispy:research_doc`, `crispy:slice_count` | `structure` |
-| `crispy:structure_doc`, `crispy:design_doc`, `crispy:research_doc`, `crispy:author`, `crispy:phase_count` | `spec` |
+| `crispy:structure_doc`, `crispy:design_doc`, `crispy:research_doc`, `crispy:author`, `crispy:phase_count` | `plan` |
 | `crispy:last_updated`, `crispy:last_updated_by`, `crispy:last_updated_note` | Any phase, when appending follow-up content |
 
 **Consistency rule:** every value you put in `META_EXTRA` that a human reader should see at a glance must also have a matching `.cell` in `SUMMARY_EXTRA`. Internal references like `crispy:git_commit` can stay in head-only.

@@ -1,6 +1,6 @@
 ---
 name: create-prd
-description: Write a Product Requirements Document (PRD) for a task by interviewing the user one product decision at a time (the problem, how success is measured, the user-facing solution, and scope) while recording technical questions for the TDD. The PRD phase of CRISPY (flow `prd-tdd`), invoked manually after /research-codebase; reads the task directory's request and research and writes `NN-prd-<desc>` under `.agents/artifacts/<task>/` via output-html or output-markdown (`--format=html|md`, default `html`). Not for the technical approach, schemas, or code structure (use /create-tdd), a combined product-and-technical design for a smaller change (use /design-discussion), or a task breakdown (use /create-spec or the planner agent).
+description: Write a Product Requirements Document (PRD) for a task by interviewing the user one product decision at a time (the problem, how success is measured, the user-facing solution, and scope) while recording technical questions for the TDD. The PRD phase of CRISPY (flow `prd-tdd`), invoked manually after /create-research; reads the task directory's request and research and writes `NN-prd-<desc>` under `.agents/artifacts/<task>/` via output-html or output-markdown (`--format=html|md`, default `html`). Not for the technical approach, schemas, or code structure (use /create-tdd), a combined product-and-technical design for a smaller change (use /create-design-discussion), or a task breakdown (use /create-plan or the planner agent).
 argument-hint: "<task directory or prior artifact path> [--format=html|md] [flow: <flow>]"
 disable-model-invocation: true
 ---
@@ -31,7 +31,7 @@ All artifacts for one task live in `.agents/artifacts/<task>/` at the repo root.
 
 State the chosen path in the conversation.
 
-The document is `NN-prd-<desc>.<ext>`, where `NN` is the next available two-digit number in the directory (count every `NN-` file regardless of type or extension; the first file is `01`). When a PRD already exists and the user is iterating or resuming, update it in place, keep its path and number, and pick up the interview where the document leaves off; create a new numbered PRD only when none exists or the user asks for one. When several exist, use the highest-numbered and name it.
+The document is `NN-prd-<desc>.<ext>`, where `NN` is the next available two-digit number in the directory (count every `NN-` file regardless of type or extension; the first file is `01`). When a PRD already exists, revising it or resuming its interview is `/iterate-prd`: name that command with the document's path and stop, unless the user asks for a new PRD.
 
 ## Step 3: Read the inputs
 
@@ -42,7 +42,7 @@ Read these in full (no limit/offset) in the main context, taking the highest-num
 - `NN-design-discussion-*`, when present — settled choices to carry forward rather than reopen.
 - Files and mockups those documents name, as needed.
 
-Reference the inputs for facts instead of repeating them, and turn missing product context into interview questions. When a product decision depends on current behavior the research doesn't establish, dispatch a focused `codebase-analyzer` (or `codebase-locator`) for that one fact, wait for it, and cite the finding. Fold the new facts into the research document in place (same path and format, re-rendered through its output skill with `crispy:last_updated`, `crispy:last_updated_by`, and `crispy:last_updated_note` refreshed), so later phases find them there. A gap larger than that means research is incomplete, so suggest rerunning `/research-codebase`. For UI work, use the research's design-system findings when drawing mockups.
+Reference the inputs for facts instead of repeating them, and turn missing product context into interview questions. When a product decision depends on current behavior the research doesn't establish, dispatch a focused `codebase-analyzer` (or `codebase-locator`) for that one fact, wait for it, and cite the finding. Fold the new facts into the research document in place (same path and format, re-rendered through its output skill with `crispy:last_updated`, `crispy:last_updated_by`, and `crispy:last_updated_note` refreshed), so later phases find them there. A gap larger than that means research is incomplete, so suggest rerunning `/create-research`. For UI work, use the research's design-system findings when drawing mockups.
 
 Record the repositories for `crispy:repos`: for each repository the task touches (usually the current one), take the identifier from `gh repo view --json nameWithOwner -q .nameWithOwner` (or the repo directory name when that fails) and the SHA from `git rev-parse HEAD`, formatted as comma-separated `<identifier>@<sha>` entries, or `none`.
 
@@ -114,7 +114,7 @@ Give the saved path, offer again to open it for review, and name the next comman
 /create-tdd .agents/artifacts/<task> flow: prd-tdd
 ```
 
-When the PRD already settles everything (no Deferred to TDD items and no real technical choices), the user can skip to `/structure-outline .agents/artifacts/<task> flow: prd-tdd` or implement directly (`/orchestrate .agents/artifacts/<task>`, or in this session for a small change). Say the command can run here, after compaction, or in a new session, and that the user can also ask to revisit part of the solution.
+When the PRD already settles everything (no Deferred to TDD items and no real technical choices), the user can skip to `/create-structure-outline .agents/artifacts/<task> flow: prd-tdd` or implement directly (`/implement-plan .agents/artifacts/<task>`, or in this session for a small change). Say the command can run here, after compaction, or in a new session, and that the user can also ask to revisit part of the solution.
 
 Then wait. The user invokes each phase, so don't start the next one yourself.
 
@@ -124,6 +124,6 @@ If the user asks to stop or move on early, save the settled decisions, list the 
 
 Stop and tell the user rather than proceeding when:
 
-- The task directory has no research document — the PRD's account of the current experience rests on it; suggest `/research-codebase` first.
+- The task directory has no research document — the PRD's account of the current experience rests on it; suggest `/create-research` first.
 - There is no request document and the arguments don't say what result the user wants — ask before drafting.
 - A required render-brief slot can't be filled (e.g., no topic derivable) — ask rather than emit a placeholder.

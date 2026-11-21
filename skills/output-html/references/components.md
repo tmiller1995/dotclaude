@@ -14,7 +14,7 @@ Treat this like a shared design system. If two artifacts both have "design decis
 - [Tables](#tables)
 - [Callouts](#callouts) — default / `.warn` / `.bad`
 - [Cards](#cards) — generic, decision-with-options, `.tradeoffs` grid
-- [Vertical-slice cards](#vertical-slice-cards) — the structure-outline / create-spec centerpiece
+- [Vertical-slice cards](#vertical-slice-cards) — the structure-outline / create-plan centerpiece
 - [Collapsibles](#collapsibles) — `<details>` deep dives
 - [Diagrams (inline SVG)](#diagrams-inline-svg) — `figure.diagram` for flows, sequences, and component maps
 - [Recommendation aside](#recommendation-aside)
@@ -277,7 +277,7 @@ The `.cell.pro` and `.cell.con` modifiers auto-prefix `+` (olive) and `−` (rus
 
 ## Vertical-slice cards
 
-This is the centerpiece of structure-outline and create-spec artifacts.
+This is the centerpiece of structure-outline and create-plan artifacts.
 
 ```html
 <div class="slice">
@@ -297,7 +297,7 @@ This is the centerpiece of structure-outline and create-spec artifacts.
 </div>
 ```
 
-Required children: `<h3>` (slice number + name), `.goal` (one sentence of what success looks like for the user), and `.checkpoint` (the testable acceptance). `<ul>` of files-touched and `.chips` for metrics are optional but conventional. `structure-outline` slices add "Automated verification" and "Manual verification" sub-blocks, and `create-spec` phases also add "Implementation steps" and "Tests" — render each as a labeled `<strong>` line followed by a `<ul>` inside the same `.slice` card.
+Required children: `<h3>` (slice number + name), `.goal` (one sentence of what success looks like for the user), and `.checkpoint` (the testable acceptance). `<ul>` of files-touched and `.chips` for metrics are optional but conventional. `structure-outline` slices add "Automated verification" and "Manual verification" sub-blocks, and `create-plan` phases also add "Implementation steps" and "Tests" — render each as a labeled `<strong>` line followed by a `<ul>` inside the same `.slice` card.
 
 ## Collapsibles
 

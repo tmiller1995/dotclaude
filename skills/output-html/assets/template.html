@@ -2,8 +2,8 @@
   CRISPY shared artifact template — aesthetic matches Thariq Shihipar's
   "html-effectiveness" essay (thariqs.github.io/html-effectiveness).
 
-  Every CRISPY skill (ask-questions, research-codebase, design-discussion,
-  create-prd, create-tdd, structure-outline, create-spec) emits a self-contained .html file using
+  Every CRISPY skill (the create-* and iterate-* phase skills:
+  research questions through plan) emit a self-contained .html file using
   this skeleton. Inline the ENTIRE <style> block into each generated
   artifact — do not link this file or share a stylesheet. The output must
   render anywhere it is opened or pasted.
@@ -195,7 +195,7 @@
     details[open] summary { margin-bottom: 0.5rem; }
     summary .where { float: right; font: 0.8125rem/1.4 var(--mono); color: var(--muted); }
 
-    /* ────────── Tradeoffs grid (used by design-discussion) ────────── */
+    /* ────────── Tradeoffs grid (used by create-design-discussion) ────────── */
     .tradeoffs { display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
       background: var(--border-soft); border: 1px solid var(--border-soft);
       border-radius: 6px; overflow: hidden; margin: 0.75rem 0; }
@@ -224,7 +224,7 @@
       font-size: 0.8125rem; letter-spacing: 0.02em;
     }
 
-    /* ────────── Slice / milestone cards (structure-outline, create-spec) ────────── */
+    /* ────────── Slice / milestone cards (create-structure-outline, create-plan) ────────── */
     .slice {
       border: 1px solid var(--border); border-radius: 8px;
       padding: 1.1rem 1.25rem; margin: 0.85rem 0; background: var(--paper);

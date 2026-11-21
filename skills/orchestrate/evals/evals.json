@@ -34,21 +34,21 @@
       "id": 3,
       "should_trigger": false,
       "prompt": "spawn parallel sub-agents to document how auth works in this repo",
-      "expected_output": "Not an orchestration task: documenting current behavior is one CRISPY research phase, and the phase skills are manual-only, so Claude points the user to /research-codebase (or /ask-questions to start a task directory) instead of opening an orchestration loop",
+      "expected_output": "Not an orchestration task: documenting current behavior is one CRISPY research phase, and the phase skills are manual-only, so Claude points the user to /create-research (or /create-research-questions to start a task directory) instead of opening an orchestration loop",
       "expectations": [
         "Recognizes this as one CRISPY research phase, not a multi-phase long-horizon task, despite the parallel sub-agent phrasing",
-        "Names the /research-codebase command (or /ask-questions to start the task) for the user to run, since the phase skills are manual-only and Claude does not invoke them itself",
+        "Names the /create-research command (or /create-research-questions to start the task) for the user to run, since the phase skills are manual-only and Claude does not invoke them itself",
         "Creates no task list and no phase gates for what is a single-phase request"
       ]
     },
     {
       "id": 4,
       "should_trigger": true,
-      "prompt": "/orchestrate .agents/artifacts/feat-ENG-123-csv-export flow: design — the directory has 01-request-csv-export.html, 02-research-questions-csv-export.html, 03-research-csv-export.html, 04-design-discussion-csv-export.html, and 05-structure-outline-csv-export.html with three slices, each carrying Automated and Manual verification. There is no spec.",
+      "prompt": "/orchestrate .agents/artifacts/feat-ENG-123-csv-export flow: design — the directory has 01-request-csv-export.html, 02-research-questions-csv-export.html, 03-research-csv-export.html, 04-design-discussion-csv-export.html, and 05-structure-outline-csv-export.html with three slices, each carrying Automated and Manual verification. There is no plan.",
       "expected_output": "The implement step runs from the task directory: the planner is dispatched with the task directory, decomposes the outline's three slices (the outline outranks the design discussion), the worker loop stops at a gate after each slice using that slice's verification lists, and each confirmed slice is committed and marked ✅ in the outline",
       "expectations": [
         "Dispatches the planner with the task directory path rather than pasting document contents or picking a document itself",
-        "The planner treats the structure outline as the governing document (spec > structure outline > TDD > PRD > design discussion > research > request) and creates one phase per slice",
+        "The planner treats the structure outline as the governing document (plan > structure outline > TDD > PRD > design discussion > research > request) and creates one phase per slice",
         "Dispatches one worker per pending task and runs tasks from the next slice only after the current slice's gate is confirmed",
         "Reports each gate in exactly the Phase [N] Complete — Ready for Manual Verification shape, listing the slice's automated commands with results and its manual steps, then waits",
         "Never checks off a manual verification item on the user's behalf",
@@ -60,13 +60,13 @@
     {
       "id": 5,
       "should_trigger": true,
-      "prompt": "/orchestrate .agents/artifacts/fix-retry-backoff flow: tdd — the directory has a request, research, and an approved 04-tdd-retry-backoff.md; no structure outline or spec.",
-      "expected_output": "With no outline or spec, the planner decomposes the TDD's scope as a single phase and there is one gate at the end listing the TDD's verification expectations",
+      "prompt": "/orchestrate .agents/artifacts/fix-retry-backoff flow: tdd — the directory has a request, research, and an approved 04-tdd-retry-backoff.md; no structure outline or plan.",
+      "expected_output": "With no outline or plan, the planner decomposes the TDD's scope as a single phase and there is one gate at the end listing the TDD's verification expectations",
       "expectations": [
-        "Dispatches the planner with the task directory; the TDD governs because no spec or outline exists",
+        "Dispatches the planner with the task directory; the TDD governs because no plan or outline exists",
         "Runs the worker loop without intermediate phase gates, since the design scope is a single phase",
         "Stops once at the end and reports in the Phase [N] Complete — Ready for Manual Verification shape, with the manual steps drawn from the TDD's verification expectations",
-        "Does not invent outline slices or a spec to create extra gates",
+        "Does not invent outline slices or a plan to create extra gates",
         "Commits through Skill('gh-commit') only after the user confirms the final gate"
       ]
     },

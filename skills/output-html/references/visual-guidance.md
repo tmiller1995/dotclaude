@@ -30,7 +30,7 @@ Match a diff's shape to the topic: a component diff for a UI change, a file-tree
 
 - **Research** documents the system as it is: current-state call trees, contracts, component and file trees, and flow diagrams. No diffs or target shapes, because research describes, it doesn't propose.
 - **Design discussion and TDD** compare before and after: the current shape beside the proposed one, or a focused diff when the point is what changes. Put a view inside each decision it informs so the options are concrete.
-- **Structure outline and spec** show target shapes for new code and focused diffs for changed shapes, inside the slice or phase that makes the change.
+- **Structure outline and plan** show target shapes for new code and focused diffs for changed shapes, inside the slice or phase that makes the change.
 - **PRD** stays product-level; use a mockup when a visual choice is being decided, and leave code shapes to the TDD.
 
 ## How each view renders

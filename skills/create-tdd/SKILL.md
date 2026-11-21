@@ -1,6 +1,6 @@
 ---
 name: create-tdd
-description: Write a Technical Design Document (TDD) for a task by settling the system design (component interactions, contracts, schemas) and then the program design (call trees, file trees, signatures, pseudocode) with the user, one technical decision at a time and with a separate approval for each. The TDD phase of CRISPY (flows `prd-tdd` and `tdd`), invoked manually after /create-prd or straight after /research-codebase; reads the task directory's request, research, and PRD when present and writes `NN-tdd-<desc>` under `.agents/artifacts/<task>/` via output-html or output-markdown (`--format=html|md`, default `html`). Not for product requirements or user-facing behavior (use /create-prd), a combined product-and-technical design for a smaller change (use /design-discussion), or vertical slices with a file inventory (use /structure-outline).
+description: Write a Technical Design Document (TDD) for a task by settling the system design (component interactions, contracts, schemas) and then the program design (call trees, file trees, signatures, pseudocode) with the user, one technical decision at a time and with a separate approval for each. The TDD phase of CRISPY (flows `prd-tdd` and `tdd`), invoked manually after /create-prd or straight after /create-research; reads the task directory's request, research, and PRD when present and writes `NN-tdd-<desc>` under `.agents/artifacts/<task>/` via output-html or output-markdown (`--format=html|md`, default `html`). Not for product requirements or user-facing behavior (use /create-prd), a combined product-and-technical design for a smaller change (use /create-design-discussion), or vertical slices with a file inventory (use /create-structure-outline).
 argument-hint: "<task directory or prior artifact path> [--format=html|md] [flow: <flow>]"
 disable-model-invocation: true
 ---
@@ -31,7 +31,7 @@ All artifacts for one task live in `.agents/artifacts/<task>/` at the repo root.
 
 State the chosen path in the conversation.
 
-The document is `NN-tdd-<desc>.<ext>`, where `NN` is the next available two-digit number in the directory (count every `NN-` file regardless of type or extension; the first file is `01`). When a TDD already exists and the user is iterating or resuming, update it in place, keep its path and number, and pick up where the document leaves off; create a new numbered TDD only when none exists or the user asks for one. When several exist, use the highest-numbered and name it.
+The document is `NN-tdd-<desc>.<ext>`, where `NN` is the next available two-digit number in the directory (count every `NN-` file regardless of type or extension; the first file is `01`). When a TDD already exists, revising it or resuming its interviews is `/iterate-tdd`: name that command with the document's path and stop, unless the user asks for a new TDD.
 
 ## Step 3: Read the inputs
 
@@ -43,7 +43,7 @@ Read these in full (no limit/offset) in the main context, taking the highest-num
 - `NN-design-discussion-*`, when present — settled choices carry forward rather than reopen.
 - Files, mockups, and diagrams those documents name, as needed.
 
-Reference the inputs rather than repeating them, and ask about missing behavior when needed. When a decision depends on a fact or pattern the research doesn't establish, dispatch a focused `codebase-analyzer`, `codebase-locator`, or `codebase-pattern-finder` for it (independent lookups in one message, so they run in parallel), wait for the findings, and verify the relevant code before presenting options. Fold the new facts into the research document in place (same path and format, re-rendered through its output skill with `crispy:last_updated`, `crispy:last_updated_by`, and `crispy:last_updated_note` refreshed), so later phases find them there. A gap larger than that means research is incomplete, so suggest rerunning `/research-codebase`.
+Reference the inputs rather than repeating them, and ask about missing behavior when needed. When a decision depends on a fact or pattern the research doesn't establish, dispatch a focused `codebase-analyzer`, `codebase-locator`, or `codebase-pattern-finder` for it (independent lookups in one message, so they run in parallel), wait for the findings, and verify the relevant code before presenting options. Fold the new facts into the research document in place (same path and format, re-rendered through its output skill with `crispy:last_updated`, `crispy:last_updated_by`, and `crispy:last_updated_note` refreshed), so later phases find them there. A gap larger than that means research is incomplete, so suggest rerunning `/create-research`.
 
 Record the repositories for `crispy:repos`: for each repository the design touches (usually the current one), take the identifier from `gh repo view --json nameWithOwner -q .nameWithOwner` (or the repo directory name when that fails) and the SHA from `git rev-parse HEAD`, formatted as comma-separated `<identifier>@<sha>` entries, or `none`.
 
@@ -78,7 +78,7 @@ Emit numbered sections in this order. Headers state the main point (e.g. "The wo
 2. **Program Design** — the in-code shape: call trees, component trees with state and package boundaries, file-tree changes, dependency-injection maps, method signatures, or pseudocode. Keep the views selective; the outline carries the detailed file list.
 3. **Patterns to Follow** — existing patterns with source paths (`file:line`) and short examples, including the test seams new code should use.
 4. **Scope** — technical boundaries agreed during the discussion. Omit when nothing beyond the PRD or request needs stating.
-5. **Open Questions** — technical decisions still unsettled. Present only while some remain (for example after an early handoff), so `/structure-outline` and `/create-spec` can see the TDD isn't final; omit it otherwise.
+5. **Open Questions** — technical decisions still unsettled. Present only while some remain (for example after an early handoff), so `/create-structure-outline` and `/create-plan` can see the TDD isn't final; omit it otherwise.
 
 Choose and place views per `skills/output-html/references/visual-guidance.md`. Draw flows (data flow, control flow, sequences) as Mermaid blocks in Markdown output; in HTML output, use the inline-SVG diagram component from `skills/output-html/references/components.md`, since output-html files load no Mermaid script. When a diagram needs more room, save a focused `diagram-<desc>.html` in the task directory using the project's visual conventions and real labels, and link it with an ordinary relative link beside its explanation.
 
@@ -107,10 +107,10 @@ Ask the user to review Program Design and approve the code shape, offering again
 Give the saved path, offer to open it for review, and name the next command with the task directory and flow:
 
 ```text
-/structure-outline .agents/artifacts/<task> flow: <flow>
+/create-structure-outline .agents/artifacts/<task> flow: <flow>
 ```
 
-The outline is optional: the user can implement directly from the TDD (`/orchestrate .agents/artifacts/<task>`, or in this session for a small change), and `/create-spec` is available when they want a task-ready plan. Say the command can run here, after compaction, or in a new session, and that the user can also ask to revisit a technical choice.
+The outline is optional: the user can implement directly from the TDD (`/implement-plan .agents/artifacts/<task>`, or in this session for a small change), and `/create-plan` is available when they want a task-ready plan. Say the command can run here, after compaction, or in a new session, and that the user can also ask to revisit a technical choice.
 
 Then wait. The user invokes each phase, so don't start the next one yourself.
 
@@ -120,6 +120,6 @@ If the user asks to stop or move on early, save the settled decisions, list the 
 
 Stop and tell the user rather than proceeding when:
 
-- The task directory has no research document — the design rests on how the code works today; suggest `/research-codebase` first.
+- The task directory has no research document — the design rests on how the code works today; suggest `/create-research` first.
 - There is no request document or PRD and the arguments don't say what result the user wants — ask before drafting.
 - A required render-brief slot can't be filled (e.g., no topic derivable) — ask rather than emit a placeholder.

@@ -258,7 +258,7 @@ Use ✅ / ❌ as the pro/con markers so the table works in renderers that don't 
 
 ## Vertical-slice cards
 
-The centerpiece of structure-outline and create-spec artifacts. Use `###` heading + sub-sections:
+The centerpiece of structure-outline and create-plan artifacts. Use `###` heading + sub-sections:
 
 ```markdown
 ### Slice 1 — Mock API + Frontend UI
@@ -276,7 +276,7 @@ The centerpiece of structure-outline and create-spec artifacts. Use `###` headin
 `Size: ~80 LOC` · `Surfaces: web`
 ```
 
-Required parts: `### Slice N — Name`, `**Goal:**`, `**Files touched:**` list, `**Checkpoint:** ✓ ...`. Chips and any "Implementation steps" / "Tests" / "Automated verification" / "Manual verification" sub-blocks are optional; `structure-outline` slices carry the two verification sub-blocks and `create-spec` phases carry all four. The verification sub-blocks render as `- [ ]` checklists.
+Required parts: `### Slice N — Name`, `**Goal:**`, `**Files touched:**` list, `**Checkpoint:** ✓ ...`. Chips and any "Implementation steps" / "Tests" / "Automated verification" / "Manual verification" sub-blocks are optional; `structure-outline` slices carry the two verification sub-blocks and `create-plan` phases carry all four. The verification sub-blocks render as `- [ ]` checklists.
 
 ## Collapsibles
 

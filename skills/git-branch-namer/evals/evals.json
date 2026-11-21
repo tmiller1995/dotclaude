@@ -41,9 +41,9 @@
     {
       "id": 4,
       "prompt": "Create a worktree for ENG-1234",
-      "expected_output": "The create-worktree skill handles the request; git-branch-namer is not the acting skill",
+      "expected_output": "The setup-worktree skill handles the request; git-branch-namer is not the acting skill",
       "expectations": [
-        "git-branch-namer is NOT the acting skill — the request routes to `create-worktree`",
+        "git-branch-namer is NOT the acting skill — the request routes to `setup-worktree`",
         "Does not respond with a bare branch name as the deliverable",
         "Recognizes that the user asked for a created worktree and branch, not for a name string"
       ]

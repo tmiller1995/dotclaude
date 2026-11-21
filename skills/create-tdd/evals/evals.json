@@ -5,7 +5,7 @@
       "id": 1,
       "should_trigger": true,
       "prompt": "/create-tdd .agents/artifacts/feat-ENG-210-shared-reviews flow: prd-tdd — the task directory holds 01-request-shared-reviews.html, 02-research-questions-shared-reviews.html, 03-research-shared-reviews.html, and 04-prd-shared-reviews.html (approved, status ready-for-tdd) with two items under Deferred to TDD.",
-      "expected_output": "A TDD at .agents/artifacts/feat-ENG-210-shared-reviews/05-tdd-shared-reviews.html built System Design first, then Program Design, each separately approved, ending at ready-for-structure with a handoff to an optional /structure-outline or direct implementation",
+      "expected_output": "A TDD at .agents/artifacts/feat-ENG-210-shared-reviews/05-tdd-shared-reviews.html built System Design first, then Program Design, each separately approved, ending at ready-for-structure with a handoff to an optional /create-structure-outline or direct implementation",
       "expectations": [
         "Reads the request, research, and PRD fully, and settles the PRD's Deferred to TDD items in the design",
         "Writes the starting document through Skill('output-html') with the stem .agents/artifacts/feat-ENG-210-shared-reviews/05-tdd-shared-reviews (next available NN, no extension), PHASE=tdd, PHASE_LABEL=Technical Design, STATUS=draft",
@@ -16,7 +16,7 @@
         "Program Design uses concrete code views (call trees, file trees, DI maps, signatures, or pseudocode), with diffs for changes to existing shapes, and gets its own approval",
         "Patterns to Follow cites source paths with short examples, including test seams",
         "Sets STATUS to ready-for-structure only after both approvals",
-        "Handoff offers to open the document for review rather than to commit it, names `/structure-outline .agents/artifacts/feat-ENG-210-shared-reviews flow: prd-tdd` as optional with direct implementation as an alternative, and waits"
+        "Handoff offers to open the document for review rather than to commit it, names `/create-structure-outline .agents/artifacts/feat-ENG-210-shared-reviews flow: prd-tdd` as optional with direct implementation as an alternative, and waits"
       ]
     },
     {

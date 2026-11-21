@@ -52,7 +52,7 @@ Read the full diff against the base branch, not just the last commit, because th
 git diff origin/<base>...HEAD
 ```
 
-Open the files that changed significantly to describe the *why* accurately. If there's an existing PR for this branch, edit rather than replace — a human may already have curated the title or description.
+Open the files that changed significantly so you can describe the *why* accurately. If the branch has a CRISPY task directory (`.agents/artifacts/<task>/`, named after the branch with `/` replaced by `-`), read its request and governing design document to get the why. The CRISPY route for this step is `/describe-pr`. If there's an existing PR for this branch, edit rather than replace — a human may already have curated the title or description.
 
 ### 4. Identify the Linear issue
 
@@ -79,36 +79,21 @@ feat(api)!: change pagination response format
 docs: update API reference for v2 endpoints
 ```
 
-**Description** — use this template, omitting sections that don't apply:
+**Description**: fill in `references/pr-description-template.md`. It has four parts:
 
-```markdown
-## Summary
+- Why the change, in one sentence
+- Merge danger: a one-way or two-way door, plus the blast radius
+- Special things to note
+- A diff-style Change outline
 
-[1-2 sentences on what this PR does and why]
-
-## Changes
-
-- [Key change 1]
-- [Key change 2]
-
-## Breaking Changes
-
-[What breaks and the migration step — delete this section if none]
-
-## Test Plan
-
-- [Commands run to verify, e.g. `dotnet test`, `npm test`]
-- [Manual checks performed]
-- [Screenshots for UI changes, if any]
-
-## Related Issue
-
-Closes ENG-123
-```
-
-Keep a Linear issue reference in the description (`Closes ENG-123` if the PR completes the issue, `Refs ENG-123` if it stays open after merge). Step 8 *also* attaches the PR to the Linear issue so the link is first-class, not just string-matched.
+Follow its rules: no verification checklists and no changelog text. End with the Linear reference: `Closes ENG-123` if the PR completes the issue, `Refs ENG-123` if the issue stays open after merge. Step 8 *also* attaches the PR to the Linear issue, so the link is first-class rather than just string-matched.
 
 ### 7. Create or update the PR
+
+First write the description to a file, then pass it with `--body-file`. A long markdown body passed inline breaks on shell quoting, especially on Windows.
+
+- When a CRISPY task directory exists, use `<task-dir>/pr-description.md`. It is git-excluded along with the rest of `.agents/`.
+- Otherwise use a temp file from `mktemp`.
 
 **Create (default to draft):**
 
@@ -116,7 +101,7 @@ Keep a Linear issue reference in the description (`Closes ENG-123` if the PR com
 gh pr create --draft \
   --base <base> \
   --title "feat(auth): add JWT token refresh endpoint" \
-  --body "<markdown from template>" \
+  --body-file "<description file>" \
   --reviewer "<login>"          # only if the user named reviewers; repeatable
 ```
 
@@ -125,7 +110,7 @@ gh pr create --draft \
 ```bash
 gh pr edit <number> \
   --title "<updated title>" \
-  --body "<updated description>" \
+  --body-file "<description file>" \
   --add-reviewer "<login1>,<login2>"    # only if the user named reviewers
 ```
 

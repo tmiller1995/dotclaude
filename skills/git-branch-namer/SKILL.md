@@ -1,6 +1,6 @@
 ---
 name: git-branch-namer
-description: "Generates kebab-case Git branch names from Linear issues using the team's trunk-based convention: a feat/, fix/, or chore/ prefix, the issue identifier with its casing preserved, and a slugified title (for example fix/ENG-1234-cookie-policy-broken-here-link). Use when the user asks for a branch name, asks what to call a branch, supplies a Linear issue ID, identifier line, or Linear URL and wants a branch for it, asks which prefix (feat, fix, or chore) a change belongs under, or asks about the base branch or the trunk-based branching model. Produces the name only: create-worktree creates the branch and worktree, gh-create-pr commits and opens the pull request."
+description: "Generates kebab-case Git branch names from Linear issues using the team's trunk-based convention: a feat/, fix/, or chore/ prefix, the issue identifier with its casing preserved, and a slugified title (for example fix/ENG-1234-cookie-policy-broken-here-link). Use when the user asks for a branch name, asks what to call a branch, supplies a Linear issue ID, identifier line, or Linear URL and wants a branch for it, asks which prefix (feat, fix, or chore) a change belongs under, or asks about the base branch or the trunk-based branching model. Produces the name only: setup-worktree creates the branch and worktree, gh-create-pr commits and opens the pull request."
 argument-hint: "ENG-1234 - Issue Title | ENG-1234 | Linear issue URL"
 ---
 

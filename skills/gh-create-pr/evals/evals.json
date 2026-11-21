@@ -64,7 +64,7 @@
       "expectations": [
         "Does NOT invoke gh-create-pr: no branch is created, nothing is committed or pushed, and no PR is opened",
         "git-branch-namer handles it, returning a name such as `fix/ENG-1234-cookie-policy-broken-here-link`",
-        "Produces the name only, leaving branch creation to create-worktree and the PR to gh-create-pr"
+        "Produces the name only, leaving branch creation to setup-worktree and the PR to gh-create-pr"
       ]
     },
     {

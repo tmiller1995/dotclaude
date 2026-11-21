@@ -59,7 +59,7 @@ Prior notes show up in `TaskGet` (or scan `TaskList`). Notes that record known-g
 
 When you change code that can be run, built, or type-checked, run a real check that exercises the change before reporting it done; if no real check can run, say which one you didn't run and why. Run the existing tests around the area you touched so you know nothing else broke.
 
-**Automated verification is yours; manual verification is the human's.** Run the phase's "Automated verification" commands (spec phase or outline slice) before marking the task complete. If the task or phase lists "Manual verification" steps, record them in task metadata (timestamped key, e.g. `manual_verification_...`) and leave them unclaimed; the orchestrator surfaces them to the human at the phase gate.
+**Automated verification is yours; manual verification is the human's.** Run the phase's "Automated verification" commands (plan phase or outline slice) before marking the task complete. If the task or phase lists "Manual verification" steps, record them in task metadata (timestamped key, e.g. `manual_verification_...`) and leave them unclaimed; the orchestrator surfaces them to the human at the phase gate.
 
 **Test discipline**
 - Test observable behavior through public entry points, not private methods or internal state.

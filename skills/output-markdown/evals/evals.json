@@ -19,7 +19,7 @@
     },
     {
       "id": 2,
-      "prompt": "CRISPY delegation: /research-codebase --format=md has finished its synthesis and hands over a render brief with phase=research, a status, a ticket line, the stem .agents/artifacts/feat-ENG-1234-csv-export/03-research-csv-export, META_EXTRA including task_dir, flow, and repos (acme/app@<sha>), and numbered body sections.",
+      "prompt": "CRISPY delegation: /create-research --format=md has finished its synthesis and hands over a render brief with phase=research, a status, a ticket line, the stem .agents/artifacts/feat-ENG-1234-csv-export/03-research-csv-export, META_EXTRA including task_dir, flow, and repos (acme/app@<sha>), and numbered body sections.",
       "expected_output": "A CRISPY-mode .md file at .agents/artifacts/feat-ENG-1234-csv-export/03-research-csv-export.md carrying the full crispy:* frontmatter set plus a top-level repos: list, with every human-facing key mirrored as a summary-table row",
       "expectations": [
         "Invokes in CRISPY mode and writes to the caller-supplied stem plus `.md` under .agents/artifacts/<task>/, creating the directory if needed — it does not fall back to the Report-mode reports/ default",

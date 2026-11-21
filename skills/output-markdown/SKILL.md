@@ -1,6 +1,6 @@
 ---
 name: output-markdown
-description: Render existing structured content (writeup, report, summary, analysis, postmortem, RFC, commit summary) as a GitHub-flavored Markdown file with YAML frontmatter and the shared component vocabulary. Use when the user asks for Markdown output of content they've already produced or discussed (e.g., "output this in markdown", "give me a markdown report", "md doc I can attach to the PR"), or when a CRISPY skill (ask-questions, research-codebase, design-discussion, create-prd, create-tdd, structure-outline, create-spec) delegates rendering with `--format=md`. Produces a portable .md file. Not for writing code that processes, parses, or transforms Markdown, or for building a Markdown-based application. For HTML output use output-html; for release notes or roadmaps sourced from Linear use linear-roadmap, which delegates here.
+description: Render existing structured content (writeup, report, summary, analysis, postmortem, RFC, commit summary) as a GitHub-flavored Markdown file with YAML frontmatter and the shared component vocabulary. Use when the user asks for Markdown output of content they've already produced or discussed (e.g., "output this in markdown", "give me a markdown report", "md doc I can attach to the PR"), or when a CRISPY phase skill (a create-* or iterate-* document phase) delegates rendering with `--format=md`. Produces a portable .md file. Not for writing code that processes, parses, or transforms Markdown, or for building a Markdown-based application. For HTML output use output-html; for release notes or roadmaps sourced from Linear use linear-roadmap, which delegates here.
 ---
 
 # Output: Markdown
@@ -9,7 +9,7 @@ This skill renders a polished `.md` file in GitHub-flavored Markdown (GFM). The 
 
 Two invocation modes:
 
-- **CRISPY mode** — invoked by `/ask-questions`, `/research-codebase`, `/design-discussion`, `/create-prd`, `/create-tdd`, `/structure-outline`, or `/create-spec` with `--format=md`. The caller provides a full render brief with phase, status, ticket, etc., plus the full output stem under the task directory `.agents/artifacts/<task>/`.
+- **CRISPY mode** — invoked by a CRISPY `create-*` or `iterate-*` document phase (`/create-research-questions` through `/create-plan` and their `/iterate-*` pairs) with `--format=md`. The caller provides a full render brief with phase, status, ticket, etc., plus the full output stem under the task directory `.agents/artifacts/<task>/`.
 - **Report mode** — invoked directly (e.g., the user says "output this in markdown" or "render this as a markdown report"). The caller provides a title and body content; CRISPY-specific slots are skipped. The output lands in `reports/YYYY-MM-DD-<topic>.md` by default unless the caller specifies a path.
 
 The rendering logic is the same for both — only some slots are absent in Report mode, and the SKIP RULES below name the structural elements to omit when their slot is empty.
@@ -30,8 +30,8 @@ The slot schema is **identical to output-html** — only the rendering differs. 
 | `{{BRANCH}}` | derived | derived | `git branch --show-current` — empty OK |
 | `{{DATE}}` | derived | derived | `date '+%Y-%m-%d %H:%M:%S %Z'` |
 | `{{BODY}}` | required | required | Numbered `## NN. Title` sections rendered via `references/components.md` |
-| `{{PHASE}}` | required | optional | One of `request`, `questions`, `research`, `design`, `prd`, `tdd`, `structure`, `spec`. Omit in Report mode. |
-| `{{PHASE_LABEL}}` | required | optional | CRISPY values, matching `PHASE` in order: `Request`, `Questions`, `Research`, `Design Discussion`, `Product Requirements`, `Technical Design`, `Structure Outline`, `Implementation Spec`. Report mode: free-form kind label (e.g., `Status report`, `RFC`). Empty → omit this segment. |
+| `{{PHASE}}` | required | optional | One of `request`, `questions`, `research`, `design`, `prd`, `tdd`, `structure`, `plan` (`spec` in documents written before 2026-11-21). Omit in Report mode. |
+| `{{PHASE_LABEL}}` | required | optional | CRISPY values, matching `PHASE` in order: `Request`, `Questions`, `Research`, `Design Discussion`, `Product Requirements`, `Technical Design`, `Structure Outline`, `Implementation Plan`. Report mode: free-form kind label (e.g., `Status report`, `RFC`). Empty → omit this segment. |
 | `{{STATUS}}` | required | optional | Lifecycle status. Empty → skip the status emoji + summary row. |
 | `{{STATUS_EMOJI}}` | derived | derived | 📝 (draft) / ✅ (ready-*) / 🟢 (complete). Only used when STATUS is non-empty. |
 | `{{TICKET}}` | required | optional | One-line ticket summary or `N/A`. |

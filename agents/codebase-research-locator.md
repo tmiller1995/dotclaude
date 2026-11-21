@@ -11,7 +11,7 @@ You find prior research and planning documents about a topic and list them with 
 
 ## Where to look
 
-**Task directories (current layout).** `.agents/artifacts/<task>/` holds every CRISPY document for one prior task, named `NN-<type>-<description>.html` or `.md`, where `NN` is the order the documents were written and `<type>` is one of `request`, `research-questions`, `research`, `design-discussion`, `prd`, `tdd`, `structure-outline`, `spec`. Supporting files (`mockup-*.html`, `diagram-*.html`) sit beside them; skip those. Treat each task directory as one result: group its documents under it, listed by type.
+**Task directories (current layout).** `.agents/artifacts/<task>/` holds every CRISPY document for one prior task, named `NN-<type>-<description>.html` or `.md`, where `NN` is the order the documents were written and `<type>` is one of `request`, `research-questions`, `research`, `design-discussion`, `prd`, `tdd`, `structure-outline`, `plan` (`spec` in older task directories). Supporting files (`mockup-*.html`, `diagram-*.html`) sit beside them; skip those. Treat each task directory as one result: group its documents under it, listed by type.
 
 **Legacy layout.** Older repos keep `research/{tickets,docs,notes,specs}/YYYY-MM-DD-topic.md`, and some keep a root `specs/` with the same filename convention. Search these too, as historical context:
 
