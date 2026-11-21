@@ -4,7 +4,7 @@
     "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1"
   },
   "includeCoAuthoredBy": false,
-  "model": "fable",
+  "model": "opus",
   "deniedMcpServers": [
     {
       "serverName": "claude.ai Firecrawl"
@@ -23,6 +23,18 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "^(startup|resume|clear|compact|fork)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\skinn\\.claude\\hooks\\herdr-agent-state.ps1\" session",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
@@ -32,17 +44,10 @@
   "enabledPlugins": {
     "csharp-lsp@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": false,
-    "warp@claude-code-warp": true,
     "ponytail@ponytail": true,
     "impeccable@impeccable": true
   },
   "extraKnownMarketplaces": {
-    "claude-code-warp": {
-      "source": {
-        "source": "github",
-        "repo": "warpdotdev/claude-code-warp"
-      }
-    },
     "ponytail": {
       "source": {
         "source": "github",
