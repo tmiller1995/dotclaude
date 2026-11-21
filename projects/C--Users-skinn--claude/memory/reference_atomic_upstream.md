@@ -5,6 +5,8 @@ type: reference
 originSessionId: 3a7a217a-db3d-4612-951d-d1edeb23c816
 modified: 2026-08-01T04:27:40.332Z
 ---
+> **2026-11-21:** the CRISPY skills were renamed to HumanLayer's `/rpi:*` names. ask-questions→create-research-questions, research-codebase→create-research, design-discussion→create-design-discussion, structure-outline→create-structure-outline, create-spec→create-plan, and create-worktree→setup-worktree; see [[crispy-workflow-adoption]]. Old names below are historical.
+
 `flora131/atomic` (GitHub) is the upstream source of the user's `.claude/skills/` and `.claude/agents/`. Referenced in Alex Lavaee's "From RPI to QRSPI" blog post (https://alexlavaee.me/blog/from-rpi-to-qrspi/).
 
 - **Local clone**: `C:\GitHub\atomic` — pulled fresh 2026-07-31: at commit `196cc766` (2026-07-31, past `0.8.31-alpha.5`). Historical baseline was v0.5.34 commit `0a40566f` (synced 2026-04-24).

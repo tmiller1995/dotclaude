@@ -1,6 +1,7 @@
 - [User Profile](user_profile.md) — .NET/C# backend + React/TanStack Start frontend developer on Windows 11
 - [Search Tool Priority](feedback_search_priority.md) — SerpAPI discovers URLs → Firecrawl extracts; Context7/MSLearn niche+fallback. Server key is `firecrawl` (mcp__firecrawl__*)
-- [CRISPY Workflow](user_crispy_workflow.md) — HumanLayer RPI-aligned flows (design | prd-tdd | tdd | research-only), .agents/artifacts task dirs, manual-only phases, artifacts not committed
+- [CRISPY Workflow](user_crispy_workflow.md) — skill names = HumanLayer /rpi:* one-to-one since 2026-11-21 (create-*/iterate-*, implement-outline/plan, describe-pr, ci-commit); flows design | prd-tdd | tdd | research-only; manual-only phases
 - [Atomic Upstream](reference_atomic_upstream.md) — flora131/atomic at C:\GitHub\atomic is now reference-only (upstream dropped its agent/skill fleet); local 2026-07-31 baseline is canonical; only gh-commit/gh-create-pr/gh-stack overlap
 - [Subagent Nesting](reference_subagent_nesting.md) — sub-agents CAN nest (5 deep, v2.1.172+); Agent granted to worker/debugger/reviewer/planner; orchestrate skill keeps main-context dispatch by choice
-- [HumanLayer QRSPI Status](reference_humanlayer_qrspi.md) — 2026-11-14: no upstream change since rpi 1.1.0 (adopted 2026-11-02); Factory acquired HumanLayer 2026-11-04; riptide gaps folded in 2026-11-02
+- [HumanLayer QRSPI Status](reference_humanlayer_qrspi.md) — 2026-11-21: aligned 1:1 with riptide-rpi plugin (22 skills, mapping in QRSPI-WORKFLOW.md); no upstream change since rpi 1.1.0; Factory acquired HumanLayer 2026-11-04
+- [Matt Pocock Skills](reference_mattpocock_skills.md) — 8 mattpocock/skills copied in 2026-11-21 (grilling set, domain-modeling, codebase-design, improve-codebase-architecture, handoff, diagnosing-bugs); skipped list + why

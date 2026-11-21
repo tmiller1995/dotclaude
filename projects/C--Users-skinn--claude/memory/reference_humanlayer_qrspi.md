@@ -5,10 +5,23 @@ metadata:
   node_type: memory
   type: reference
   originSessionId: ea1e6bff-266f-4a73-9908-9c95ed4d2576
-  modified: 2026-11-03T01:10:27.391Z
+  modified: 2026-11-21T21:02:23.116Z
 ---
 
-As of 2026-11-14 (re-checked; prior checks 2026-11-02, 2026-10-21, 2026-07-31):
+As of 2026-11-21 (re-checked; prior checks 2026-11-14, 2026-11-02, 2026-10-21, 2026-07-31):
+
+- **2026-11-21: one-to-one alignment with `apps/riptide-rpi-claude-plugin` (22 skills).** The upstream repos were unchanged since 11-14.
+  - The 7 skills not covered before were diffed.
+  - Local skills were renamed and split to match upstream names exactly; see [[crispy-workflow-adoption]].
+  - Portable gaps adopted:
+    - describe-pr template, `pr-description.md` + `--body-file`, CI watch
+    - commit each phase on a continuous run (`/ci-commit`)
+    - "What was done" in gate reports
+    - setup-worktree: nesting check, `.env*` / `CLAUDE.local.md` copy, task-dir carry-over
+  - Product-only, skipped: configure-workspaces, review-artifact-comments, and the humanlayer plugin's orchestrate and teleport.
+  - Upstream contradicts itself on describe-pr's `pr-walkthrough.html`: the docs say add one at ≥300 lines / ≥5 files, the SKILL.md says don't. Skipped until upstream settles it.
+  - The full mapping table is in `skills/QRSPI-WORKFLOW.md` → HumanLayer Skill Mapping.
+  - On the next check, re-diff against that table.
 
 - **2026-11-14 check: nothing to adopt.** `humanlayer/skills` last commit is still the 2026-11-01 rpi 1.1.0 bump; riptide plugin untouched; monorepo commits since are riptide-daemon path fixes only. **Factory acquired HumanLayer 2026-11-04** (blog `humanlayer-joins-factory`); the post says nothing about the skills repo or methodology. Watch for the repos going quiet or moving under Factory on the next check.
 

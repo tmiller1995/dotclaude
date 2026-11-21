@@ -1,19 +1,44 @@
 ---
 name: crispy-workflow-adoption
-description: "User's CRISPY workflow (HumanLayer QRSPI/RPI-aligned since 2026-10-21) — flow menu after research, .agents/artifacts task dirs, manual-only phase skills, artifacts not committed"
+description: "User's CRISPY workflow: skill names match HumanLayer's /rpi:* one-to-one since 2026-11-21 (create-*/iterate-* pairs, implement-outline/plan, describe-pr, ci-commit); .agents/artifacts task dirs, manual-only phase skills, artifacts not committed"
 metadata:
   node_type: memory
   type: user
-  originSessionId: ea1e6bff-266f-4a73-9908-9c95ed4d2576
-  modified: 2026-10-21T18:54:35.991Z
+  modified: 2026-11-21T21:02:08.264Z
+  originSessionId: 47e52f26-1304-49a8-a16f-d3a101c3c249
 ---
 
-User runs **CRISPY** (their name for HumanLayer's QRSPI/RPI) for non-trivial changes. On 2026-10-21 the user chose to adopt HumanLayer's 2026-10 `rpi` guidance in full; see [[humanlayer-qrspi-status]].
+User runs **CRISPY** (their name for HumanLayer's QRSPI/RPI) for non-trivial changes. They adopted HumanLayer's `rpi` guidance in full on 2026-10-21. On 2026-11-21 they chose **literal one-to-one skill names** with HumanLayer's open-sourced `/rpi:*` plugin, which reversed the earlier merged create-and-iterate skills. See [[humanlayer-qrspi-status]].
 
-**Flow:** `/ask-questions` (writes `NN-request-*` + `NN-research-questions-*`, 2–7 questions, asks which flow) → `/research-codebase` (reads only the questions doc) → one of: `design` (`/design-discussion`) | `prd-tdd` (`/create-prd` → `/create-tdd`) | `tdd` (`/create-tdd`) | `research-only` → optional `/structure-outline` → optional `/create-spec` → implement via `/orchestrate <task-dir>` (planner + worker loop with phase gates) or directly → review (`reviewer` + `code-simplifier`). Implementation precedence: spec > outline > TDD > PRD > design discussion > research > request.
+**Flow:**
+1. `/create-research-questions`, which writes `NN-request-*` and `NN-research-questions-*`, then `/create-research`.
+2. Then one flow:
+   - `design` → `/create-design-discussion`
+   - `prd-tdd` → `/create-prd`, then `/create-tdd`
+   - `tdd` → `/create-tdd`
+   - `research-only`
+3. Optionally `/create-structure-outline`, then optionally `/create-plan`.
+4. `/implement-outline` or `/implement-plan` (the latter covers Oneshot from the request), then review (`reviewer` + `code-simplifier`), then `/describe-pr`.
 
-**Conventions:** artifacts in `.agents/artifacts/<branch-or-slug>/NN-<type>-<desc>.<html|md>` with `repos` metadata; phases update docs in place; artifacts are NOT committed (gh-commit/worker skip `.agents/artifacts/`); `--format=html|md` via output-html/output-markdown.
+Each document phase has an `/iterate-*` pair. Post-implementation fixes go through `/iterate-implementation`. `/ci-commit` commits without asking and is used when the user says "commit as you go". `/setup-worktree` copies the task dir, `.env*`, and `CLAUDE.local.md`. Implementation precedence: plan > outline > TDD > PRD > design discussion > research > request.
 
-**User preferences (explicit):** phase skills stay **manual-only** (`disable-model-invocation: true`) — the user invokes each phase; Claude names the next command but never starts it. `/create-spec` kept as an optional step. Worker writes tests for what it implements.
+**Renamed 2026-11-21:**
+- ask-questions → create-research-questions
+- research-codebase → create-research
+- design-discussion → create-design-discussion
+- structure-outline → create-structure-outline
+- create-spec → create-plan; doc type `spec` → `plan` (legacy `NN-spec-*` is still read as a plan)
+- create-worktree → setup-worktree
 
-**How to apply:** for a non-trivial implementation request, suggest starting the flow at the right phase and name the command; don't run phases inline or skip alignment phases unprompted.
+`orchestrate` is now the worker-loop engine the implement skills call.
+
+**Conventions:**
+- Artifacts live in `.agents/artifacts/<branch-or-slug>/NN-<type>-<desc>.<html|md>` with `repos` metadata.
+- A `/create-*` skill writes a new document. When the document already exists, it names the `/iterate-*` command instead.
+- Artifacts are NOT committed.
+- `--format=html|md` renders through output-html or output-markdown.
+- PR body template: `skills/gh-create-pr/references/pr-description-template.md` (HumanLayer describe-pr + Matt's Merge danger line).
+
+**User preferences (explicit):** all phase skills are **manual-only** (`disable-model-invocation: true`). The user invokes each phase; Claude names the next command but never starts it. `/create-plan` stays optional. The worker writes tests for what it implements.
+
+**How to apply:** for a non-trivial implementation request, suggest starting the flow at the right phase and name the command. Don't run phases inline or skip alignment phases unprompted. Related: [[mattpocock-skills-import]].
