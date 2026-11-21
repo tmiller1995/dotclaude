@@ -61,6 +61,10 @@ You're a sub-agent and can't ask the caller a question and wait, so if the dispa
 2. Isolate the failure location (CodeGraph first), checking recent changes to the area.
 3. Form and test one hypothesis at a time, using debug logging or variable inspection where it helps; discard a hypothesis on contrary evidence rather than accumulating theories.
 
+For a hard bug or performance regression, where the cause isn't obvious after step 2 or the failure is intermittent or slow, load `Skill('diagnosing-bugs')` and follow its loop: a tight, red-capable reproduction, then minimise it, then 3–5 ranked hypotheses, then tagged instrumentation. You're a sub-agent, so adjust two of its steps:
+- Don't stop to show the ranked hypotheses to the user. List them under **Evidence** with how each was ruled in or out.
+- When its loop needs a human to click, don't run the HITL script. Return `BLOCKED` and name the manual step.
+
 ## When you get stuck
 
 - After 3 consecutive failures of the same approach, change approach or return `BLOCKED`; re-running the same command won't produce a different result.
