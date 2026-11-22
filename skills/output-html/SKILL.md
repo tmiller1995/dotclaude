@@ -5,7 +5,7 @@ description: Render existing structured content (writeup, report, summary, analy
 
 # Output: HTML
 
-This skill renders a polished, self-contained `.html` file. The design vocabulary is anchored to Thariq Shihipar's [*The Unreasonable Effectiveness of HTML*](https://thariqs.github.io/html-effectiveness/) — system fonts only, every CSS rule inlined, no CDN, no fonts loaded over the network, inline SVG for diagrams.
+This skill renders a polished, self-contained `.html` file: system fonts only, every CSS rule inlined, no CDN, no fonts loaded over the network, inline SVG for diagrams. The look is **Line Diagram**: CRISPY is a line with stations, so every phase document opens on a navy signage band whose strip map shows which stop it is, and the recommendation is the page's one reversed plate.
 
 Two invocation modes are supported:
 
@@ -29,6 +29,7 @@ The same schema serves both modes. CRISPY mode fills all slots; Report mode fill
 | `{{REPO}}` | derived | derived | `basename "$(git rev-parse --show-toplevel)"` — if no git repo, use `""` and apply the SKIP rule |
 | `{{BRANCH}}` | derived | derived | `git branch --show-current` — same skip behavior if absent |
 | `{{DATE}}` | derived | derived | `date '+%Y-%m-%d %H:%M:%S %Z'` |
+| `{{LINE}}` | derived | omit | The strip-map stations as `<li>` items, from `crispy:flow` and `PHASE` — see [Strip map](#strip-map). Empty in Report mode and for `flow: none`. |
 | `{{BODY}}` | required | required | Numbered `<section>` blocks rendered via `references/components.md` |
 | `{{PHASE}}` | required | optional | One of `request`, `questions`, `research`, `design`, `prd`, `tdd`, `structure`, `plan` (`spec` in documents written before 2026-11-21). Omit in Report mode. |
 | `{{PHASE_LABEL}}` | required | optional | Human label for the eyebrow. CRISPY values, matching `PHASE` in order: `Request`, `Questions`, `Research`, `Design Discussion`, `Product Requirements`, `Technical Design`, `Structure Outline`, `Implementation Plan`. In Report mode, set to a free-form subtitle (e.g., `Status report`, `RFC`, `Postmortem`) OR leave empty to skip the eyebrow entirely. |
@@ -48,6 +49,8 @@ These rules let one template serve both modes cleanly. After you fill the slots,
 | --- | --- |
 | `{{PHASE_LABEL}}` AND `{{REPO}}` both empty | the entire `<div class="eyebrow">…</div>` |
 | `{{PROMPT_TEXT}}` empty | the entire `<div class="prompt-box">…</div>` block |
+| `{{LINE}}` empty | the `<ol class="line">…</ol>` element |
+| `{{LINE}}` empty AND the eyebrow removed | the entire `<header class="band">…</header>` |
 | `{{STATUS}}` empty | the Status `<div class="cell">` inside `.summary` |
 | `{{BRANCH}}` empty | the Branch `<div class="cell">` inside `.summary` |
 | `{{DATE}}` empty | the Date `<div class="cell">` inside `.summary` |
@@ -72,7 +75,25 @@ Valid `crispy:status` values, in rough progression order. Each CRISPY phase has 
 | `ready-for-implementation` | `ready` |
 | `complete` | `complete` |
 
-In Report mode, you can use any of these or skip STATUS entirely. Custom status strings work too — just map them to one of the three CSS classes (`draft` / `ready` / `complete`) based on which color you want (gold / clay / olive).
+In Report mode, you can use any of these or skip STATUS entirely. Custom status strings work too — just map them to one of the three CSS classes (`draft` / `ready` / `complete`) based on which station mark you want: `draft` a dashed ring, `ready` a heavy orange ring, `complete` a filled green dot.
+
+### Strip map
+
+`{{LINE}}` lists the flow's stations in order. Mark every station before the document's phase `done`, the phase itself `here` with `aria-current="step"`, and leave later stations bare:
+
+```html
+<li class="done">Request</li><li class="done">Questions</li><li class="done">Research</li><li class="here" aria-current="step">Design</li><li>Structure</li><li>Plan</li>
+```
+
+| `crispy:flow` | Stations |
+| --- | --- |
+| `design` | Request · Questions · Research · Design · Structure · Plan |
+| `prd-tdd` | Request · Questions · Research · PRD · TDD · Structure · Plan |
+| `tdd` | Request · Questions · Research · TDD · Structure · Plan |
+| `research-only` | Request · Questions · Research · Plan |
+| `none` | no line: leave `{{LINE}}` empty |
+
+`PHASE` maps to a station by name (`request` → Request, `questions` → Questions, `design` → Design, `prd` → PRD, `tdd` → TDD, `structure` → Structure, `plan` or legacy `spec` → Plan).
 
 ### Phase-specific metadata (CRISPY mode)
 
@@ -140,7 +161,8 @@ In Report mode you can stamp the file with `<meta name="report:*">` tags for dow
 
 See `references/components.md` for the full catalog: when to use each component, the HTML snippet to paste, and which CSS classes carry meaning. Components include:
 
-- `.eyebrow`, `.sec-head`, `.sec-intro` — section structure
+- `.band`, `.eyebrow`, `.line` — the masthead and strip map (template-emitted)
+- `.sec-head`, `.sec-intro` — section structure
 - `.prompt-box`, `.summary` / `.cell` / `.badge` — header card
 - `.callout` (default / `.warn` / `.bad`) — inline callouts
 - `.card`, `.options` + `.option.chosen`, `.tradeoffs` — decision cards

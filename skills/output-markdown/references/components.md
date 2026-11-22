@@ -196,7 +196,7 @@ GFM does not have a styled callout primitive. Three options:
 
 | HTML component | GFM alert |
 | --- | --- |
-| `.callout` (clay, default) | `> [!NOTE]` |
+| `.callout` (info, default) | `> [!NOTE]` |
 | `.callout.warn` | `> [!WARNING]` |
 | `.callout.bad` | `> [!CAUTION]` |
 

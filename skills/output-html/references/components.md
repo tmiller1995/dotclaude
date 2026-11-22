@@ -25,7 +25,7 @@ Treat this like a shared design system. If two artifacts both have "design decis
 
 ### Numbered section header
 
-Use for every top-level body section. Numbering rule: see [What not to do](#what-not-to-do).
+Use for every top-level body section. The number renders on a navy platform tile. Numbering rule: see [What not to do](#what-not-to-do).
 
 ```html
 <section>
@@ -52,11 +52,13 @@ These are already wired through template slots; do not re-emit them by hand. Lis
 
 | Component | Slot | Visual |
 | --- | --- | --- |
-| `.eyebrow` | derived from `PHASE_LABEL`/`REPO` | Tiny uppercase tracker above the title |
-| `<h1>` | `TITLE` | Serif display heading |
-| `.prompt-box` | `PROMPT_TEXT` | Clay-accented box containing the originating ticket |
-| `.summary` `.cell` | base cells + `SUMMARY_EXTRA` | Grid of key/value chips below the prompt |
-| `.badge.status-*` | derived from `STATUS_CLASS` | Pill showing the artifact's lifecycle state |
+| `.band` | always (removed by SKIP rules) | Navy signage band across the top of the page |
+| `.eyebrow` | derived from `PHASE_LABEL`/`REPO` | Uppercase phase · repo line inside the band |
+| `.line` | `LINE` | Strip map of the flow's stations: done filled, current ringed and named large, upcoming hollow |
+| `<h1>` | `TITLE` | Bold sans display heading |
+| `.prompt-box` | `PROMPT_TEXT` | Muted lead line with a bold label, no box |
+| `.summary` `.cell` | base cells + `SUMMARY_EXTRA` | Hairline-ruled row of key/value facts |
+| `.badge.status-*` | derived from `STATUS_CLASS` | Station mark plus the status text: dashed ring, heavy ring, or filled dot |
 
 ## Inline elements
 
@@ -74,7 +76,7 @@ Use for file paths, identifiers, line refs. Embed inside `<a>` when linking: `<a
 This explanation calls out <span class="hl">one specific phrase</span> in body text.
 ```
 
-Clay-background highlight on inline prose. Use sparingly — for the one phrase per paragraph that you want the eye to land on.
+Orange-tinted highlight on inline prose. Use sparingly — for the one phrase per paragraph that you want the eye to land on.
 
 ### Tags (change kind)
 
@@ -140,7 +142,7 @@ The template does not style `<dl>` heavily — body text scale. Use semantically
 </blockquote>
 ```
 
-Clay-accented left bar, muted body. Use for cited principles, not for asides — asides should use `.callout` instead.
+Neutral left rule, muted body. Use for cited principles, not for asides — asides should use `.callout` instead.
 
 ## Code blocks
 
@@ -161,7 +163,7 @@ The `.file-label` above the `<pre>` is part of the component — emit them toget
 | `.cm` | comments | `<span class="cm">// note: ...</span>` |
 | `.hl` | visually-emphasized region | `<span class="hl">deprecated</span>` |
 
-The template's palette renders these in Thariq's clay/gold/olive/gray scheme automatically. Hand-write the spans; a syntax-highlighter library would break self-containment.
+The template's palette renders these in orange / light blue / green / gray on the dark code ground automatically. Hand-write the spans; a syntax-highlighter library would break self-containment.
 
 ### When NOT to use a code block
 
@@ -184,7 +186,7 @@ Use for ≥3 rows of structured comparison. For 1–2 rows, prefer a `<ul>` or i
 
 ## Callouts
 
-### Default callout (clay)
+### Default callout (info)
 
 ```html
 <div class="callout">
@@ -193,7 +195,7 @@ Use for ≥3 rows of structured comparison. For 1–2 rows, prefer a `<ul>` or i
 </div>
 ```
 
-For neutral context: rollback strategy, "for the human, not sub-agents", caveats.
+Renders with a navy `i` sign beside the text, no box. For neutral context: rollback strategy, "for the human, not sub-agents", caveats.
 
 ### Warning callout
 
@@ -204,7 +206,7 @@ For neutral context: rollback strategy, "for the human, not sub-agents", caveats
 </div>
 ```
 
-For "be careful" — gold left bar.
+For "be careful" — amber `!` sign.
 
 ### Bad / blocking callout
 
@@ -215,7 +217,7 @@ For "be careful" — gold left bar.
 </div>
 ```
 
-For "this would break something." Rust-red left bar.
+For "this would break something." Red `!` sign.
 
 ## Cards
 
@@ -229,7 +231,7 @@ For "this would break something." Rust-red left bar.
 </div>
 ```
 
-A neutral container for a single self-contained idea. Equivalent to "a section that doesn't deserve its own numbered header."
+A heavy top rule over a single self-contained idea, no box. Equivalent to "a section that doesn't deserve its own numbered header."
 
 ### Decision card with contrastive options
 
@@ -253,7 +255,7 @@ A neutral container for a single self-contained idea. Equivalent to "a section t
 </div>
 ```
 
-This is the canonical shape for every architecture decision and every open question. The `.option.chosen` class auto-appends "✓ chosen" with the clay accent, so the chosen one stands out without an extra label.
+This is the canonical shape for every architecture decision and every open question. The `.option.chosen` class fills its letter tile with the line orange and appends a "Chosen" label, so the chosen one stands out without an extra label. Options are ruled rows, not boxes.
 
 ### Tradeoffs grid (pros vs cons of one approach)
 
@@ -273,7 +275,7 @@ When the comparison is two-sided (not A vs B vs C, but "what we gain vs what we 
 </div>
 ```
 
-The `.cell.pro` and `.cell.con` modifiers auto-prefix `+` (olive) and `−` (rust) bullets.
+The `.cell.pro` and `.cell.con` modifiers auto-prefix `+` (green) and `−` (red) bullets.
 
 ## Vertical-slice cards
 
@@ -326,7 +328,7 @@ For a flow, sequence, or component map that reads better as a picture than as a 
 
 ```html
 <figure class="diagram">
-  <svg viewBox="0 0 520 90" role="img" aria-labelledby="dg-export-title">
+  <svg viewBox="0 0 520 90" width="520" role="img" aria-labelledby="dg-export-title">
     <title id="dg-export-title">Export request flow</title>
     <defs>
       <marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
@@ -353,21 +355,20 @@ For a flow, sequence, or component map that reads better as a picture than as a 
 | `.edge` | connector lines and paths |
 | `.arrow` | arrowhead marker fill |
 
-Keep it to the nodes and edges the point needs. Give each diagram's `<title>` and marker unique ids so several diagrams can share a page. No external scripts or diagram libraries — the SVG is hand-written so the file stays self-contained. For a layout or visual too dense for one figure, save a separate `diagram-<desc>.html` beside the document and link it. `visual-guidance.md` covers when a diagram beats a tree or a diff.
+Set `width` to the viewBox width so labels render at their drawn size; a diagram wider than the column scrolls sideways instead of shrinking. Keep it to the nodes and edges the point needs. Give each diagram's `<title>` and marker unique ids so several diagrams can share a page. No external scripts or diagram libraries — the SVG is hand-written so the file stays self-contained. For a layout or visual too dense for one figure, save a separate `diagram-<desc>.html` beside the document and link it. `visual-guidance.md` covers when a diagram beats a tree or a diff.
 
 ## Recommendation aside
 
-For "the bottom-line callout" at the end of a section — typically only used in design-discussion artifacts.
+For the document's bottom-line recommendation — typically only used in design-discussion artifacts.
 
 ```html
 <aside class="reco">
-  <h2>Recommendation</h2>
-  <p>Adopt Option B (new <code>reticulation_log</code> table) so the audit
-     requirement is satisfied without coupling to <code>operation_log</code>.</p>
+  <h2>Adopt Option B: a new <code>reticulation_log</code> table</h2>
+  <p>It satisfies the audit requirement without coupling to <code>operation_log</code>.</p>
 </aside>
 ```
 
-Renders with a clay border and uppercase heading. Use at most one per section.
+Renders as the document's one reversed plate: an ink-colored block (a light plate in dark mode) whose `<h2>` states the decision itself as a sentence, not a "Recommendation" label. Use at most one per document, for the headline recommendation; it reads best near the top, before the detail.
 
 ## Component-selection cheat sheet
 
@@ -386,7 +387,7 @@ Renders with a clay border and uppercase heading. Use at most one per section.
 | A self-contained sub-topic with a heading | `.card` |
 | A 5+ line deep dive that not everyone needs | `<details>` (first one `open`) |
 | A flow, sequence, or component map | `figure.diagram` + inline `<svg>` |
-| The "headline" recommendation for a section | `aside.reco` |
+| The document's headline recommendation (once) | `aside.reco` |
 | Metrics / counts inline | `.chips` |
 | An inline file path or identifier | `<code>` |
 | One phrase to emphasize in prose | `<span class="hl">…</span>` |
